@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { mockData } from './data/mockData';
-import type { DanhMucTaiLieu, NhanSu, ThongBao, ReportType, LichRaSoat, ChucVu, AuditLog, LichAudit, DaoTaoTruyenThong, PhienBanTaiLieu } from './types';
+import type { DanhMucTaiLieu, NhanSu, ThongBao, ReportType, LichRaSoat, ChucVu, AuditLog, LichAudit, DaoTaoTruyenThong, PhienBanTaiLieu, DanhMucChung, PhongBan, LoaiTaiLieu, CapDoTaiLieu, MucDoBaoMat, TanSuatRaSoat, HangMucThayDoi, ToChucDanhGia, DanhGiaVien } from './types';
 import { DocumentStatus, NotificationType, AuditAction, VersionStatus, ReviewResult } from './constants';
 import Layout from './components/layout/Layout';
 import LoginPage from './components/LoginPage';
@@ -8,6 +9,7 @@ import Dashboard from './components/Dashboard';
 import DocumentManagementPage from './components/DocumentManagementPage';
 import DocumentDetail from './components/DocumentDetail';
 import SettingsPage from './components/SettingsPage';
+import CategoryManagementPage from './components/CategoryManagementPage';
 import StandardsManagementPage from './components/StandardsManagementPage';
 import ReportsPage from './components/ReportsPage';
 import AuditManagementPage from './components/AuditManagementPage';
@@ -17,7 +19,19 @@ import { translate } from './utils/translations';
 import { GOOGLE_SCRIPT_URL } from './config';
 import { getAllData, updateAllData, login } from './services/api';
 
-type View = 'dashboard' | 'documents' | 'document-detail' | 'settings' | 'standards' | 'reports' | 'audits';
+// Import forms for Category Management
+import PersonnelForm from './components/forms/PersonnelForm';
+import DepartmentForm from './components/forms/DepartmentForm';
+import GenericCategoryForm from './components/forms/GenericCategoryForm';
+import AuditorForm from './components/forms/AuditorForm';
+// FIX: Import Badge component to resolve 'Cannot find name 'Badge'' error.
+import Badge from './components/ui/Badge';
+
+
+type View = 'dashboard' | 'documents' | 'document-detail' | 'settings' | 'standards' | 'reports' | 'audits' |
+    'settings-personnel' | 'settings-departments' | 'settings-positions' | 'settings-docTypes' | 'settings-docLevels' |
+    'settings-securityLevels' | 'settings-reviewFrequencies' | 'settings-changeItems' | 'settings-auditors' | 'settings-auditOrgs';
+
 
 const App: React.FC = () => {
     const [data, setData] = useState<typeof mockData | null>(null);
@@ -28,6 +42,7 @@ const App: React.FC = () => {
     const [view, setView] = useState<View>('dashboard');
     const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
     const [initialReportType, setInitialReportType] = useState<ReportType | null>(null);
+    const [initialDocFilter, setInitialDocFilter] = useState<string | null>(null);
     
     const isUpdating = useRef(false);
 
@@ -41,6 +56,7 @@ const App: React.FC = () => {
         setIsLoading(true);
         setError(null);
         try {
+            // The result from the API might be an incomplete object if some sheets are missing.
             const result = await getAllData();
 
             const parseStringToArray = (field: any): string[] => {
@@ -50,30 +66,37 @@ const App: React.FC = () => {
                 }
                 return [];
             };
+            
+            // Create a new data object by merging the result with the mockData structure.
+            // This ensures all expected array properties are present to prevent .map errors.
+            const dataWithFallbacks: any = {};
+            for (const key of Object.keys(mockData)) {
+                // Use the fetched data if available, otherwise use the mockData value (which is an empty array).
+                dataWithFallbacks[key] = (result as any)?.[key] || (mockData as any)[key];
+            }
 
-            const sanitizedData = {
-                ...result,
-                documents: result.documents.map((doc: DanhMucTaiLieu) => ({
-                    ...doc,
-                    pham_vi_ap_dung: parseStringToArray(doc.pham_vi_ap_dung),
-                    tieu_chuan_ids: parseStringToArray(doc.tieu_chuan_ids),
-                    iso_tham_chieu: parseStringToArray(doc.iso_tham_chieu),
-                    tieu_chuan_khac: parseStringToArray(doc.tieu_chuan_khac),
-                    phap_ly_tham_chieu: parseStringToArray(doc.phap_ly_tham_chieu),
-                })),
-                auditSchedules: result.auditSchedules.map((audit: LichAudit) => ({
-                    ...audit,
-                    tieu_chuan_ids: parseStringToArray(audit.tieu_chuan_ids),
-                    doan_danh_gia_ids: parseStringToArray(audit.doan_danh_gia_ids),
-                    tai_lieu_lien_quan_ids: parseStringToArray(audit.tai_lieu_lien_quan_ids),
-                })),
-                trainings: result.trainings.map((training: DaoTaoTruyenThong) => ({
-                    ...training,
-                    phong_ban_tham_gia: parseStringToArray(training.phong_ban_tham_gia),
-                }))
-            };
+            // Now, perform the string-to-array parsing on the guaranteed arrays.
+            // This is necessary because data from Google Sheets can come as comma-separated strings.
+            dataWithFallbacks.documents = (dataWithFallbacks.documents || []).map((doc: DanhMucTaiLieu) => ({
+                ...doc,
+                pham_vi_ap_dung: parseStringToArray(doc.pham_vi_ap_dung),
+                tieu_chuan_ids: parseStringToArray(doc.tieu_chuan_ids),
+                iso_tham_chieu: parseStringToArray(doc.iso_tham_chieu),
+                tieu_chuan_khac: parseStringToArray(doc.tieu_chuan_khac),
+                phap_ly_tham_chieu: parseStringToArray(doc.phap_ly_tham_chieu),
+            }));
+            dataWithFallbacks.auditSchedules = (dataWithFallbacks.auditSchedules || []).map((audit: LichAudit) => ({
+                ...audit,
+                tieu_chuan_ids: parseStringToArray(audit.tieu_chuan_ids),
+                doan_danh_gia_ids: parseStringToArray(audit.doan_danh_gia_ids),
+                tai_lieu_lien_quan_ids: parseStringToArray(audit.tai_lieu_lien_quan_ids),
+            }));
+            dataWithFallbacks.trainings = (dataWithFallbacks.trainings || []).map((training: DaoTaoTruyenThong) => ({
+                ...training,
+                phong_ban_tham_gia: parseStringToArray(training.phong_ban_tham_gia),
+            }));
 
-            setData(sanitizedData);
+            setData(dataWithFallbacks);
         } catch (e: any) {
             console.error("Failed to fetch data from Google Sheets:", e);
             let detailedError: React.ReactNode = `Không thể tải dữ liệu từ Google Sheets. Lỗi: ${e.message}. Vui lòng kiểm tra lại cấu hình và thử lại.`;
@@ -243,6 +266,9 @@ const App: React.FC = () => {
         if (view !== 'reports') {
             setInitialReportType(null);
         }
+        if (view !== 'documents') {
+            setInitialDocFilter(null);
+        }
     }, [view]);
 
     const handleLogin = async (username: string, password: string): Promise<boolean> => {
@@ -267,6 +293,11 @@ const App: React.FC = () => {
     const handleNavigateToReport = (reportType: ReportType) => {
         setView('reports');
         setInitialReportType(reportType);
+    };
+
+    const handleNavigateToDocumentsWithFilter = (filter: 'bookmarked') => {
+        setView('documents');
+        setInitialDocFilter(filter);
     };
     
     const handleViewDetails = (doc: DanhMucTaiLieu) => {
@@ -332,64 +363,89 @@ const App: React.FC = () => {
         if (type === 'versions') {
             handleSetData(prevData => {
                 if (!prevData) return null;
-
-                const isNewVersion = !relatedData.id_phien_ban;
-                const savedVersion = { ...relatedData };
-                if (isNewVersion) {
-                    savedVersion.id_phien_ban = `v-${uuidv4()}`;
-                }
-
-                let nextVersions = [...prevData.versions];
-
+        
+                const isNew = !relatedData.id_phien_ban;
+                const savedVersion = { ...relatedData, id_phien_ban: relatedData.id_phien_ban || `v-${uuidv4()}` };
+        
+                let otherVersions = prevData.versions.filter(v => v.id_phien_ban !== savedVersion.id_phien_ban);
+        
                 if (savedVersion.is_moi_nhat) {
-                    nextVersions = nextVersions.map(v => {
-                        if (v.ma_tl !== savedVersion.ma_tl || v.id_phien_ban === savedVersion.id_phien_ban) {
-                            return v;
+                    otherVersions = otherVersions.map(v => {
+                        if (v.ma_tl === savedVersion.ma_tl) {
+                            const updatedV = { ...v, is_moi_nhat: false };
+                            if (savedVersion.trang_thai_phien_ban === VersionStatus.BAN_HANH && v.trang_thai_phien_ban === VersionStatus.BAN_HANH) {
+                                updatedV.trang_thai_phien_ban = VersionStatus.THU_HOI;
+                            }
+                            return updatedV;
                         }
-                        const updatedV = { ...v, is_moi_nhat: false };
-                        if (savedVersion.trang_thai_phien_ban === VersionStatus.BAN_HANH && v.trang_thai_phien_ban === VersionStatus.BAN_HANH) {
-                            updatedV.trang_thai_phien_ban = VersionStatus.THU_HOI;
-                        }
-                        return updatedV;
+                        return v;
                     });
                 }
-
-                if (isNewVersion) {
-                    nextVersions.push(savedVersion);
-                } else {
-                    const index = nextVersions.findIndex(v => v.id_phien_ban === savedVersion.id_phien_ban);
-                    if (index > -1) nextVersions[index] = savedVersion;
-                    else nextVersions.push(savedVersion);
-                }
-
+        
+                const nextVersions = [...otherVersions, savedVersion];
                 let nextDocuments = [...prevData.documents];
                 const docIndex = nextDocuments.findIndex(d => d.ma_tl === savedVersion.ma_tl);
-                
+        
                 if (docIndex > -1) {
                     const originalDoc = nextDocuments[docIndex];
-                    let updatedDoc = { ...originalDoc };
-                    
-                    if (isNewVersion && originalDoc.trang_thai === DocumentStatus.DA_BAN_HANH) {
-                        updatedDoc.trang_thai = DocumentStatus.DANG_RA_SOAT;
+                    const updatedDoc = { ...originalDoc };
+        
+                    const latestVersionForDoc = nextVersions
+                        .filter(v => v.ma_tl === savedVersion.ma_tl)
+                        .find(v => v.is_moi_nhat);
+        
+                    let baseStatus = originalDoc.trang_thai;
+        
+                    if (latestVersionForDoc) {
+                        switch (latestVersionForDoc.trang_thai_phien_ban) {
+                            case VersionStatus.BAN_HANH:
+                                baseStatus = DocumentStatus.DA_BAN_HANH;
+                                updatedDoc.ngay_ban_hanh = latestVersionForDoc.ngay_phat_hanh;
+                                updatedDoc.ngay_hieu_luc = latestVersionForDoc.ngay_phat_hanh;
+                                break;
+                            case VersionStatus.PHE_DUYET:
+                                baseStatus = DocumentStatus.CHO_PHE_DUYET;
+                                break;
+                            case VersionStatus.BAN_THAO:
+                                if (originalDoc.trang_thai !== DocumentStatus.NHAP) {
+                                    baseStatus = DocumentStatus.DANG_RA_SOAT;
+                                }
+                                break;
+                        }
+                    } else if (isNew && originalDoc.trang_thai === DocumentStatus.DA_BAN_HANH) {
+                        baseStatus = DocumentStatus.DANG_RA_SOAT;
                     }
-                    
-                    if (savedVersion.is_moi_nhat && savedVersion.trang_thai_phien_ban === VersionStatus.BAN_HANH) {
-                        updatedDoc.trang_thai = DocumentStatus.DA_BAN_HANH;
-                        updatedDoc.ngay_ban_hanh = savedVersion.ngay_phat_hanh;
-                        updatedDoc.ngay_hieu_luc = savedVersion.ngay_phat_hanh;
-                    }
-                     // If the latest version is draft/pending, the document is in review/approval
-                    else if (savedVersion.is_moi_nhat && savedVersion.trang_thai_phien_ban === VersionStatus.PHE_DUYET) {
-                         updatedDoc.trang_thai = DocumentStatus.CHO_PHE_DUYET;
-                    } else if (savedVersion.is_moi_nhat && savedVersion.trang_thai_phien_ban === VersionStatus.BAN_THAO) {
-                        if (originalDoc.trang_thai !== DocumentStatus.NHAP) {
-                           updatedDoc.trang_thai = DocumentStatus.DANG_RA_SOAT;
+        
+                    // --- Overriding Logic ---
+                    const today = new Date();
+                    today.setUTCHours(0, 0, 0, 0);
+                    let finalStatus = baseStatus;
+        
+                    // Priority 1: Expiry date is the ultimate override.
+                    if (updatedDoc.ngay_het_hieu_luc) {
+                        const expiryDate = new Date(updatedDoc.ngay_het_hieu_luc);
+                        expiryDate.setUTCHours(0, 0, 0, 0);
+                        if (expiryDate <= today) {
+                            finalStatus = DocumentStatus.HET_HIEU_LUC;
                         }
                     }
-                    
+        
+                    // Priority 2: Overdue review overrides 'Published'.
+                    if (finalStatus === DocumentStatus.DA_BAN_HANH) {
+                        const isDueForReview = prevData.reviewSchedules.some(s =>
+                            s.ma_tl === updatedDoc.ma_tl &&
+                            !s.ngay_ra_soat_thuc_te &&
+                            new Date(s.ngay_ra_soat_ke_tiep) <= today
+                        );
+                        if (isDueForReview) {
+                            finalStatus = DocumentStatus.DANG_RA_SOAT;
+                        }
+                    }
+        
+                    updatedDoc.trang_thai = finalStatus;
                     nextDocuments[docIndex] = updatedDoc;
                 }
-
+        
                 return { ...prevData, versions: nextVersions, documents: nextDocuments };
             });
             return;
@@ -454,6 +510,20 @@ const App: React.FC = () => {
             handleSaveRelatedData('versions', { ...version, trang_thai_phien_ban: newStatus, is_moi_nhat: isApproving || version.is_moi_nhat });
         }
     };
+
+    const handleToggleBookmark = (docId: string) => {
+        handleSetData(prev => {
+            if (!prev) return null;
+            return {
+                ...prev,
+                documents: prev.documents.map(d => 
+                    d.ma_tl === docId 
+                    ? { ...d, is_bookmarked: !d.is_bookmarked } 
+                    : d
+                ),
+            };
+        });
+    };
     
     const handleMarkNotificationRead = (id: string) => {
         handleSetData(prev => prev ? ({ ...prev, notifications: prev.notifications.map(n => n.id === id ? { ...n, is_read: true } : n) }) : null);
@@ -462,6 +532,44 @@ const App: React.FC = () => {
     const handleMarkAllNotificationsRead = () => {
         handleSetData(prev => prev ? ({ ...prev, notifications: prev.notifications.map(n => ({ ...n, is_read: true })) }) : null);
     }
+    
+    const handleSaveCategory = (categoryKey: keyof typeof mockData, formData: any) => {
+        handleSetData(prev => {
+            if (!prev) return null;
+            const list = (prev as any)[categoryKey] as any[];
+            let newList;
+            if (formData.id && list.some(item => item.id === formData.id)) {
+                 newList = list.map(item => item.id === formData.id ? formData : item);
+            } else {
+                 const newRole = categoryKey === 'nhanSu' ? { role: 'user' } : {};
+                 newList = [...list, { ...formData, id: `${categoryKey}-${uuidv4()}`, ...newRole, is_active: true }];
+            }
+            return { ...prev, [categoryKey]: newList };
+        });
+    };
+
+    const handleDeleteCategory = (categoryKey: keyof typeof mockData, itemToDelete: any) => {
+        handleSetData(prev => {
+            if (!prev) return null;
+            const list = (prev as any)[categoryKey] as any[];
+            const newList = list.filter(item => item.id !== itemToDelete.id);
+            return { ...prev, [categoryKey]: newList };
+        });
+    };
+
+    const handleToggleCategoryStatus = (categoryKey: keyof typeof mockData, itemToToggle: any) => {
+         handleSetData(prev => {
+            if (!prev) return null;
+            const list = (prev as any)[categoryKey] as any[];
+            const newList = list.map(item =>
+                item.id === itemToToggle.id
+                    ? { ...item, is_active: item.is_active === false }
+                    : item
+            );
+            return { ...prev, [categoryKey]: newList };
+        });
+    };
+
 
     if (isLoading && !currentUser) {
         return <div className="flex h-screen items-center justify-center">Đang tải...</div>;
@@ -504,21 +612,68 @@ const App: React.FC = () => {
     if (!data) {
         return <div className="flex h-screen items-center justify-center">Không có dữ liệu hoặc không thể tải dữ liệu. Vui lòng kiểm tra lại Google Sheet và triển khai Apps Script.</div>;
     }
+    
+    const categoryManagementProps = {
+        onSave: handleSaveCategory,
+        onDelete: handleDeleteCategory,
+        onToggleStatus: handleToggleCategoryStatus,
+        currentUser: currentUser,
+    };
 
     const renderContent = () => {
         const selectedDocument = data.documents.find(d => d.ma_tl === selectedDocId);
         switch (view) {
-            case 'dashboard': return <Dashboard documents={data.documents} versions={data.versions} currentUser={currentUser} departments={data.phongBan} auditSchedules={data.auditSchedules} nhanSu={data.nhanSu} onNavigate={(view) => handleNavigate(view)} onNavigateToReport={handleNavigateToReport} onNavigateToDocument={(docId) => handleNavigate('document-detail', docId)} />;
-            case 'documents': return <DocumentManagementPage allData={data} onUpdateData={handleSetData} currentUser={currentUser} onViewDetails={handleViewDetails} />;
+            case 'dashboard': return <Dashboard documents={data.documents} versions={data.versions} currentUser={currentUser} departments={data.phongBan} auditSchedules={data.auditSchedules} nhanSu={data.nhanSu} onNavigate={(view) => handleNavigate(view)} onNavigateToReport={handleNavigateToReport} onNavigateToDocument={(docId) => handleNavigate('document-detail', docId)} onNavigateToDocumentsWithFilter={handleNavigateToDocumentsWithFilter} />;
+            case 'documents': return <DocumentManagementPage allData={data} onUpdateData={handleSetData} currentUser={currentUser} onViewDetails={handleViewDetails} onToggleBookmark={handleToggleBookmark} initialFilter={initialDocFilter} />;
             case 'document-detail':
                 if (selectedDocument) {
-                    return <DocumentDetail document={selectedDocument} allData={data} onBack={() => handleNavigate('documents')} onSaveRelatedData={handleSaveRelatedData} onDeleteRelatedData={handleDeleteRelatedData} onUpdateDocument={handleUpdateDocument} onUpdateVersionStatus={handleUpdateVersionStatus} currentUser={currentUser} />;
+                    return <DocumentDetail document={selectedDocument} allData={data} onBack={() => handleNavigate('documents')} onSaveRelatedData={handleSaveRelatedData} onDeleteRelatedData={handleDeleteRelatedData} onUpdateDocument={handleUpdateDocument} onUpdateVersionStatus={handleUpdateVersionStatus} currentUser={currentUser} onToggleBookmark={handleToggleBookmark} />;
                 }
                 return <div>Tài liệu không tồn tại.</div>;
-            case 'settings': return <SettingsPage allData={data} onUpdateData={handleSetData} currentUser={currentUser} />;
+            case 'settings': return <SettingsPage />;
             case 'standards': return <StandardsManagementPage standards={data.tieuChuan} onUpdateData={handleSetData} currentUser={currentUser} />;
             case 'reports': return <ReportsPage allData={data} initialReportType={initialReportType} onViewDetails={handleViewDetails} />;
             case 'audits': return <AuditManagementPage allData={data} onUpdateData={handleSetData} currentUser={currentUser} />;
+            
+            // Category Management Pages
+            case 'settings-personnel':
+                return <CategoryManagementPage
+                    {...categoryManagementProps} title="Quản lý Nhân sự" categoryKey="nhanSu" items={data.nhanSu}
+                    FormComponent={PersonnelForm} formProps={{ phongBanList: data.phongBan, chucVuList: data.chucVu, currentUser: currentUser }}
+                    columns={[
+                        { header: 'Tên nhân sự', accessor: 'ten', sortKey: 'ten' },
+                        { header: 'Chức vụ', accessor: (item: NhanSu) => data.chucVu.find(cv => cv.id === item.chuc_vu)?.ten || 'N/A', sortKey: 'chuc_vu' },
+                        { header: 'Phòng ban', accessor: (item: NhanSu) => data.phongBan.find(pb => pb.id === item.phong_ban_id)?.ten || 'N/A', sortKey: 'phong_ban_id' },
+                        { header: 'Vai trò', accessor: (item: NhanSu) => <Badge status={item.role} />, sortKey: 'role' },
+                    ]}
+                />;
+            case 'settings-departments':
+                return <CategoryManagementPage {...categoryManagementProps} title="Quản lý Phòng ban" categoryKey="phongBan" items={data.phongBan} FormComponent={DepartmentForm} />;
+            case 'settings-positions':
+                return <CategoryManagementPage {...categoryManagementProps} title="Quản lý Chức vụ" categoryKey="chucVu" items={data.chucVu} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Chức vụ' }} />;
+            case 'settings-docTypes':
+                return <CategoryManagementPage {...categoryManagementProps} title="Quản lý Loại tài liệu" categoryKey="loaiTaiLieu" items={data.loaiTaiLieu} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Loại tài liệu' }} />;
+            case 'settings-docLevels':
+                return <CategoryManagementPage {...categoryManagementProps} title="Quản lý Cấp độ tài liệu" categoryKey="capDoTaiLieu" items={data.capDoTaiLieu} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Cấp độ tài liệu' }} />;
+            case 'settings-securityLevels':
+                return <CategoryManagementPage {...categoryManagementProps} title="Quản lý Mức độ bảo mật" categoryKey="mucDoBaoMat" items={data.mucDoBaoMat} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Mức độ bảo mật' }} />;
+            case 'settings-reviewFrequencies':
+                return <CategoryManagementPage {...categoryManagementProps} title="Quản lý Tần suất rà soát" categoryKey="tanSuatRaSoat" items={data.tanSuatRaSoat} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Tần suất rà soát' }} />;
+            case 'settings-changeItems':
+                return <CategoryManagementPage {...categoryManagementProps} title="Quản lý Hạng mục thay đổi" categoryKey="hangMucThayDoi" items={data.hangMucThayDoi} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Hạng mục thay đổi' }} />;
+            case 'settings-auditors':
+                return <CategoryManagementPage 
+                    {...categoryManagementProps} title="Quản lý Đánh giá viên" categoryKey="danhGiaVien" items={data.danhGiaVien}
+                    FormComponent={AuditorForm} formProps={{ organizations: data.toChucDanhGia }}
+                     columns={[
+                        { header: 'Tên đánh giá viên', accessor: 'ten', sortKey: 'ten' },
+                        { header: 'Loại', accessor: (item: DanhGiaVien) => item.loai === 'internal' ? 'Nội bộ' : 'Bên ngoài', sortKey: 'loai' },
+                        { header: 'Tổ chức', accessor: (item: DanhGiaVien) => data.toChucDanhGia.find(o => o.id === item.to_chuc_id)?.ten || '', sortKey: 'to_chuc_id' },
+                    ]}
+                />;
+            case 'settings-auditOrgs':
+                return <CategoryManagementPage {...categoryManagementProps} title="Quản lý Tổ chức đánh giá" categoryKey="toChucDanhGia" items={data.toChucDanhGia} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Tổ chức đánh giá' }} />;
+
             default: return <div>Page not found</div>;
         }
     };

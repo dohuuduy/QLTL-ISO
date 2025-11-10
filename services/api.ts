@@ -9,6 +9,36 @@ const isUrlConfigured = () => {
 };
 
 /**
+ * A robust fetcher for Google Apps Script that uses a POST request with
+ * FormData. This helps avoid CORS preflight issues that can occur with
+ * 'application/json' or large 'text/plain' payloads, which often result
+ * in "Failed to fetch" errors.
+ *
+ * NOTE FOR BACKEND: The Google Apps Script must be updated to read the
+ * payload from `e.parameter.payload` instead of `e.postData.contents`.
+ * e.g., `const payload = JSON.parse(e.parameter.payload);`
+ */
+const postToGAS = async (payload: object): Promise<any> => {
+    const formData = new FormData();
+    formData.append('payload', JSON.stringify(payload));
+    
+    // Using FormData avoids the need for a CORS preflight request, making the
+    // call more reliable for large payloads. The browser will automatically set
+    // the correct 'Content-Type: multipart/form-data'.
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: formData,
+    });
+    
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Network request failed: ${response.status} - ${errorText}`);
+    }
+
+    return response.json();
+};
+
+/**
  * Fetches all data from the Google Sheets backend.
  * @returns A promise that resolves with all the application data.
  * @throws An error if the network request fails.
@@ -16,31 +46,13 @@ const isUrlConfigured = () => {
 export const getAllData = async (): Promise<typeof mockData> => {
     if (!isUrlConfigured()) {
         console.warn("Google Apps Script URL not configured, falling back to mock data.");
-        return mockData;
+        return Promise.resolve(mockData);
     }
     
     try {
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain',
-            },
-            body: JSON.stringify({
-                action: 'getAllData'
-            }),
-            redirect: 'follow',
-            mode: 'cors'
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Lỗi mạng khi tải dữ liệu: ${response.status} - ${errorText}`);
-        }
-        
-        const data = await response.json();
+        const data = await postToGAS({ action: 'getAllData' });
         console.log('Data loaded successfully from Google Sheets');
         return data;
-        
     } catch (error) {
         console.error('Failed to fetch data from Google Sheets:', error);
         throw error;
@@ -59,40 +71,16 @@ export const updateAllData = async (updatedData: typeof mockData): Promise<void>
     }
     
     try {
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain',
-            },
-            body: JSON.stringify({
-                action: 'updateAllData',
-                data: updatedData
-            }),
-            redirect: 'follow',
-            mode: 'cors'
+        const result = await postToGAS({
+            action: 'updateAllData',
+            data: updatedData
         });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Lỗi mạng khi cập nhật dữ liệu: ${response.status} - ${errorText}`);
-        }
         
-        const responseText = await response.text();
-        try {
-            if (responseText) {
-                const result = JSON.parse(responseText);
-                if (result.status === 'error') {
-                    throw new Error(result.message || 'Update failed');
-                }
-                console.log('Data updated successfully in Google Sheets');
-            }
-        } catch (e) {
-            if (e instanceof SyntaxError) {
-                console.error("Failed to parse update response as JSON, but request was successful.", responseText);
-            } else {
-                throw e;
-            }
+        if (result.status === 'error') {
+            throw new Error(result.message || 'Update failed');
         }
+        console.log('Data updated successfully in Google Sheets');
+        
     } catch (error) {
         console.error('Failed to update data in Google Sheets:', error);
         throw error;
@@ -116,25 +104,11 @@ export const login = async (username: string, password: string): Promise<NhanSu 
     }
 
     try {
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'text/plain'
-            },
-            body: JSON.stringify({ 
-                action: 'login', 
-                username, 
-                password 
-            }),
-            redirect: 'follow',
-            mode: 'cors'
+        const result = await postToGAS({ 
+            action: 'login', 
+            username, 
+            password 
         });
-
-        if (!response.ok) {
-            throw new Error(`Yêu cầu đăng nhập thất bại với mã trạng thái ${response.status}`);
-        }
-
-        const result = await response.json();
         
         if (result.status === 'success' && result.user) {
             console.log('Login successful');

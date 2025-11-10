@@ -5,6 +5,7 @@ import DashboardInsights from './DashboardInsights';
 import ActionableDocuments from './ActionableDocuments';
 import UpcomingAudits from './UpcomingAudits';
 import ExpiringDocuments from './ExpiringDocuments';
+import BookmarkedDocuments from './BookmarkedDocuments';
 
 interface DashboardProps {
     documents: DanhMucTaiLieu[];
@@ -16,11 +17,13 @@ interface DashboardProps {
     onNavigate: (view: 'audits') => void;
     onNavigateToReport: (reportType: ReportType) => void;
     onNavigateToDocument: (docId: string) => void;
+    onNavigateToDocumentsWithFilter: (filter: 'bookmarked') => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ 
     documents, versions, currentUser, departments, 
-    auditSchedules, nhanSu, onNavigate, onNavigateToReport, onNavigateToDocument 
+    auditSchedules, nhanSu, onNavigate, onNavigateToReport, onNavigateToDocument, 
+    onNavigateToDocumentsWithFilter 
 }) => {
     
     const nhanSuMap = useMemo(() => new Map(nhanSu.filter(Boolean).map(ns => [ns.id, ns.ten])), [nhanSu]);
@@ -45,6 +48,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                         versions={versions}
                         currentUser={currentUser} 
                         onDocumentClick={handleDocumentClick}
+                    />
+                     <BookmarkedDocuments
+                        documents={documents}
+                        onDocumentClick={handleDocumentClick}
+                        onNavigateToDocuments={() => onNavigateToDocumentsWithFilter('bookmarked')}
                     />
                      <ExpiringDocuments
                         documents={documents}

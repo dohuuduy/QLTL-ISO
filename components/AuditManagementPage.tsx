@@ -228,7 +228,7 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                 <Card.Body>
                      <div className="flex flex-wrap items-end gap-4">
                         <div>
-                            <label htmlFor="start-date" className="block text-sm font-medium text-gray-700">Lọc từ ngày</label>
+                            <label htmlFor="start-date" className="block text-sm font-medium text-gray-900">Lọc từ ngày</label>
                              <DatePicker
                                 id="start-date"
                                 value={dateFilter.start}
@@ -237,7 +237,7 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                             />
                         </div>
                          <div>
-                            <label htmlFor="end-date" className="block text-sm font-medium text-gray-700">Đến ngày</label>
+                            <label htmlFor="end-date" className="block text-sm font-medium text-gray-900">Đến ngày</label>
                             <DatePicker
                                 id="end-date"
                                 value={dateFilter.end}

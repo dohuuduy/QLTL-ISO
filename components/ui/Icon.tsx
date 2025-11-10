@@ -48,6 +48,8 @@ const icons: { [key: string]: React.ReactElement } = {
     'arrows-right-left': <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />,
     'paper-airplane': <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />,
     'arrow-uturn-left': <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />,
+    'star': <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.321l5.599.378a.563.563 0 01.31.988l-4.25 3.518a.563.563 0 00-.18.54l1.35 5.498a.563.563 0 01-.84.61l-4.93-2.91a.563.563 0 00-.576 0l-4.93 2.91a.563.563 0 01-.84-.61l1.35-5.498a.563.563 0 00-.18-.54l-4.25-3.518a.563.563 0 01.31-.988l5.599-.378a.563.563 0 00.475-.321L11.48 3.5z" />,
+    'star-solid': <path fill="currentColor" stroke="none" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.321l5.599.378a.563.563 0 01.31.988l-4.25 3.518a.563.563 0 00-.18.54l1.35 5.498a.563.563 0 01-.84.61l-4.93-2.91a.563.563 0 00-.576 0l-4.93 2.91a.563.563 0 01-.84-.61l1.35-5.498a.563.563 0 00-.18-.54l-4.25-3.518a.563.563 0 01.31-.988l5.599-.378a.563.563 0 00.475-.321L11.48 3.5z" />,
 };
 
 export const Icon: React.FC<IconProps> = ({ type, className = 'h-6 w-6' }) => {

@@ -48,16 +48,61 @@ export const getCalendarGrid = (displayDate: Date) => {
 export const formatDateForDisplay = (isoDate?: string): string => {
     if (!isoDate) return '';
     try {
-        const date = new Date(isoDate);
+        // Using UTC methods to avoid timezone issues. The input is 'YYYY-MM-DD'.
+        const parts = isoDate.split('T')[0].split('-');
+        if (parts.length !== 3) return '';
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10);
+        const day = parseInt(parts[2], 10);
+        
+        const date = new Date(Date.UTC(year, month - 1, day));
         if (isNaN(date.getTime())) return '';
-        const day = String(date.getUTCDate()).padStart(2, '0');
-        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-        const year = date.getUTCFullYear();
-        return `${day}/${month}/${year}`;
+
+        const displayDay = String(date.getUTCDate()).padStart(2, '0');
+        const displayMonth = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const displayYear = date.getUTCFullYear();
+        return `${displayDay}/${displayMonth}/${displayYear}`;
     } catch (e) {
         return '';
     }
 };
+
+/**
+ * Parses a date string in dd/MM/yyyy format and returns an ISO string (yyyy-MM-dd).
+ * Returns null if the format is invalid.
+ */
+export const parseDisplayDate = (displayDate?: string): string | null => {
+    if (!displayDate) return null;
+
+    // Regex to match d/m/yyyy or dd/mm/yyyy, allowing for single digits and separators /, -, .
+    const match = displayDate.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/);
+    if (!match) return null;
+
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
+
+    // Basic sanity checks for year and month
+    if (year < 1000 || year > 3000 || month < 1 || month > 12) {
+        return null;
+    }
+
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    // Check if the constructed date is valid and its parts match the input.
+    // This catches invalid dates like 30/02/2024.
+    if (
+        date.getUTCFullYear() === year &&
+        date.getUTCMonth() === month - 1 &&
+        date.getUTCDate() === day
+    ) {
+        // Return in ISO format (YYYY-MM-DD)
+        return date.toISOString().split('T')[0];
+    }
+
+    return null;
+};
+
 
 export const formatDateTimeForDisplay = (isoTimestamp?: string): string => {
     if (!isoTimestamp) return '';

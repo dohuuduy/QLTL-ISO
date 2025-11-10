@@ -84,9 +84,14 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
     const [formData, setFormData] = useState(getInitialState());
     const [dateError, setDateError] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    
     const [isStandardsDropdownOpen, setIsStandardsDropdownOpen] = useState(false);
     const [standardsSearchTerm, setStandardsSearchTerm] = useState('');
     const standardsDropdownRef = useRef<HTMLDivElement>(null);
+
+    const [isIsoRefDropdownOpen, setIsIsoRefDropdownOpen] = useState(false);
+    const [isoRefSearchTerm, setIsoRefSearchTerm] = useState('');
+    const isoRefDropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (initialData) {
@@ -111,16 +116,19 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
         }
     }, [formData.ngay_hieu_luc, formData.ngay_het_hieu_luc]);
     
-    // Close standards dropdown on outside click
+    // Close dropdowns on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (standardsDropdownRef.current && !standardsDropdownRef.current.contains(event.target as Node)) {
                 setIsStandardsDropdownOpen(false);
             }
+            if (isoRefDropdownRef.current && !isoRefDropdownRef.current.contains(event.target as Node)) {
+                setIsIsoRefDropdownOpen(false);
+            }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [standardsDropdownRef]);
+    }, [standardsDropdownRef, isoRefDropdownRef]);
 
     const validate = (): Record<string, string> => {
         const newErrors: Record<string, string> = {};
@@ -183,6 +191,22 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
             tieu_chuan_ids: (prev.tieu_chuan_ids || []).filter(id => id !== standardId)
         }));
     };
+    
+    const handleSelectIsoRef = (standardId: string) => {
+        setFormData(prev => ({
+            ...prev,
+            iso_tham_chieu: [...(prev.iso_tham_chieu || []), standardId]
+        }));
+        setIsoRefSearchTerm('');
+        setIsIsoRefDropdownOpen(false);
+    };
+
+    const handleRemoveIsoRef = (standardId: string) => {
+        setFormData(prev => ({
+            ...prev,
+            iso_tham_chieu: (prev.iso_tham_chieu || []).filter(id => id !== standardId)
+        }));
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -224,24 +248,35 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
         return list.filter(item => item.is_active !== false || item.id === selectedIds);
     };
     
-    const availableStandards = useMemo(() => {
-        return categories.tieuChuan
-            .filter(tc => 
-                (tc.is_active !== false) && // Only show active standards in dropdown
-                !formData.tieu_chuan_ids?.includes(tc.id) && // Don't show already selected standards
-                tc.ten.toLowerCase().includes(standardsSearchTerm.toLowerCase()) // Filter by search term
-            )
-            .sort((a, b) => a.ten.localeCompare(b.ten));
-    }, [categories.tieuChuan, formData.tieu_chuan_ids, standardsSearchTerm]);
-    
     const getStandardDisplay = (standard: TieuChuan | undefined) => {
         if (!standard) return '';
         const details = [standard.phien_ban, standard.ten_viet_tat].filter(Boolean).join(' / ');
         return details ? `${standard.ten} (${details})` : standard.ten;
     };
+    
+    const availableStandards = useMemo(() => {
+        return categories.tieuChuan
+            .filter(tc => 
+                (tc.is_active !== false) && // Only show active standards in dropdown
+                !formData.tieu_chuan_ids?.includes(tc.id) && // Don't show already selected standards
+                getStandardDisplay(tc).toLowerCase().includes(standardsSearchTerm.toLowerCase()) // Filter by search term
+            )
+            .sort((a, b) => a.ten.localeCompare(b.ten));
+    }, [categories.tieuChuan, formData.tieu_chuan_ids, standardsSearchTerm]);
+
+    const availableIsoRefs = useMemo(() => {
+        return categories.tieuChuan
+            .filter(tc => 
+                (tc.is_active !== false) && 
+                !formData.iso_tham_chieu?.includes(tc.id) &&
+                getStandardDisplay(tc).toLowerCase().includes(isoRefSearchTerm.toLowerCase())
+            )
+            .sort((a, b) => a.ten.localeCompare(b.ten));
+    }, [categories.tieuChuan, formData.iso_tham_chieu, isoRefSearchTerm]);
+
 
     const inputStyles = "mt-1 block w-full rounded-md bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
-    const labelStyles = "block text-sm font-medium text-gray-700";
+    const labelStyles = "block text-sm font-medium text-gray-900";
 
     const TabButton: React.FC<{ tabId: 'basic' | 'references'; title: string }> = ({ tabId, title }) => (
         <button
@@ -445,10 +480,69 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                             </div>
                                         </div>
                                         
-                                        <div>
-                                            <label htmlFor="iso_tham_chieu" className={labelStyles}>ISO tham chiếu (phân cách bởi dấu phẩy)</label>
-                                            <input type="text" name="iso_tham_chieu" id="iso_tham_chieu" value={formData.iso_tham_chieu.join(', ')} onChange={handleArrayChange} className={`${inputStyles} border-gray-300`} placeholder="VD: ISO 9001:2015, ISO 14001:2015" />
+                                        <div ref={isoRefDropdownRef} className="relative">
+                                            <label className={labelStyles}>ISO tham chiếu</label>
+                                            <div className="relative">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsIsoRefDropdownOpen(prev => !prev)}
+                                                    className={`${inputStyles} border-gray-300 flex items-center justify-between text-left`}
+                                                >
+                                                    <div className="flex flex-wrap gap-2 items-center min-h-[22px]">
+                                                        {(formData.iso_tham_chieu || []).length > 0 ? (
+                                                            (formData.iso_tham_chieu || []).map(id => {
+                                                                const standard = categories.tieuChuan.find(tc => tc.id === id);
+                                                                return (
+                                                                    <span key={id} className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+                                                                        {getStandardDisplay(standard)}
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={(e) => { e.stopPropagation(); handleRemoveIsoRef(id); }}
+                                                                            className="h-3.5 w-3.5 rounded-full text-blue-600 hover:bg-blue-200"
+                                                                        >
+                                                                            <Icon type="x-mark" className="h-3.5 w-3.5" />
+                                                                        </button>
+                                                                    </span>
+                                                                );
+                                                            })
+                                                        ) : (
+                                                            <span className="text-gray-400">Chọn ISO tham chiếu...</span>
+                                                        )}
+                                                    </div>
+                                                    <Icon type="chevron-down" className="h-5 w-5 text-gray-400" />
+                                                </button>
+                                                
+                                                {isIsoRefDropdownOpen && (
+                                                    <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-hidden flex flex-col">
+                                                        <div className="p-2 border-b border-gray-200">
+                                                            <input
+                                                                type="text"
+                                                                value={isoRefSearchTerm}
+                                                                onChange={(e) => setIsoRefSearchTerm(e.target.value)}
+                                                                placeholder="Tìm kiếm tiêu chuẩn..."
+                                                                className="w-full rounded-md border-gray-300 py-1.5 px-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                                            />
+                                                        </div>
+                                                        <ul className="overflow-y-auto">
+                                                            {availableIsoRefs.length > 0 ? (
+                                                                availableIsoRefs.map(tc => (
+                                                                    <li
+                                                                        key={tc.id}
+                                                                        onClick={() => handleSelectIsoRef(tc.id)}
+                                                                        className="px-3 py-2 text-sm text-gray-800 hover:bg-slate-100 cursor-pointer"
+                                                                    >
+                                                                        {getStandardDisplay(tc)}
+                                                                    </li>
+                                                                ))
+                                                            ) : (
+                                                                <li className="px-3 py-2 text-sm text-gray-500">Không tìm thấy tiêu chuẩn.</li>
+                                                            )}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
+
                                         <div>
                                             <label htmlFor="tieu_chuan_khac" className={labelStyles}>Tiêu chuẩn khác (phân cách bởi dấu phẩy)</label>
                                             <input type="text" name="tieu_chuan_khac" id="tieu_chuan_khac" value={formData.tieu_chuan_khac.join(', ')} onChange={handleArrayChange} className={`${inputStyles} border-gray-300`} />

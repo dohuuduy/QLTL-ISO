@@ -47,7 +47,7 @@ const VersionForm: React.FC<VersionFormProps> = ({ onSubmit, onCancel, initialDa
     const activeOrCurrentlySelectedUsers = nhanSuList.filter(u => u.is_active !== false || u.id === formData.nguoi_thuc_hien);
 
     const inputStyles = "mt-1 block w-full rounded-md border-gray-300 bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
-    const labelStyles = "block text-sm font-medium text-gray-700";
+    const labelStyles = "block text-sm font-medium text-gray-900";
 
     return (
         <form onSubmit={handleSubmit}>

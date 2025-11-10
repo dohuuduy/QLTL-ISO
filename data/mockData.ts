@@ -171,6 +171,7 @@ export const documents: DanhMucTaiLieu[] = [
     link_drive: 'https://docs.google.com/document/d/example1',
     file_pdf: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
     file_docx: 'https://file-examples.com/storage/fe1236279963e10a22121e0/2017/02/file-sample_100kB.docx',
+    is_bookmarked: true,
   },
   {
     ma_tl: 'TL-002',

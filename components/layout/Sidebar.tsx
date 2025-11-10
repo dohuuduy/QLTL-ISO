@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Icon } from '../ui/Icon';
 import type { NhanSu, ReportType } from '../../types';
 import { reportNavItems } from '../../constants';
@@ -46,13 +46,27 @@ const Sidebar: React.FC<SidebarProps> = ({
     isCollapsed, isMobileOpen, onCloseMobileMenu, onNavigate, currentUser, currentView, onNavigateToReport
 }) => {
     
+    const [isCategoriesOpen, setIsCategoriesOpen] = useState(currentView.startsWith('settings-'));
+
     const mainNavItems = [
         { view: 'dashboard', icon: 'home', label: 'Dashboard' },
         { view: 'documents', icon: 'document-text', label: 'Quản lý Tài liệu' },
         { view: 'standards', icon: 'bookmark', label: 'Quản lý Tiêu chuẩn' },
         { view: 'audits', icon: 'calendar', label: 'Lịch Audit' },
         { view: 'reports', icon: 'chart-bar', label: 'Báo cáo' },
-        { view: 'settings', icon: 'cog', label: 'Cài đặt', adminOnly: true },
+    ];
+    
+    const categoryNavItems = [
+        { key: 'settings-personnel', label: 'Nhân sự' },
+        { key: 'settings-departments', label: 'Phòng ban' },
+        { key: 'settings-positions', label: 'Chức vụ' },
+        { key: 'settings-docTypes', label: 'Loại tài liệu' },
+        { key: 'settings-docLevels', label: 'Cấp độ tài liệu' },
+        { key: 'settings-securityLevels', label: 'Mức độ bảo mật' },
+        { key: 'settings-reviewFrequencies', label: 'Tần suất rà soát' },
+        { key: 'settings-changeItems', label: 'Hạng mục thay đổi' },
+        { key: 'settings-auditors', label: 'Đánh giá viên' },
+        { key: 'settings-auditOrgs', label: 'Tổ chức đánh giá' },
     ];
 
     const handleNavigation = (view: any) => {
@@ -66,6 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
     
     const isReportsActive = currentView === 'reports';
+    const isCategoriesActive = currentView.startsWith('settings-');
 
     const sidebarContent = (
          <div className="flex flex-col h-full">
@@ -76,49 +91,103 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <span className="text-xl font-bold text-gray-800">DocManager ISO</span>
                 </button>
             </div>
-            <nav className="flex-1 px-2 py-4 space-y-1">
-                 {mainNavItems.map(item => {
-                    if (item.adminOnly && currentUser.role !== 'admin') return null;
+            <div className="flex-1 flex flex-col overflow-y-auto">
+                <nav className="flex-1 px-2 py-4 space-y-1">
+                    {mainNavItems.map(item => {
+                        if (item.view === 'reports') {
+                            return (
+                                <div key={item.view}>
+                                    <NavItem
+                                        icon={item.icon}
+                                        label={item.label}
+                                        isCollapsed={isCollapsed}
+                                        isActive={isReportsActive}
+                                        onClick={() => handleNavigation(item.view)}
+                                    />
+                                    {isReportsActive && !isCollapsed && (
+                                        <div className="pl-8 pt-1 space-y-1">
+                                            {reportNavItems.map(subItem => (
+                                                <button 
+                                                    key={subItem.key}
+                                                    onClick={() => handleReportNavigation(subItem.key)}
+                                                    className="flex items-center w-full px-4 py-2 text-xs font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900"
+                                                >
+                                                    {subItem.title}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }
 
-                    if (item.view === 'reports') {
                         return (
-                            <div key={item.view}>
-                                <NavItem
-                                    icon={item.icon}
-                                    label={item.label}
-                                    isCollapsed={isCollapsed}
-                                    isActive={isReportsActive}
-                                    onClick={() => handleNavigation(item.view)}
+                            <NavItem
+                                key={item.view}
+                                icon={item.icon}
+                                label={item.label}
+                                isCollapsed={isCollapsed}
+                                isActive={currentView === item.view}
+                                onClick={() => handleNavigation(item.view)}
+                            />
+                        )
+                    })}
+                    
+                     {currentUser.role === 'admin' && (
+                         <div>
+                            <button
+                                onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                                className={`group flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                                    isCategoriesActive
+                                        ? 'bg-blue-50 text-blue-700'
+                                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                }`}
+                            >
+                                <Icon
+                                    type="archive"
+                                    className={`h-6 w-6 transition-colors duration-200 ${
+                                        isCategoriesActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'
+                                    }`}
                                 />
-                                {isReportsActive && !isCollapsed && (
-                                     <div className="pl-8 pt-1 space-y-1">
-                                        {reportNavItems.map(subItem => (
-                                            <button 
-                                                key={subItem.key}
-                                                onClick={() => handleReportNavigation(subItem.key)}
-                                                className="flex items-center w-full px-4 py-2 text-xs font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900"
-                                            >
-                                                {subItem.title}
-                                            </button>
-                                        ))}
-                                    </div>
+                                <span className={`ml-4 whitespace-nowrap transition-opacity duration-200 ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
+                                    Danh mục
+                                </span>
+                                {!isCollapsed && (
+                                     <Icon
+                                        type="chevron-down"
+                                        className={`ml-auto h-5 w-5 transform transition-transform duration-200 ${isCategoriesOpen ? 'rotate-180' : ''}`}
+                                    />
                                 )}
-                            </div>
-                        );
-                    }
-
-                    return (
-                        <NavItem
-                            key={item.view}
-                            icon={item.icon}
-                            label={item.label}
-                            isCollapsed={isCollapsed}
-                            isActive={currentView === item.view}
-                            onClick={() => handleNavigation(item.view)}
-                        />
-                    )
-                 })}
-            </nav>
+                            </button>
+                            {isCategoriesOpen && !isCollapsed && (
+                                <div className="pl-8 pt-1 space-y-1">
+                                    {categoryNavItems.map(item => (
+                                         <button 
+                                            key={item.key}
+                                            onClick={() => handleNavigation(item.key)}
+                                            className={`flex items-center w-full px-4 py-2 text-xs font-medium rounded-md hover:bg-gray-100 hover:text-gray-900 ${
+                                                currentView === item.key ? 'text-blue-600' : 'text-gray-500'
+                                            }`}
+                                        >
+                                            {item.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </nav>
+                {/* Settings link at the bottom */}
+                <div className="mt-auto px-2 py-4">
+                    <NavItem
+                        icon="cog"
+                        label="Cài đặt"
+                        isCollapsed={isCollapsed}
+                        isActive={currentView === 'settings'}
+                        onClick={() => handleNavigation('settings')}
+                    />
+                </div>
+            </div>
         </div>
     );
 

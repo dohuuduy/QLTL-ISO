@@ -26,13 +26,13 @@ const Table = <T extends { [key: string]: any }>({ columns, data, onRowClick, ac
                                     <th
                                         key={index}
                                         scope="col"
-                                        className={`py-3.5 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider ${col.className || ''}`}
+                                        className={`py-3.5 px-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider ${col.className || ''}`}
                                     >
                                         {col.header}
                                     </th>
                                 ))}
                                 {actions && (
-                                     <th scope="col" className="relative py-3.5 px-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider no-print">
+                                     <th scope="col" className="relative py-3.5 px-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider no-print">
                                         Hành động
                                     </th>
                                 )}

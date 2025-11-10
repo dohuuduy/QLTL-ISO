@@ -298,7 +298,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     <ReportContentWrapper>
                         <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4">
                             <div className="flex items-center gap-2">
-                                <label htmlFor="department-select" className="text-sm font-medium text-gray-700">Chọn phòng ban:</label>
+                                <label htmlFor="department-select" className="text-sm font-medium text-gray-900">Chọn phòng ban:</label>
                                 <select id="department-select" value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                                     <option value="">-- Vui lòng chọn --</option>
                                     {allData.phongBan.map(pb => <option key={pb.id} value={pb.id}>{pb.ten}</option>)}
@@ -344,7 +344,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     <ReportContentWrapper>
                         <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4">
                             <div className="flex items-center gap-2">
-                                <label htmlFor="standard-select" className="text-sm font-medium text-gray-700">Chọn tiêu chuẩn:</label>
+                                <label htmlFor="standard-select" className="text-sm font-medium text-gray-900">Chọn tiêu chuẩn:</label>
                                 <select id="standard-select" value={selectedStandard} onChange={e => setSelectedStandard(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                                     <option value="">-- Vui lòng chọn --</option>
                                     {allData.tieuChuan.filter(tc => tc.is_active).map(tc => <option key={tc.id} value={tc.id}>{tc.ten}</option>)}
@@ -390,7 +390,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     <ReportContentWrapper>
                         <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4">
                             <div className="flex items-center gap-2">
-                                <label htmlFor="document-select" className="text-sm font-medium text-gray-700">Chọn tài liệu:</label>
+                                <label htmlFor="document-select" className="text-sm font-medium text-gray-900">Chọn tài liệu:</label>
                                 <select id="document-select" value={selectedDocumentId} onChange={e => setSelectedDocumentId(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                                     <option value="">-- Vui lòng chọn --</option>
                                     {allData.documents.map(d => <option key={d.ma_tl} value={d.ma_tl}>{d.ten_tai_lieu} ({d.ma_tl})</option>)}
@@ -443,7 +443,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4">
                             <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
                                 <div className="flex items-center gap-2">
-                                    <label htmlFor="expiry-days" className="text-sm font-medium text-gray-700">Khung thời gian:</label>
+                                    <label htmlFor="expiry-days" className="text-sm font-medium text-gray-900">Khung thời gian:</label>
                                     <select id="expiry-days" value={expiryDays} onChange={e => setExpiryDays(Number(e.target.value))} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                                         <option value={30}>30 ngày tới</option>
                                         <option value={60}>60 ngày tới</option>
@@ -462,7 +462,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                         />
                                     </div>
                                     <div className="ml-2 text-sm">
-                                        <label htmlFor="include-expired" className="font-medium text-gray-700">
+                                        <label htmlFor="include-expired" className="font-medium text-gray-900">
                                             Bao gồm tài liệu đã hết hiệu lực
                                         </label>
                                     </div>
@@ -504,7 +504,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     <ReportContentWrapper>
                         <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4">
                             <div className="flex items-center gap-2">
-                                <label htmlFor="audit-select" className="text-sm font-medium text-gray-700">Chọn cuộc audit:</label>
+                                <label htmlFor="audit-select" className="text-sm font-medium text-gray-900">Chọn cuộc audit:</label>
                                 <select id="audit-select" value={selectedAuditId} onChange={e => setSelectedAuditId(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                                     <option value="">-- Vui lòng chọn --</option>
                                     {allData.auditSchedules.map(a => <option key={a.id} value={a.id}>{`${a.ten_cuoc_audit} (${formatDateForDisplay(a.ngay_bat_dau)})`}</option>)}

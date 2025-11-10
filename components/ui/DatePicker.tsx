@@ -1,7 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from './Icon';
-import { getCalendarGrid, getMonthYearText, formatDate, formatDateForDisplay } from '../../utils/dateUtils';
+import { getCalendarGrid, getMonthYearText, formatDate, formatDateForDisplay, parseDisplayDate } from '../../utils/dateUtils';
 
 interface DatePickerProps {
     value: string | undefined;
@@ -13,8 +12,9 @@ interface DatePickerProps {
 
 const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, className }) => {
     const [isOpen, setIsOpen] = useState(false);
-    
-    let initialDate = value ? new Date(value) : new Date();
+    const [displayValue, setDisplayValue] = useState(formatDateForDisplay(value));
+
+    let initialDate = value ? new Date(`${value}T00:00:00Z`) : new Date();
     if (isNaN(initialDate.getTime())) {
       initialDate = new Date();
     }
@@ -22,8 +22,10 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
     const [displayDate, setDisplayDate] = useState(initialDate);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
+    // Sync display value when the external value prop changes
     useEffect(() => {
-        const newDate = value ? new Date(value) : null;
+        setDisplayValue(formatDateForDisplay(value));
+        const newDate = value ? new Date(`${value}T00:00:00Z`) : null;
         if (newDate && !isNaN(newDate.getTime())) {
             setDisplayDate(newDate);
         }
@@ -49,11 +51,31 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
     const changeMonth = (amount: number) => {
         setDisplayDate(prev => new Date(prev.getFullYear(), prev.getMonth() + amount, 1));
     };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setDisplayValue(e.target.value);
+    };
+
+    const handleInputBlur = () => {
+        if (displayValue === '') {
+            onChange('');
+            return;
+        }
+
+        const isoDate = parseDisplayDate(displayValue);
+        if (isoDate) {
+            // Valid manual input, update parent state
+            onChange(isoDate);
+        } else {
+            // Invalid manual input, revert to last known good value
+            setDisplayValue(formatDateForDisplay(value));
+        }
+    };
     
     const calendarGrid = getCalendarGrid(displayDate);
     const weekdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
-    let selectedDateObj = value ? new Date(value) : null;
+    let selectedDateObj = value ? new Date(`${value}T00:00:00Z`) : null; // Use UTC to avoid timezone shifts
     if (selectedDateObj && isNaN(selectedDateObj.getTime())) {
       selectedDateObj = null;
     }
@@ -64,18 +86,24 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
                 <input
                     type="text"
                     id={id}
-                    value={formatDateForDisplay(value) || ''}
-                    onClick={() => setIsOpen(!isOpen)}
-                    readOnly
+                    value={displayValue}
+                    onFocus={() => setIsOpen(true)}
+                    onChange={handleInputChange}
+                    onBlur={handleInputBlur}
                     required={required}
-                    className={`${className} cursor-pointer pr-10`}
-                    placeholder="Chọn ngày..."
+                    className={`${className} pr-10`}
+                    placeholder="dd/MM/yyyy"
                 />
                  {/* The hidden input ensures form submission works as expected with the name attribute */}
-                 <input type="hidden" name={id} value={value || ''} />
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                    <Icon type="calendar" className="h-5 w-5 text-gray-400" />
-                </div>
+                <input type="hidden" name={id} value={value || ''} />
+                <button
+                    type="button"
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
+                    aria-label="Toggle calendar"
+                >
+                    <Icon type="calendar" className="h-5 w-5" />
+                </button>
             </div>
 
             {isOpen && (
@@ -97,6 +125,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
                             if (!day) return <div key={index}></div>;
                             
                             const isCurrentMonthDay = day.getMonth() === displayDate.getMonth();
+                            // Compare dates by ignoring time part
                             const isSelected = selectedDateObj && day.toDateString() === selectedDateObj.toDateString();
                             const isToday = day.toDateString() === new Date().toDateString();
 

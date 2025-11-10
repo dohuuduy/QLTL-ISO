@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { 
     DanhMucTaiLieu, PhienBanTaiLieu, NhatKyThayDoi, PhanPhoiTaiLieu, LichRaSoat, DaoTaoTruyenThong, RuiRoCoHoi, NhanSu, PhongBan, LoaiTaiLieu, CapDoTaiLieu, MucDoBaoMat, TanSuatRaSoat, HangMucThayDoi, AuditLog, TieuChuan
@@ -128,10 +129,11 @@ interface DocumentDetailProps {
     onDeleteRelatedData: (type: string, data: any) => void;
     onUpdateDocument: (document: DanhMucTaiLieu) => void;
     onUpdateVersionStatus: (versionId: string, newStatus: VersionStatus) => void;
+    onToggleBookmark: (docId: string) => void;
     currentUser: NhanSu;
 }
 
-type ModalType = 'versions' | 'changeLogs' | 'distributions' | 'reviewSchedules' | 'trainings' | 'risks';
+type ModalType = 'versions' | 'changeLogs' | 'distributions' | 'reviewSchedules' | 'trainings' | 'risks' | 'viewChangeLog';
 
 type ModalContent = {
     type: ModalType;
@@ -144,7 +146,8 @@ const idKeyMap: Record<ModalType, string> = {
     distributions: 'id_phan_phoi',
     reviewSchedules: 'id_lich',
     trainings: 'id_dt',
-    risks: 'id_rr'
+    risks: 'id_rr',
+    viewChangeLog: 'id_thay_doi'
 };
 
 const AUDIT_ITEMS_PER_PAGE = 10;
@@ -177,7 +180,7 @@ const TabContentWrapper: React.FC<{
 );
 
 const DocumentDetail: React.FC<DocumentDetailProps> = ({
-    document, allData, onBack, onSaveRelatedData, onDeleteRelatedData, onUpdateDocument, onUpdateVersionStatus, currentUser
+    document, allData, onBack, onSaveRelatedData, onDeleteRelatedData, onUpdateDocument, onUpdateVersionStatus, onToggleBookmark, currentUser
 }) => {
     const [activeTabIndex, setActiveTabIndex] = useState(0);
     const [modalContent, setModalContent] = useState<ModalContent | null>(null);
@@ -263,25 +266,39 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
         setIsEditingDocument(false);
     };
 
+    const getModalTitle = () => {
+        if (!modalContent) return '';
+        const isEditing = !!modalContent.data;
+
+        if (modalContent.type === 'viewChangeLog') {
+            return 'Chi tiết Thay đổi';
+        }
+
+        const prefix = isEditing ? 'Chỉnh sửa' : 'Thêm';
+        // Special case for 'changeLogs' to be more user-friendly
+        const entityName = modalContent.type === 'changeLogs' ? 'Thay đổi' : translate(modalContent.type);
+        return `${prefix} ${entityName}`;
+    };
+
     const renderModalContent = () => {
         if (!modalContent) return null;
-        const handleSave = (formData: any) => {
+        const handleSaveAndClose = (formData: any) => {
             onSaveRelatedData(modalContent.type, formData);
             closeModal();
         };
 
         switch (modalContent.type) {
             case 'versions':
-                return <VersionForm onSubmit={handleSave} onCancel={closeModal} initialData={modalContent.data} ma_tl={document.ma_tl} nhanSuList={allData.nhanSu} />;
+                return <VersionForm onSubmit={handleSaveAndClose} onCancel={closeModal} initialData={modalContent.data} ma_tl={document.ma_tl} nhanSuList={allData.nhanSu} />;
             case 'changeLogs':
-                return <ChangeLogForm onSubmit={handleSave} onCancel={closeModal} initialData={modalContent.data} versions={relatedData.versions} nhanSuList={allData.nhanSu} hangMucList={allData.hangMucThayDoi} />;
+                return <ChangeLogForm onSubmit={handleSaveAndClose} onCancel={closeModal} initialData={modalContent.data} versions={relatedData.versions} nhanSuList={allData.nhanSu} hangMucList={allData.hangMucThayDoi} />;
             case 'distributions':
-                return <DistributionForm onSubmit={handleSave} onCancel={closeModal} initialData={modalContent.data} versions={relatedData.versions} phongBanList={allData.phongBan} nhanSuList={allData.nhanSu} />;
+                return <DistributionForm onSubmit={handleSaveAndClose} onCancel={closeModal} initialData={modalContent.data} versions={relatedData.versions} phongBanList={allData.phongBan} nhanSuList={allData.nhanSu} />;
             case 'reviewSchedules':
-                return <ReviewScheduleForm onSubmit={handleSave} onCancel={closeModal} initialData={modalContent.data} ma_tl={document.ma_tl} nhanSuList={allData.nhanSu} tanSuatList={allData.tanSuatRaSoat} />;
+                return <ReviewScheduleForm onSubmit={handleSaveAndClose} onCancel={closeModal} initialData={modalContent.data} ma_tl={document.ma_tl} nhanSuList={allData.nhanSu} tanSuatList={allData.tanSuatRaSoat} />;
             case 'trainings':
                 return <TrainingForm 
-                            onSubmit={handleSave} 
+                            onSubmit={handleSaveAndClose} 
                             onCancel={closeModal} 
                             initialData={modalContent.data} 
                             ma_tl={document.ma_tl}
@@ -289,7 +306,41 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                             phongBanList={allData.phongBan}
                         />;
             case 'risks':
-                return <RiskForm onSubmit={handleSave} onCancel={closeModal} initialData={modalContent.data} ma_tl={document.ma_tl} nhanSuList={allData.nhanSu} />;
+                return <RiskForm onSubmit={handleSaveAndClose} onCancel={closeModal} initialData={modalContent.data} ma_tl={document.ma_tl} nhanSuList={allData.nhanSu} />;
+            case 'viewChangeLog': {
+                const data = modalContent.data as NhatKyThayDoi;
+                if (!data) return null;
+                const version = relatedData.versions.find(v => v.id_phien_ban === data.id_phien_ban);
+                return (
+                    <div>
+                        <div className="p-6 space-y-6">
+                            <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-4">
+                                <DetailItem label="Phiên bản" value={version?.phien_ban} />
+                                <DetailItem label="Hạng mục" value={hangMucMap.get(data.hang_muc)} />
+                                <DetailItem label="Ngày đề xuất" value={formatDateForDisplay(data.ngay_de_xuat)} />
+                                <DetailItem label="Người đề xuất" value={nhanSuMap.get(data.nguoi_de_xuat)} />
+                            </dl>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Lý do thay đổi</label>
+                                <p className="mt-1 text-sm text-gray-900 bg-slate-50 p-3 rounded-md border border-slate-200">{data.ly_do_thay_doi}</p>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Nội dung trước</label>
+                                    <pre className="mt-1 text-sm text-gray-900 bg-red-50 p-3 rounded-md border border-red-200 whitespace-pre-wrap font-sans h-48 overflow-y-auto">{data.noi_dung_truoc || 'Không có'}</pre>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Nội dung sau</label>
+                                    <pre className="mt-1 text-sm text-gray-900 bg-green-50 p-3 rounded-md border border-green-200 whitespace-pre-wrap font-sans h-48 overflow-y-auto">{data.noi_dung_sau || 'Không có'}</pre>
+                                </div>
+                            </div>
+                        </div>
+                        <Modal.Footer>
+                            <button type="button" onClick={closeModal} className="btn-secondary">Đóng</button>
+                        </Modal.Footer>
+                    </div>
+                );
+            }
             default: return null;
         }
     };
@@ -342,30 +393,35 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
     const paginatedAuditTrail = relatedData.auditTrail.slice((auditPage - 1) * AUDIT_ITEMS_PER_PAGE, auditPage * AUDIT_ITEMS_PER_PAGE);
 
     const tabs = [
-        { title: `Phiên bản (${relatedData.versions.length})`, content: (
-            <TabContentWrapper title="Lịch sử Phiên bản" buttonLabel="Thêm Phiên bản" onButtonClick={() => openModal('versions')} showButton={canUpdateDocument}>
-                <Table<PhienBanTaiLieu> columns={[
-                    { header: 'Phiên bản', accessor: (item) => <div className="flex items-center gap-2">{item.phien_ban} {item.is_moi_nhat && <Badge status={VersionStatus.BAN_HANH} size="sm" title="Phiên bản mới nhất đang được ban hành" />}</div> },
-                    { header: 'Ngày phát hành', accessor: item => formatDateForDisplay(item.ngay_phat_hanh) },
-                    { header: 'Trạng thái', accessor: item => <Badge status={item.trang_thai_phien_ban} /> },
-                    { header: 'Tóm tắt thay đổi', accessor: 'tom_tat_thay_doi' },
-                    { header: 'Người thực hiện', accessor: item => nhanSuMap.get(item.nguoi_thuc_hien) },
-                ]} data={relatedData.versions} actions={renderVersionActions} onRowClick={(item) => openModal('versions', item)} />
-            </TabContentWrapper>
-        )},
         { title: `Nhật ký Thay đổi (${relatedData.changeLogs.length})`, content: (
              <TabContentWrapper title="Chi tiết Thay đổi" buttonLabel="Thêm Thay đổi" onButtonClick={() => openModal('changeLogs')} showButton={canUpdateDocument}>
-                <Table<NhatKyThayDoi> columns={[
-                    { header: 'Phiên bản', accessor: item => relatedData.versions.find(v => v.id_phien_ban === item.id_phien_ban)?.phien_ban },
-                    { header: 'Hạng mục', accessor: item => hangMucMap.get(item.hang_muc) },
-                    { header: 'Ngày đề xuất', accessor: item => formatDateForDisplay(item.ngay_de_xuat) },
-                    { header: 'Người đề xuất', accessor: item => nhanSuMap.get(item.nguoi_de_xuat) },
-                ]} data={relatedData.changeLogs} actions={canUpdateDocument ? item => (
-                    <div className="flex items-center justify-end space-x-2">
-                        <button onClick={() => openModal('changeLogs', item)} className="text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
-                        <button onClick={() => openConfirm('changeLogs', item)} className="text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
-                    </div>
-                ) : undefined} />
+                <Table<NhatKyThayDoi> 
+                    columns={[
+                        { header: 'Phiên bản', accessor: item => relatedData.versions.find(v => v.id_phien_ban === item.id_phien_ban)?.phien_ban },
+                        { header: 'Hạng mục', accessor: item => hangMucMap.get(item.hang_muc) },
+                        { header: 'Lý do', accessor: item => <p className="truncate max-w-xs">{item.ly_do_thay_doi}</p> },
+                        { header: 'Ngày đề xuất', accessor: item => formatDateForDisplay(item.ngay_de_xuat) },
+                        { header: 'Người đề xuất', accessor: item => nhanSuMap.get(item.nguoi_de_xuat) },
+                    ]} 
+                    data={relatedData.changeLogs} 
+                    actions={item => (
+                        <div className="flex items-center justify-end space-x-2">
+                            <button onClick={(e) => { e.stopPropagation(); openModal('viewChangeLog', item); }} className="p-1 text-gray-500 hover:text-gray-800" title="Xem chi tiết thay đổi">
+                                <Icon type="eye" className="h-5 w-5" />
+                            </button>
+                            {canUpdateDocument && (
+                                <button onClick={(e) => { e.stopPropagation(); openModal('changeLogs', item); }} className="p-1 text-blue-600 hover:text-blue-800" title="Chỉnh sửa">
+                                    <Icon type="pencil" className="h-4 w-4" />
+                                </button>
+                            )}
+                            {canDeleteDocument && (
+                                <button onClick={(e) => { e.stopPropagation(); openConfirm('changeLogs', item); }} className="p-1 text-red-600 hover:text-red-800" title="Xóa">
+                                    <Icon type="trash" className="h-4 w-4" />
+                                </button>
+                            )}
+                        </div>
+                    )}
+                />
             </TabContentWrapper>
         )},
         { title: `Phân phối (${relatedData.distributions.length})`, content: (
@@ -458,15 +514,27 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
             </div>
              <Card>
                 <Card.Header>
-                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
-                            <h2 className="text-2xl font-bold text-gray-900">{document.ten_tai_lieu}</h2>
-                            <div className="mt-1 flex items-center space-x-4">
-                               <span className="text-sm text-gray-500">{document.ma_tl} / {document.so_hieu}</span>
-                               <Badge status={document.trang_thai} />
+                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div className="flex items-start gap-x-3">
+                            <button
+                                onClick={() => onToggleBookmark(document.ma_tl)}
+                                className="p-1 rounded-full hover:bg-yellow-100 mt-1 flex-shrink-0 no-print"
+                                title={document.is_bookmarked ? 'Bỏ đánh dấu' : 'Đánh dấu'}
+                            >
+                                <Icon
+                                    type={document.is_bookmarked ? 'star-solid' : 'star'}
+                                    className={`h-6 w-6 ${document.is_bookmarked ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}`}
+                                />
+                            </button>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">{document.ten_tai_lieu}</h2>
+                                <div className="mt-1 flex items-center space-x-4">
+                                   <span className="text-sm text-gray-500">{document.ma_tl} / {document.so_hieu}</span>
+                                   <Badge status={document.trang_thai} />
+                                </div>
                             </div>
                         </div>
-                        <div className="flex items-center space-x-2 flex-shrink-0 no-print">
+                        <div className="flex items-center space-x-2 flex-shrink-0 no-print sm:ml-auto">
                              {canUpdateDocument && (
                                 <button onClick={() => setIsEditingDocument(true)} className="btn-secondary">Sửa thông tin</button>
                              )}
@@ -533,12 +601,42 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                      </dl>
                  </Card.Body>
              </Card>
+            
+            <Card>
+                <Card.Header className="flex items-center justify-between">
+                    <h3 className="text-base font-semibold leading-6 text-gray-900">Lịch sử Phiên bản</h3>
+                    {canUpdateDocument && (
+                        <button
+                            type="button"
+                            onClick={() => openModal('versions')}
+                            className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none no-print"
+                        >
+                            <Icon type="plus" className="-ml-1 mr-2 h-4 w-4" />
+                            Thêm Phiên bản
+                        </button>
+                    )}
+                </Card.Header>
+                <Card.Body>
+                    <Table<PhienBanTaiLieu>
+                        columns={[
+                            { header: 'Phiên bản', accessor: (item) => <div className="flex items-center gap-2">{item.phien_ban} {item.is_moi_nhat && <Badge status={VersionStatus.BAN_HANH} size="sm" title="Phiên bản mới nhất đang được ban hành" />}</div> },
+                            { header: 'Ngày phát hành', accessor: item => formatDateForDisplay(item.ngay_phat_hanh) },
+                            { header: 'Trạng thái', accessor: item => <Badge status={item.trang_thai_phien_ban} /> },
+                            { header: 'Tóm tắt thay đổi', accessor: 'tom_tat_thay_doi' },
+                            { header: 'Người thực hiện', accessor: item => nhanSuMap.get(item.nguoi_thuc_hien) },
+                        ]}
+                        data={relatedData.versions}
+                        actions={renderVersionActions}
+                        onRowClick={(item) => openModal('versions', item)}
+                    />
+                </Card.Body>
+            </Card>
 
             <div className="print-tabs-container">
                  <Tabs tabs={tabs} activeTabIndex={activeTabIndex} onTabChange={setActiveTabIndex} />
             </div>
 
-            <Modal isOpen={!!modalContent} onClose={closeModal} title={modalContent ? `Chỉnh sửa ${translate(modalContent.type)}` : ''}>
+            <Modal isOpen={!!modalContent} onClose={closeModal} title={getModalTitle()}>
                 {renderModalContent()}
             </Modal>
 
@@ -575,7 +673,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                     onClose={closeConfirm}
                     onConfirm={handleDelete}
                     title={`Xác nhận Xóa ${translate(confirmDialog.type)}`}
-                    message={confirmationMessages[confirmDialog.type]}
+                    message={confirmationMessages[confirmDialog.type as keyof typeof confirmationMessages]}
                 />
             )}
         </div>

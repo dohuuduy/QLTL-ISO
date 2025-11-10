@@ -82,6 +82,7 @@ export interface DanhMucTaiLieu {
     file_docx?: string;
     ma_tl_cha?: string;
     tai_lieu_thay_the?: string;
+    is_bookmarked?: boolean;
 }
 
 export interface PhienBanTaiLieu {

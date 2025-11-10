@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { 
     DanhMucTaiLieu, 
@@ -31,6 +31,7 @@ import { translate } from '../utils/translations';
 import { exportToCsv } from '../utils/exportUtils';
 import ExportDropdown from './ui/ExportDropdown';
 import RelatedDocumentsView from './RelatedDocumentsView';
+import Pagination from './ui/Pagination';
 
 type AllData = {
     documents: DanhMucTaiLieu[];
@@ -48,6 +49,8 @@ interface DocumentManagementPageProps {
     onUpdateData: React.Dispatch<React.SetStateAction<any>>;
     currentUser: NhanSu;
     onViewDetails: (doc: DanhMucTaiLieu) => void;
+    onToggleBookmark: (docId: string) => void;
+    initialFilter: string | null;
 }
 
 type SortConfig = {
@@ -56,14 +59,28 @@ type SortConfig = {
 } | null;
 
 
-const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData, onUpdateData, currentUser, onViewDetails }) => {
+const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData, onUpdateData, currentUser, onViewDetails, onToggleBookmark, initialFilter }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingDocument, setEditingDocument] = useState<DanhMucTaiLieu | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [relatedDoc, setRelatedDoc] = useState<DanhMucTaiLieu | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filters, setFilters] = useState({ status: '', department: '', standard: '' });
+    const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
     const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ngay_hieu_luc', direction: 'descending' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
+
+    useEffect(() => {
+        if (initialFilter === 'bookmarked') {
+            setShowBookmarkedOnly(true);
+        }
+    }, [initialFilter]);
+    
+    // Reset to page 1 whenever filters, sorting, or items per page change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filters, showBookmarkedOnly, sortConfig, itemsPerPage]);
 
     const { phongBanMap, loaiTaiLieuMap, latestVersionMap } = useMemo(() => ({
         phongBanMap: new Map(allData.phongBan.filter(Boolean).map(pb => [pb.id, pb.ten])),
@@ -77,6 +94,10 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
 
     const filteredDocuments = useMemo(() => {
         return allData.documents.filter(doc => {
+            if (showBookmarkedOnly && !doc.is_bookmarked) {
+                return false;
+            }
+
             const matchesSearch =
                 doc.ten_tai_lieu.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 doc.ma_tl.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,7 +118,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             
             return matchesSearch && matchesStatus && matchesDepartment && matchesStandard;
         });
-    }, [allData.documents, searchTerm, filters]);
+    }, [allData.documents, searchTerm, filters, showBookmarkedOnly]);
 
     const sortedDocuments = useMemo(() => {
         let sortableItems = [...filteredDocuments];
@@ -134,6 +155,13 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         }
         return sortableItems;
     }, [filteredDocuments, sortConfig, phongBanMap, latestVersionMap]);
+
+    const totalPages = Math.ceil(sortedDocuments.length / itemsPerPage);
+
+    const paginatedDocuments = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return sortedDocuments.slice(startIndex, startIndex + itemsPerPage);
+    }, [sortedDocuments, currentPage, itemsPerPage]);
 
     const relatedDocsData = useMemo(() => {
         if (!relatedDoc) return null;
@@ -378,6 +406,22 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
     );
 
     const tableColumns = [
+        { 
+            header: <Icon type="star" className="h-5 w-5 text-gray-500 mx-auto" />,
+            accessor: (item: DanhMucTaiLieu) => (
+                <button 
+                    onClick={(e) => { e.stopPropagation(); onToggleBookmark(item.ma_tl); }}
+                    className="p-1 rounded-full hover:bg-yellow-100 flex items-center justify-center w-full"
+                    title={item.is_bookmarked ? 'Bỏ đánh dấu' : 'Đánh dấu'}
+                >
+                    <Icon 
+                        type={item.is_bookmarked ? 'star-solid' : 'star'} 
+                        className={`h-5 w-5 ${item.is_bookmarked ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}`} 
+                    />
+                </button>
+            ),
+            className: 'w-12'
+        },
         { header: getSortableHeader('Mã', 'ma_tl'), accessor: (item: DanhMucTaiLieu) => item.ma_tl },
         { header: getSortableHeader('Tên tài liệu', 'ten_tai_lieu'), accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu, className: 'font-medium text-gray-900' },
         { header: getSortableHeader('Số hiệu', 'so_hieu'), accessor: (item: DanhMucTaiLieu) => item.so_hieu },
@@ -444,18 +488,20 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
 
             <Card>
                 <Card.Body>
-                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 no-print">
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm theo tên, mã, số hiệu..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        />
+                     <div className="flex flex-wrap items-center gap-4 mb-4 no-print">
+                        <div className="relative flex-grow min-w-[200px]">
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm theo tên, mã, số hiệu..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            />
+                        </div>
                         <select
                             value={filters.status}
                             onChange={(e) => setFilters(f => ({ ...f, status: e.target.value as DocumentStatus | '' | 'all_docs' }))}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         >
                             <option value="">Tài liệu đang dùng (Mặc định)</option>
                             <option value="all_docs">Tất cả Trạng thái</option>
@@ -464,7 +510,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                         <select
                             value={filters.department}
                             onChange={(e) => setFilters(f => ({ ...f, department: e.target.value }))}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         >
                             <option value="">Tất cả Phòng ban</option>
                             {allData.phongBan.map(d => <option key={d.id} value={d.id}>{d.ten}</option>)}
@@ -472,20 +518,56 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                          <select
                             value={filters.standard}
                             onChange={(e) => setFilters(f => ({ ...f, standard: e.target.value }))}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         >
                             <option value="">Tất cả Tiêu chuẩn</option>
                             {allData.tieuChuan.filter(s => s.is_active).map(s => <option key={s.id} value={s.id}>{s.ten_viet_tat ? `${s.ten_viet_tat} - ${s.ten}` : s.ten}</option>)}
                         </select>
+                        <button
+                            onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
+                            className={`inline-flex items-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ${
+                                showBookmarkedOnly
+                                    ? 'bg-yellow-50 text-yellow-800 ring-yellow-300'
+                                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50'
+                            }`}
+                        >
+                            <Icon type={showBookmarkedOnly ? 'star-solid' : 'star'} className="-ml-0.5 h-4 w-4" />
+                            <span className="hidden sm:inline">Đã đánh dấu</span>
+                        </button>
                     </div>
                 </Card.Body>
                 <Table<DanhMucTaiLieu>
                     columns={tableColumns}
-                    data={sortedDocuments}
+                    data={paginatedDocuments}
                     onRowClick={onViewDetails}
                     rowClassName={getRowClassName}
                     actions={renderActions}
                 />
+                {sortedDocuments.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                    >
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <span>Hiển thị</span>
+                            <select
+                                id="items-per-page"
+                                value={itemsPerPage}
+                                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-1"
+                            >
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                            </select>
+                            <span>
+                                dòng trên mỗi trang. (Tổng số {sortedDocuments.length} tài liệu)
+                            </span>
+                        </div>
+                    </Pagination>
+                )}
             </Card>
 
              <Modal isOpen={isModalOpen} onClose={closeModal} title={editingDocument ? 'Chỉnh sửa Tài liệu' : 'Thêm mới Tài liệu'}>
