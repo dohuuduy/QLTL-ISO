@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { 
     DanhMucTaiLieu, PhienBanTaiLieu, NhatKyThayDoi, PhanPhoiTaiLieu, LichRaSoat, DaoTaoTruyenThong, RuiRoCoHoi, NhanSu, PhongBan, LoaiTaiLieu, CapDoTaiLieu, MucDoBaoMat, TanSuatRaSoat, HangMucThayDoi, AuditLog, TieuChuan
@@ -188,6 +187,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
     const [isEditingDocument, setIsEditingDocument] = useState(false);
     const [selectorModalType, setSelectorModalType] = useState<'parent' | 'replacement' | null>(null);
     const [auditPage, setAuditPage] = useState(1);
+    const [showOlderVersions, setShowOlderVersions] = useState(false);
     
     const canUpdateDocument = currentUser.role === 'admin' || !!currentUser.permissions?.canUpdate;
     const canDeleteDocument = currentUser.role === 'admin' || !!currentUser.permissions?.canDelete;
@@ -391,6 +391,14 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
     };
 
     const paginatedAuditTrail = relatedData.auditTrail.slice((auditPage - 1) * AUDIT_ITEMS_PER_PAGE, auditPage * AUDIT_ITEMS_PER_PAGE);
+
+    const displayVersions = useMemo(() => {
+        if (showOlderVersions) {
+            return relatedData.versions;
+        }
+        // By default, show versions that are not recalled/archived.
+        return relatedData.versions.filter(v => v.trang_thai_phien_ban !== VersionStatus.THU_HOI);
+    }, [relatedData.versions, showOlderVersions]);
 
     const tabs = [
         { title: `Nhật ký Thay đổi (${relatedData.changeLogs.length})`, content: (
@@ -626,16 +634,38 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
             <Card>
                 <Card.Header className="flex items-center justify-between">
                     <h3 className="text-base font-semibold leading-6 text-gray-900">Lịch sử Phiên bản</h3>
-                    {canUpdateDocument && (
-                        <button
-                            type="button"
-                            onClick={() => openModal('versions')}
-                            className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none no-print"
-                        >
-                            <Icon type="plus" className="-ml-1 mr-2 h-4 w-4" />
-                            Thêm Phiên bản
-                        </button>
-                    )}
+                    <div className="flex items-center gap-x-4 no-print">
+                        <div className="flex items-center">
+                            <label htmlFor="show-older-versions-toggle" className="text-sm font-medium text-gray-700 mr-3 cursor-pointer">
+                                Hiện phiên bản cũ
+                            </label>
+                            <button
+                                type="button"
+                                className={`${showOlderVersions ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+                                role="switch"
+                                id="show-older-versions-toggle"
+                                aria-checked={showOlderVersions}
+                                onClick={() => setShowOlderVersions(!showOlderVersions)}
+                            >
+                                <span className="sr-only">Hiện phiên bản cũ</span>
+                                <span
+                                    aria-hidden="true"
+                                    className={`${showOlderVersions ? 'translate-x-5' : 'translate-x-0'} pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+                                />
+                            </button>
+                        </div>
+
+                        {canUpdateDocument && (
+                            <button
+                                type="button"
+                                onClick={() => openModal('versions')}
+                                className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none"
+                            >
+                                <Icon type="plus" className="-ml-1 mr-2 h-4 w-4" />
+                                Thêm Phiên bản
+                            </button>
+                        )}
+                    </div>
                 </Card.Header>
                 <Card.Body>
                     <Table<PhienBanTaiLieu>
@@ -646,7 +676,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                             { header: 'Tóm tắt thay đổi', accessor: 'tom_tat_thay_doi' },
                             { header: 'Người thực hiện', accessor: item => nhanSuMap.get(item.nguoi_thuc_hien) },
                         ]}
-                        data={relatedData.versions}
+                        data={displayVersions}
                         actions={renderVersionActions}
                         onRowClick={(item) => openModal('versions', item)}
                     />

@@ -57,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     ];
     
      const adminNavItems = [
-        { view: 'audit-log', icon: 'clipboard-document-list', label: 'Nhật ký Hệ thống' },
+        { view: 'audit-log', icon: 'clock', label: 'Nhật ký Hệ thống' },
     ];
     
     const categoryNavItems = [
