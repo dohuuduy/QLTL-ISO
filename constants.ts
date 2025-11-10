@@ -37,6 +37,9 @@ export enum AuditAction {
     CREATE = 'create',
     UPDATE = 'update',
     DELETE = 'delete',
+    LOGIN_SUCCESS = 'login_success',
+    LOGIN_FAIL = 'login_fail',
+    LOGOUT = 'logout',
 }
 
 export enum NotificationType {

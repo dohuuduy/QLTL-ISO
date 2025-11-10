@@ -42,6 +42,9 @@ export const translations: Record<string, string> = {
     [AuditAction.CREATE]: "Tạo mới",
     [AuditAction.UPDATE]: "Cập nhật",
     [AuditAction.DELETE]: "Xóa",
+    [AuditAction.LOGIN_SUCCESS]: "Đăng nhập thành công",
+    [AuditAction.LOGIN_FAIL]: "Đăng nhập thất bại",
+    [AuditAction.LOGOUT]: "Đăng xuất",
     
     // AuditStatus
     [AuditStatus.PLANNED]: "Đã lên lịch",
@@ -49,7 +52,7 @@ export const translations: Record<string, string> = {
     [AuditStatus.COMPLETED]: "Hoàn thành",
     [AuditStatus.CANCELLED]: "Đã hủy",
 
-    // Entity Types for Audit Log
+    // Entity Types for Audit Log & Categories
     'documents': "Tài liệu",
     'versions': "Phiên bản",
     'changeLogs': "Nhật ký thay đổi",
@@ -58,6 +61,18 @@ export const translations: Record<string, string> = {
     'trainings': "Đào tạo",
     'risks': "Rủi ro & Cơ hội",
     'auditSchedules': "Lịch Audit",
+    'nhanSu': 'Nhân sự',
+    'phongBan': 'Phòng ban',
+    'chucVu': 'Chức vụ',
+    'loaiTaiLieu': 'Loại tài liệu',
+    'capDoTaiLieu': 'Cấp độ tài liệu',
+    'mucDoBaoMat': 'Mức độ bảo mật',
+    'tanSuatRaSoat': 'Tần suất rà soát',
+    'hangMucThayDoi': 'Hạng mục thay đổi',
+    'tieuChuan': 'Tiêu chuẩn',
+    'danhGiaVien': 'Đánh giá viên',
+    'toChucDanhGia': 'Tổ chức đánh giá',
+    'system': 'Hệ thống',
 
     // User Status
     'active': "Đang hoạt động",

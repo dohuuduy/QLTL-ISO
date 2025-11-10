@@ -491,7 +491,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
              <TabContentWrapper title="Lịch sử thay đổi hệ thống">
                 <Table<AuditLog> columns={[
                     { header: 'Thời gian', accessor: item => formatDateTimeForDisplay(item.timestamp) },
-                    { header: 'Người dùng', accessor: item => nhanSuMap.get(item.user_id) },
+                    { header: 'Người dùng', accessor: 'user_name' },
                     { header: 'Hành động', accessor: item => <Badge status={item.action} /> },
                     { header: 'Chi tiết', accessor: 'details' },
                 ]} data={paginatedAuditTrail} />
@@ -505,7 +505,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
     ];
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             <div>
                 <button onClick={onBack} className="flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 no-print">
                     <Icon type="arrow-left" className="h-5 w-5 mr-2" />
@@ -528,7 +528,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                             </button>
                             <div>
                                 <h2 className="text-2xl font-bold text-gray-900">{document.ten_tai_lieu}</h2>
-                                <div className="mt-1 flex items-center space-x-4">
+                                <div className="mt-2 flex items-center space-x-4">
                                    <span className="text-sm text-gray-500">{document.ma_tl} / {document.so_hieu}</span>
                                    <Badge status={document.trang_thai} />
                                 </div>
@@ -545,61 +545,82 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                         </div>
                     </div>
                 </Card.Header>
-                 <Card.Body>
-                     <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-4">
-                        <DetailItem label="Loại tài liệu" value={loaiTaiLieuMap.get(document.loai_tai_lieu)} />
-                        <DetailItem label="Phòng ban quản lý" value={phongBanMap.get(document.phong_ban_quan_ly)} />
-                        <DetailItem label="Cấp độ" value={capDoMap.get(document.cap_do)} />
-                        <DetailItem label="Mức độ bảo mật" value={mucDoBaoMatMap.get(document.muc_do_bao_mat)} />
-                        <DetailItem label="Ngày ban hành" value={formatDateForDisplay(document.ngay_ban_hanh)} />
-                        <DetailItem label="Ngày hiệu lực" value={formatDateForDisplay(document.ngay_hieu_luc)} />
-                        <DetailItem label="Ngày hết hiệu lực" value={formatDateForDisplay(document.ngay_het_hieu_luc)} />
-                        <DetailItem label="Phiên bản mới nhất" value={relatedData.versions.find(v => v.is_moi_nhat)?.phien_ban} />
+                <Card.Body>
+                    <div className="space-y-10">
+                        {/* General Info */}
+                        <div>
+                            <h3 className="font-semibold text-gray-800 text-base">Thông tin chung</h3>
+                            <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-4">
+                                <DetailItem label="Loại tài liệu" value={loaiTaiLieuMap.get(document.loai_tai_lieu)} />
+                                <DetailItem label="Phòng ban quản lý" value={phongBanMap.get(document.phong_ban_quan_ly)} />
+                                <DetailItem label="Cấp độ" value={capDoMap.get(document.cap_do)} />
+                                <DetailItem label="Mức độ bảo mật" value={mucDoBaoMatMap.get(document.muc_do_bao_mat)} />
+                            </dl>
+                        </div>
 
-                        <div className="sm:col-span-2">
-                             <DetailItem label="Tiêu chuẩn áp dụng" value={(document.tieu_chuan_ids || []).map(id => (
-                                <span key={id} className="mr-2 inline-block"><Badge status={tieuChuanMap.get(id) || id} size="sm" /></span>
-                            ))} />
-                        </div>
-                        <div className="sm:col-span-2">
-                            <RelationshipItem
-                                label="Tài liệu cha"
-                                doc={allData.documents.find(d => d.ma_tl === document.ma_tl_cha) || null}
-                                canUpdate={canUpdateDocument}
-                                onAdd={() => setSelectorModalType('parent')}
-                                onRemove={() => handleRemoveRelationship('parent')}
-                            />
-                        </div>
-                         <div className="sm:col-span-2">
-                              <RelationshipItem
-                                label="Thay thế cho tài liệu"
-                                doc={allData.documents.find(d => d.ma_tl === document.tai_lieu_thay_the) || null}
-                                canUpdate={canUpdateDocument}
-                                onAdd={() => setSelectorModalType('replacement')}
-                                onRemove={() => handleRemoveRelationship('replacement')}
-                            />
-                        </div>
-                        <div className="sm:col-span-2">
-                            <DetailItem label="Người soạn thảo" value={nhanSuMap.get(document.nguoi_soan_thao)} />
-                        </div>
-                         <div className="sm:col-span-2">
-                            <DetailItem label="Người rà soát" value={nhanSuMap.get(document.nguoi_ra_soat)} />
-                        </div>
-                        <div className="sm:col-span-2">
-                            <DetailItem label="Người phê duyệt" value={nhanSuMap.get(document.nguoi_phe_duyet)} />
+                        {/* Timeline & Version */}
+                        <div>
+                            <h3 className="font-semibold text-gray-800 text-base">Mốc thời gian & Phiên bản</h3>
+                            <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-4">
+                                <DetailItem label="Ngày ban hành" value={formatDateForDisplay(document.ngay_ban_hanh)} />
+                                <DetailItem label="Ngày hiệu lực" value={formatDateForDisplay(document.ngay_hieu_luc)} />
+                                <DetailItem label="Ngày hết hiệu lực" value={formatDateForDisplay(document.ngay_het_hieu_luc)} />
+                                <DetailItem label="Phiên bản mới nhất" value={relatedData.versions.find(v => v.is_moi_nhat)?.phien_ban} />
+                            </dl>
                         </div>
                         
-                        <div className="sm:col-span-4">
-                             <dt className="text-sm font-medium text-gray-500">File đính kèm</dt>
-                             <dd className="mt-1 flex items-center space-x-4">
+                        {/* Stakeholders */}
+                        <div>
+                            <h3 className="font-semibold text-gray-800 text-base">Các bên liên quan</h3>
+                            <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
+                                <DetailItem label="Người soạn thảo" value={nhanSuMap.get(document.nguoi_soan_thao)} />
+                                <DetailItem label="Người rà soát" value={nhanSuMap.get(document.nguoi_ra_soat)} />
+                                <DetailItem label="Người phê duyệt" value={nhanSuMap.get(document.nguoi_phe_duyet)} />
+                            </dl>
+                        </div>
+
+                        {/* References and Relationships */}
+                        <div>
+                            <h3 className="font-semibold text-gray-800 text-base">Tham chiếu & Liên kết</h3>
+                            <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                                 <div className="sm:col-span-2">
+                                     <DetailItem label="Tiêu chuẩn áp dụng" value={(document.tieu_chuan_ids || []).map(id => (
+                                        <span key={id} className="mr-2 mb-2 inline-block"><Badge status={tieuChuanMap.get(id) || id} size="sm" /></span>
+                                    ))} />
+                                </div>
+                                <div>
+                                    <RelationshipItem
+                                        label="Tài liệu cha"
+                                        doc={allData.documents.find(d => d.ma_tl === document.ma_tl_cha) || null}
+                                        canUpdate={canUpdateDocument}
+                                        onAdd={() => setSelectorModalType('parent')}
+                                        onRemove={() => handleRemoveRelationship('parent')}
+                                    />
+                                </div>
+                                <div>
+                                    <RelationshipItem
+                                        label="Thay thế cho tài liệu"
+                                        doc={allData.documents.find(d => d.ma_tl === document.tai_lieu_thay_the) || null}
+                                        canUpdate={canUpdateDocument}
+                                        onAdd={() => setSelectorModalType('replacement')}
+                                        onRemove={() => handleRemoveRelationship('replacement')}
+                                    />
+                                </div>
+                            </dl>
+                        </div>
+                        
+                        {/* Attachments */}
+                        <div>
+                             <h3 className="font-semibold text-gray-800 text-base">Tệp đính kèm</h3>
+                             <div className="mt-4 flex items-center space-x-4">
                                 {document.link_drive && <a href={document.link_drive} target="_blank" rel="noopener noreferrer" className="link">Google Drive</a>}
                                 {document.file_pdf && <a href={document.file_pdf} target="_blank" rel="noopener noreferrer" className="link">PDF</a>}
                                 {document.file_docx && <a href={document.file_docx} target="_blank" rel="noopener noreferrer" className="link">DOCX</a>}
                                 {!document.link_drive && !document.file_pdf && !document.file_docx && <span className="text-sm text-gray-400">Không có</span>}
-                             </dd>
+                             </div>
                         </div>
-                     </dl>
-                 </Card.Body>
+                    </div>
+                </Card.Body>
              </Card>
             
             <Card>

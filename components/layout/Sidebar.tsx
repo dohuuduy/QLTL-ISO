@@ -56,6 +56,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         { view: 'reports', icon: 'chart-bar', label: 'Báo cáo' },
     ];
     
+     const adminNavItems = [
+        { view: 'audit-log', icon: 'clipboard-document-list', label: 'Nhật ký Hệ thống' },
+    ];
+    
     const categoryNavItems = [
         { key: 'settings-personnel', label: 'Nhân sự' },
         { key: 'settings-departments', label: 'Phòng ban' },
@@ -134,47 +138,66 @@ const Sidebar: React.FC<SidebarProps> = ({
                     })}
                     
                      {currentUser.role === 'admin' && (
-                         <div>
-                            <button
-                                onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                                className={`group flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                                    isCategoriesActive
-                                        ? 'bg-blue-50 text-blue-700'
-                                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                                }`}
-                            >
-                                <Icon
-                                    type="archive"
-                                    className={`h-6 w-6 transition-colors duration-200 ${
-                                        isCategoriesActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'
-                                    }`}
-                                />
-                                <span className={`ml-4 whitespace-nowrap transition-opacity duration-200 ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
-                                    Danh mục
+                         <>
+                            <div className="px-4 pt-4 pb-2">
+                                <span className={`text-xs font-semibold text-gray-500 uppercase ${isCollapsed ? 'hidden' : 'block'}`}>
+                                    Quản trị
                                 </span>
-                                {!isCollapsed && (
-                                     <Icon
-                                        type="chevron-down"
-                                        className={`ml-auto h-5 w-5 transform transition-transform duration-200 ${isCategoriesOpen ? 'rotate-180' : ''}`}
+                            </div>
+                            
+                            {adminNavItems.map(item => (
+                                <NavItem
+                                    key={item.view}
+                                    icon={item.icon}
+                                    label={item.label}
+                                    isCollapsed={isCollapsed}
+                                    isActive={currentView === item.view}
+                                    onClick={() => handleNavigation(item.view)}
+                                />
+                            ))}
+                         
+                             <div>
+                                <button
+                                    onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                                    className={`group flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                                        isCategoriesActive
+                                            ? 'bg-blue-50 text-blue-700'
+                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <Icon
+                                        type="archive"
+                                        className={`h-6 w-6 transition-colors duration-200 ${
+                                            isCategoriesActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'
+                                        }`}
                                     />
+                                    <span className={`ml-4 whitespace-nowrap transition-opacity duration-200 ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
+                                        Danh mục
+                                    </span>
+                                    {!isCollapsed && (
+                                        <Icon
+                                            type="chevron-down"
+                                            className={`ml-auto h-5 w-5 transform transition-transform duration-200 ${isCategoriesOpen ? 'rotate-180' : ''}`}
+                                        />
+                                    )}
+                                </button>
+                                {isCategoriesOpen && !isCollapsed && (
+                                    <div className="pl-8 pt-1 space-y-1">
+                                        {categoryNavItems.map(item => (
+                                            <button 
+                                                key={item.key}
+                                                onClick={() => handleNavigation(item.key)}
+                                                className={`flex items-center w-full px-4 py-2 text-xs font-medium rounded-md hover:bg-gray-100 hover:text-gray-900 ${
+                                                    currentView === item.key ? 'text-blue-600' : 'text-gray-500'
+                                                }`}
+                                            >
+                                                {item.label}
+                                            </button>
+                                        ))}
+                                    </div>
                                 )}
-                            </button>
-                            {isCategoriesOpen && !isCollapsed && (
-                                <div className="pl-8 pt-1 space-y-1">
-                                    {categoryNavItems.map(item => (
-                                         <button 
-                                            key={item.key}
-                                            onClick={() => handleNavigation(item.key)}
-                                            className={`flex items-center w-full px-4 py-2 text-xs font-medium rounded-md hover:bg-gray-100 hover:text-gray-900 ${
-                                                currentView === item.key ? 'text-blue-600' : 'text-gray-500'
-                                            }`}
-                                        >
-                                            {item.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                            </div>
+                        </>
                     )}
                 </nav>
                 {/* Settings link at the bottom */}

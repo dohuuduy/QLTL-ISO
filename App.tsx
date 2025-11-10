@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { mockData } from './data/mockData';
 import type { DanhMucTaiLieu, NhanSu, ThongBao, ReportType, LichRaSoat, ChucVu, AuditLog, LichAudit, DaoTaoTruyenThong, PhienBanTaiLieu, DanhMucChung, PhongBan, LoaiTaiLieu, CapDoTaiLieu, MucDoBaoMat, TanSuatRaSoat, HangMucThayDoi, ToChucDanhGia, DanhGiaVien } from './types';
@@ -13,6 +12,7 @@ import CategoryManagementPage from './components/CategoryManagementPage';
 import StandardsManagementPage from './components/StandardsManagementPage';
 import ReportsPage from './components/ReportsPage';
 import AuditManagementPage from './components/AuditManagementPage';
+import AuditLogPage from './components/AuditLogPage';
 import { v4 as uuidv4 } from 'uuid';
 import { formatDateForDisplay } from './utils/dateUtils';
 import { translate } from './utils/translations';
@@ -28,7 +28,7 @@ import AuditorForm from './components/forms/AuditorForm';
 import Badge from './components/ui/Badge';
 
 
-type View = 'dashboard' | 'documents' | 'document-detail' | 'settings' | 'standards' | 'reports' | 'audits' |
+type View = 'dashboard' | 'documents' | 'document-detail' | 'settings' | 'standards' | 'reports' | 'audits' | 'audit-log' |
     'settings-personnel' | 'settings-departments' | 'settings-positions' | 'settings-docTypes' | 'settings-docLevels' |
     'settings-securityLevels' | 'settings-reviewFrequencies' | 'settings-changeItems' | 'settings-auditors' | 'settings-auditOrgs';
 
@@ -148,6 +148,26 @@ const App: React.FC = () => {
             return newData;
         });
     };
+
+    const addAuditLog = useCallback((action: AuditAction, details: string, entity_type: string = 'system', entity_id?: string) => {
+        const user = currentUser; // Capture current user at the time of action
+        const newLog: AuditLog = {
+            id: `log-${uuidv4()}`,
+            timestamp: new Date().toISOString(),
+            user_id: user?.id || 'system',
+            user_name: user?.ten || 'Hệ thống',
+            action,
+            entity_type,
+            entity_id,
+            details,
+        };
+        // Use a functional update to ensure we're not overwriting other state changes
+        handleSetData(prev => {
+            if (!prev) return null;
+            return { ...prev, auditTrail: [newLog, ...(prev.auditTrail || [])] };
+        });
+    }, [currentUser]); // Depend on currentUser to get the correct user info
+
 
     // Sync currentUser with full details from the main data source after login.
     // This ensures permissions are correctly loaded if the login endpoint returns a partial user object.
@@ -276,12 +296,18 @@ const App: React.FC = () => {
         if (user) {
             await fetchData(); // Refetch all data after successful login
             setCurrentUser(user);
+            addAuditLog(AuditAction.LOGIN_SUCCESS, `Người dùng '${user.ten}' đăng nhập thành công.`);
             return true;
+        } else {
+            addAuditLog(AuditAction.LOGIN_FAIL, `Đăng nhập thất bại với tên đăng nhập: '${username}'.`);
+            return false;
         }
-        return false;
     };
 
     const handleLogout = () => {
+        if(currentUser) {
+            addAuditLog(AuditAction.LOGOUT, `Người dùng '${currentUser.ten}' đã đăng xuất.`);
+        }
         setCurrentUser(null);
     };
 
@@ -357,14 +383,15 @@ const App: React.FC = () => {
                 
                 return { ...prevData, documents: nextDocuments, reviewSchedules: nextReviewSchedules };
             });
+            addAuditLog(AuditAction.UPDATE, `Hoàn thành rà soát cho tài liệu ${completedReview.ma_tl} với kết quả: ${translate(completedReview.ket_qua_ra_soat!)}.`, 'reviewSchedules', completedReview.id_lich);
             return;
         }
         
         if (type === 'versions') {
+            const isNew = !relatedData.id_phien_ban;
             handleSetData(prevData => {
                 if (!prevData) return null;
         
-                const isNew = !relatedData.id_phien_ban;
                 const savedVersion = { ...relatedData, id_phien_ban: relatedData.id_phien_ban || `v-${uuidv4()}` };
         
                 let otherVersions = prevData.versions.filter(v => v.id_phien_ban !== savedVersion.id_phien_ban);
@@ -448,10 +475,16 @@ const App: React.FC = () => {
         
                 return { ...prevData, versions: nextVersions, documents: nextDocuments };
             });
+            addAuditLog(
+                isNew ? AuditAction.CREATE : AuditAction.UPDATE,
+                `${isNew ? 'Tạo' : 'Cập nhật'} phiên bản '${relatedData.phien_ban}' cho tài liệu ${relatedData.ma_tl}.`,
+                'versions',
+                relatedData.id_phien_ban || ''
+            );
             return;
         }
 
-
+        const isNewItem = !relatedData[Object.keys(relatedData).find(k => k.startsWith('id_')) || 'id'];
         handleSetData(prevData => {
             if (!prevData) return null;
             const list = (prevData as any)[type] as any[];
@@ -466,6 +499,11 @@ const App: React.FC = () => {
             }
             return { ...prevData, [type]: newList };
         });
+        addAuditLog(
+            isNewItem ? AuditAction.CREATE : AuditAction.UPDATE,
+            `${isNewItem ? 'Tạo' : 'Cập nhật'} mục trong '${translate(type)}'.`,
+            type
+        );
     };
 
     const handleDeleteRelatedData = (type: string, relatedData: any) => {
@@ -477,28 +515,26 @@ const App: React.FC = () => {
             const newList = list.filter(item => item[idKey] !== relatedData[idKey]);
             return { ...prevData, [type]: newList };
         });
+        addAuditLog(AuditAction.DELETE, `Xóa mục khỏi '${translate(type)}'.`, type);
     };
     
     const handleUpdateDocument = (updatedDocument: DanhMucTaiLieu) => {
+        let originalStatus = '';
+        const prevDoc = data?.documents.find(d => d.ma_tl === updatedDocument.ma_tl);
+        if (prevDoc) originalStatus = prevDoc.trang_thai;
+
         handleSetData(prev => {
             if (!prev) return null;
-            const originalDoc = prev.documents.find(d => d.ma_tl === updatedDocument.ma_tl);
-            let newAuditTrail = prev.auditTrail;
-            if (currentUser && originalDoc && originalDoc.trang_thai !== updatedDocument.trang_thai) {
-                const newAuditLog: AuditLog = {
-                    id: `log-${uuidv4()}`, timestamp: new Date().toISOString(), user_id: currentUser.id,
-                    action: AuditAction.UPDATE, entity_type: 'documents', entity_id: updatedDocument.ma_tl,
-                    ma_tl: updatedDocument.ma_tl,
-                    details: `Đã thay đổi trạng thái từ "${translate(originalDoc.trang_thai)}" sang "${translate(updatedDocument.trang_thai)}".`,
-                };
-                newAuditTrail = [...prev.auditTrail, newAuditLog];
-            }
             return {
                 ...prev,
                 documents: prev.documents.map(d => d.ma_tl === updatedDocument.ma_tl ? updatedDocument : d),
-                auditTrail: newAuditTrail,
             };
         });
+        
+        const details = originalStatus && originalStatus !== updatedDocument.trang_thai
+            ? `Cập nhật tài liệu '${updatedDocument.ten_tai_lieu}' (${updatedDocument.ma_tl}) và thay đổi trạng thái từ '${translate(originalStatus)}' sang '${translate(updatedDocument.trang_thai)}'.`
+            : `Cập nhật thông tin tài liệu '${updatedDocument.ten_tai_lieu}' (${updatedDocument.ma_tl}).`;
+        addAuditLog(AuditAction.UPDATE, details, 'documents', updatedDocument.ma_tl);
     };
 
     const handleUpdateVersionStatus = (versionId: string, newStatus: VersionStatus) => {
@@ -506,8 +542,8 @@ const App: React.FC = () => {
         const version = data.versions.find(v => v.id_phien_ban === versionId);
         if (version) {
             const isApproving = newStatus === VersionStatus.BAN_HANH;
-            // When approving, this version MUST become the latest.
             handleSaveRelatedData('versions', { ...version, trang_thai_phien_ban: newStatus, is_moi_nhat: isApproving || version.is_moi_nhat });
+            addAuditLog(AuditAction.UPDATE, `Cập nhật trạng thái phiên bản '${version.phien_ban}' của tài liệu ${version.ma_tl} thành '${translate(newStatus)}'.`, 'versions', version.id_phien_ban);
         }
     };
 
@@ -534,6 +570,7 @@ const App: React.FC = () => {
     }
     
     const handleSaveCategory = (categoryKey: keyof typeof mockData, formData: any) => {
+        const isNew = !formData.id;
         handleSetData(prev => {
             if (!prev) return null;
             const list = (prev as any)[categoryKey] as any[];
@@ -546,6 +583,12 @@ const App: React.FC = () => {
             }
             return { ...prev, [categoryKey]: newList };
         });
+         addAuditLog(
+            isNew ? AuditAction.CREATE : AuditAction.UPDATE,
+            `${isNew ? 'Tạo' : 'Cập nhật'} mục '${formData.ten}' trong '${translate(categoryKey as string)}'.`,
+            categoryKey as string,
+            formData.id
+        );
     };
 
     const handleDeleteCategory = (categoryKey: keyof typeof mockData, itemToDelete: any) => {
@@ -555,6 +598,7 @@ const App: React.FC = () => {
             const newList = list.filter(item => item.id !== itemToDelete.id);
             return { ...prev, [categoryKey]: newList };
         });
+         addAuditLog(AuditAction.DELETE, `Xóa mục '${itemToDelete.ten}' khỏi '${translate(categoryKey as string)}'.`, categoryKey as string, itemToDelete.id);
     };
 
     const handleToggleCategoryStatus = (categoryKey: keyof typeof mockData, itemToToggle: any) => {
@@ -568,11 +612,23 @@ const App: React.FC = () => {
             );
             return { ...prev, [categoryKey]: newList };
         });
+        const newStatus = itemToToggle.is_active === false ? 'hoạt động' : 'vô hiệu hóa';
+        addAuditLog(AuditAction.UPDATE, `Cập nhật trạng thái của '${itemToToggle.ten}' thành '${newStatus}' trong '${translate(categoryKey as string)}'.`, categoryKey as string, itemToToggle.id);
     };
 
 
+    const LoadingIndicator: React.FC<{ message: string }> = ({ message }) => (
+        <div className="flex h-screen items-center justify-center bg-slate-50">
+            <div className="flex flex-col items-center space-y-4">
+                <div className="spinner"></div>
+                <p className="text-gray-600 animate-pulse">{message}</p>
+            </div>
+        </div>
+    );
+
     if (isLoading && !currentUser) {
-        return <div className="flex h-screen items-center justify-center">Đang tải...</div>;
+        // Show a more visually appealing loading state on initial app load
+        return <LoadingIndicator message="Đang tải ứng dụng..." />;
     }
     
     if (error && (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('AKfycbw-C_pFUfOYtzWPqwQ1kYgP6cucA5AVe4LTcENv-89COXalBqZejq6gwsAiH96lYZoB'))) {
@@ -592,7 +648,8 @@ const App: React.FC = () => {
     }
     
     if (isLoading) {
-        return <div className="flex h-screen items-center justify-center">Đang tải dữ liệu...</div>;
+        // Show loading indicator when refetching data after login or on manual retry
+        return <LoadingIndicator message="Đang tải dữ liệu..." />;
     }
 
     if (error) {
@@ -634,6 +691,7 @@ const App: React.FC = () => {
             case 'standards': return <StandardsManagementPage standards={data.tieuChuan} onUpdateData={handleSetData} currentUser={currentUser} />;
             case 'reports': return <ReportsPage allData={data} initialReportType={initialReportType} onViewDetails={handleViewDetails} />;
             case 'audits': return <AuditManagementPage allData={data} onUpdateData={handleSetData} currentUser={currentUser} />;
+            case 'audit-log': return <AuditLogPage auditLogs={data.auditTrail} users={data.nhanSu} />;
             
             // Category Management Pages
             case 'settings-personnel':

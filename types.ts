@@ -158,10 +158,11 @@ export interface AuditLog {
     id: string;
     timestamp: string;
     user_id: string;
+    user_name: string; // Add user_name for easier display
     action: AuditAction;
-    entity_type: string; // e.g., 'documents', 'versions'
-    entity_id: string;
-    ma_tl: string;
+    entity_type: string; // e.g., 'documents', 'versions', 'system'
+    entity_id?: string; // Optional ID of the entity affected
+    ma_tl?: string; // Optional related document ID
     details: string;
 }
 
