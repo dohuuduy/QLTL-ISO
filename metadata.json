@@ -1,0 +1,5 @@
+{
+  "name": "ISO Document Management System",
+  "description": "An application to manage system documents according to ISO standards, tracking lifecycle, versions, distribution, access control, and related processes for compliance and auditing.",
+  "requestFramePermissions": []
+}

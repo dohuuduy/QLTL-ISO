@@ -1,0 +1,3 @@
+// !!! IMPORTANT !!!
+// PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL HERE
+export const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCTuIQW2WDF460scpdp-68UERvXQ5ACWUPLJvzZ1PoGbv2UUnOAwXuVP5F-jgu8Jhi/exec';

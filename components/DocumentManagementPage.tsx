@@ -1,0 +1,544 @@
+import React, { useState, useMemo } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import type { 
+    DanhMucTaiLieu, 
+    NhanSu, 
+    PhongBan, 
+    LoaiTaiLieu, 
+    CapDoTaiLieu, 
+    MucDoBaoMat, 
+    TieuChuan,
+    PhienBanTaiLieu,
+    NhatKyThayDoi,
+    PhanPhoiTaiLieu,
+    LichRaSoat,
+    DaoTaoTruyenThong,
+    RuiRoCoHoi,
+    AuditLog,
+    ThongBao,
+    LichAudit
+} from '../types';
+import { DocumentStatus, VersionStatus } from '../constants';
+import { Icon } from './ui/Icon';
+import Card from './ui/Card';
+import Table from './ui/Table';
+import Modal from './ui/Modal';
+import Badge from './ui/Badge';
+import ConfirmationDialog from './ui/ConfirmationDialog';
+import DocumentForm from './forms/DocumentForm';
+import { formatDateForDisplay } from '../utils/dateUtils';
+import { translate } from '../utils/translations';
+import { exportToCsv } from '../utils/exportUtils';
+import ExportDropdown from './ui/ExportDropdown';
+import RelatedDocumentsView from './RelatedDocumentsView';
+
+type AllData = {
+    documents: DanhMucTaiLieu[];
+    versions: PhienBanTaiLieu[];
+    nhanSu: NhanSu[];
+    phongBan: PhongBan[];
+    loaiTaiLieu: LoaiTaiLieu[];
+    capDoTaiLieu: CapDoTaiLieu[];
+    mucDoBaoMat: MucDoBaoMat[];
+    tieuChuan: TieuChuan[];
+};
+
+interface DocumentManagementPageProps {
+    allData: AllData;
+    onUpdateData: React.Dispatch<React.SetStateAction<any>>;
+    currentUser: NhanSu;
+    onViewDetails: (doc: DanhMucTaiLieu) => void;
+}
+
+type SortConfig = {
+    key: string;
+    direction: 'ascending' | 'descending';
+} | null;
+
+
+const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData, onUpdateData, currentUser, onViewDetails }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingDocument, setEditingDocument] = useState<DanhMucTaiLieu | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [relatedDoc, setRelatedDoc] = useState<DanhMucTaiLieu | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filters, setFilters] = useState({ status: '', department: '', standard: '' });
+    const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ngay_hieu_luc', direction: 'descending' });
+
+    const { phongBanMap, loaiTaiLieuMap, latestVersionMap } = useMemo(() => ({
+        phongBanMap: new Map(allData.phongBan.filter(Boolean).map(pb => [pb.id, pb.ten])),
+        loaiTaiLieuMap: new Map(allData.loaiTaiLieu.filter(Boolean).map(ltl => [ltl.id, ltl.ten])),
+        latestVersionMap: new Map(allData.versions.filter(v => v && v.is_moi_nhat).map(v => [v.ma_tl, v.phien_ban]))
+    }), [allData.phongBan, allData.loaiTaiLieu, allData.versions]);
+    
+    const canCreate = currentUser.role === 'admin' || !!currentUser.permissions?.canCreate;
+    const canUpdate = currentUser.role === 'admin' || !!currentUser.permissions?.canUpdate;
+    const canDelete = currentUser.role === 'admin' || !!currentUser.permissions?.canDelete;
+
+    const filteredDocuments = useMemo(() => {
+        return allData.documents.filter(doc => {
+            const matchesSearch =
+                doc.ten_tai_lieu.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                doc.ma_tl.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                doc.so_hieu.toLowerCase().includes(searchTerm.toLowerCase());
+
+            const matchesStatus = (() => {
+                if (filters.status === '') { // Default view: all except expired
+                    return doc.trang_thai !== DocumentStatus.HET_HIEU_LUC;
+                }
+                if (filters.status === 'all_docs') { // User explicitly selected all
+                    return true;
+                }
+                return doc.trang_thai === filters.status; // User selected a specific status
+            })();
+            
+            const matchesDepartment = filters.department ? doc.phong_ban_quan_ly === filters.department : true;
+            const matchesStandard = filters.standard ? doc.tieu_chuan_ids.includes(filters.standard) : true;
+            
+            return matchesSearch && matchesStatus && matchesDepartment && matchesStandard;
+        });
+    }, [allData.documents, searchTerm, filters]);
+
+    const sortedDocuments = useMemo(() => {
+        let sortableItems = [...filteredDocuments];
+        if (sortConfig !== null) {
+            sortableItems.sort((a, b) => {
+                let aValue: any;
+                let bValue: any;
+
+                switch (sortConfig.key) {
+                    case 'phong_ban_quan_ly':
+                        aValue = phongBanMap.get(a.phong_ban_quan_ly) || '';
+                        bValue = phongBanMap.get(b.phong_ban_quan_ly) || '';
+                        break;
+                    case 'phien_ban':
+                        aValue = latestVersionMap.get(a.ma_tl) || '';
+                        bValue = latestVersionMap.get(b.ma_tl) || '';
+                        break;
+                    default:
+                        aValue = a[sortConfig.key as keyof DanhMucTaiLieu];
+                        bValue = b[sortConfig.key as keyof DanhMucTaiLieu];
+                }
+                
+                if (aValue == null) return 1;
+                if (bValue == null) return -1;
+
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [filteredDocuments, sortConfig, phongBanMap, latestVersionMap]);
+
+    const relatedDocsData = useMemo(() => {
+        if (!relatedDoc) return null;
+
+        const parent = relatedDoc.ma_tl_cha ? allData.documents.find(d => d.ma_tl === relatedDoc.ma_tl_cha) : null;
+        const children = allData.documents.filter(d => d.ma_tl_cha === relatedDoc.ma_tl);
+        
+        const replaces = relatedDoc.tai_lieu_thay_the ? allData.documents.find(d => d.ma_tl === relatedDoc.tai_lieu_thay_the) : null;
+        const replacedBy = allData.documents.filter(d => d.tai_lieu_thay_the === relatedDoc.ma_tl);
+
+        const sameStandard = allData.documents.filter(d => 
+            d.ma_tl !== relatedDoc.ma_tl && 
+            d.tieu_chuan_ids.some(id => relatedDoc.tieu_chuan_ids.includes(id))
+        );
+        const sameDepartment = allData.documents.filter(d => 
+            d.ma_tl !== relatedDoc.ma_tl && 
+            d.phong_ban_quan_ly === relatedDoc.phong_ban_quan_ly
+        );
+
+        return { parent, children, replaces, replacedBy, sameStandard, sameDepartment };
+    }, [relatedDoc, allData.documents]);
+
+    const requestSort = (key: string) => {
+        let direction: 'ascending' | 'descending' = 'ascending';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortableHeader = (label: string, key: string) => {
+        const isSorting = sortConfig?.key === key;
+        const sortIcon = isSorting 
+            ? (sortConfig.direction === 'ascending' ? 'chevron-up' : 'chevron-down')
+            : 'chevron-down';
+        
+        return (
+            <button 
+                onClick={() => requestSort(key)} 
+                className="group inline-flex items-center gap-1"
+            >
+                <span>{label}</span>
+                <Icon 
+                    type={sortIcon} 
+                    className={`h-4 w-4 transition-opacity ${isSorting ? 'opacity-100 text-gray-700' : 'opacity-0 text-gray-400 group-hover:opacity-100'}`} 
+                />
+            </button>
+        );
+    };
+
+    const openModal = (doc: DanhMucTaiLieu | null = null) => {
+        setEditingDocument(doc);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setEditingDocument(null);
+        setIsModalOpen(false);
+    };
+    
+    const handleOpenRelatedModal = (doc: DanhMucTaiLieu) => {
+        setRelatedDoc(doc);
+    };
+
+    const handleNavigateFromModal = (doc: DanhMucTaiLieu) => {
+        setRelatedDoc(null);
+        onViewDetails(doc);
+    };
+
+    const handleSave = (formData: DanhMucTaiLieu) => {
+        onUpdateData((prev: any) => {
+            if (!prev) return null;
+
+            let newDocumentsList;
+            let newVersionsList = prev.versions;
+
+            if (editingDocument) { // Editing
+                newDocumentsList = prev.documents.map((item: DanhMucTaiLieu) =>
+                    item.ma_tl === editingDocument.ma_tl ? formData : item
+                );
+            } else { // Creating
+                const newDoc = { ...formData, ma_tl: `TL-${uuidv4().split('-')[0].toUpperCase()}` };
+                newDocumentsList = [...prev.documents, newDoc];
+
+                const newVersion: PhienBanTaiLieu = {
+                    id_phien_ban: `v-${uuidv4()}`,
+                    ma_tl: newDoc.ma_tl,
+                    phien_ban: '1.0',
+                    ngay_phat_hanh: newDoc.ngay_ban_hanh,
+                    trang_thai_phien_ban: VersionStatus.BAN_THAO,
+                    tom_tat_thay_doi: 'Ban hành lần đầu',
+                    noi_dung_cap_nhat: 'Toàn bộ nội dung',
+                    nguoi_thuc_hien: newDoc.nguoi_soan_thao,
+                    is_moi_nhat: true,
+                };
+                newVersionsList = [...newVersionsList, newVersion];
+            }
+            return { ...prev, documents: newDocumentsList, versions: newVersionsList };
+        });
+        closeModal();
+    };
+
+    const handleDelete = () => {
+        if (!deletingId) return;
+
+        onUpdateData((prev: any) => {
+            if (!prev) return null;
+
+            // Find versions of the document to be deleted to clean up related data
+            const versionsToDelete = prev.versions
+                .filter((v: PhienBanTaiLieu) => v.ma_tl === deletingId)
+                .map((v: PhienBanTaiLieu) => v.id_phien_ban);
+            const versionsToDeleteSet = new Set(versionsToDelete);
+
+            // Filter out all related data
+            const newVersions = prev.versions.filter((v: PhienBanTaiLieu) => v.ma_tl !== deletingId);
+            const newChangeLogs = prev.changeLogs.filter((cl: NhatKyThayDoi) => !versionsToDeleteSet.has(cl.id_phien_ban));
+            const newDistributions = prev.distributions.filter((d: PhanPhoiTaiLieu) => !versionsToDeleteSet.has(d.id_phien_ban));
+            const newReviewSchedules = prev.reviewSchedules.filter((rs: LichRaSoat) => rs.ma_tl !== deletingId);
+            const newTrainings = prev.trainings.filter((t: DaoTaoTruyenThong) => t.ma_tl !== deletingId);
+            const newRisks = prev.risks.filter((r: RuiRoCoHoi) => r.ma_tl !== deletingId);
+            const newAuditTrail = prev.auditTrail.filter((log: AuditLog) => log.ma_tl !== deletingId);
+            const newNotifications = prev.notifications.filter((n: ThongBao) => n.ma_tl !== deletingId);
+
+            // Remove references from other documents
+            const newDocuments = prev.documents
+                .filter((d: DanhMucTaiLieu) => d.ma_tl !== deletingId)
+                .map((doc: DanhMucTaiLieu) => {
+                    const updatedDoc = { ...doc };
+                    if (updatedDoc.ma_tl_cha === deletingId) {
+                        updatedDoc.ma_tl_cha = undefined;
+                    }
+                    if (updatedDoc.tai_lieu_thay_the === deletingId) {
+                        updatedDoc.tai_lieu_thay_the = undefined;
+                    }
+                    return updatedDoc;
+                });
+                
+            // Remove references from audit schedules
+            const newAuditSchedules = prev.auditSchedules.map((audit: LichAudit) => {
+                if (audit.tai_lieu_lien_quan_ids?.includes(deletingId)) {
+                    return {
+                        ...audit,
+                        tai_lieu_lien_quan_ids: audit.tai_lieu_lien_quan_ids.filter(id => id !== deletingId)
+                    };
+                }
+                return audit;
+            });
+
+            return {
+                ...prev,
+                documents: newDocuments,
+                versions: newVersions,
+                changeLogs: newChangeLogs,
+                distributions: newDistributions,
+                reviewSchedules: newReviewSchedules,
+                trainings: newTrainings,
+                risks: newRisks,
+                auditTrail: newAuditTrail,
+                notifications: newNotifications,
+                auditSchedules: newAuditSchedules,
+            };
+        });
+
+        setDeletingId(null);
+    };
+    
+    const deletionInfo = useMemo(() => {
+        if (!deletingId) return { title: 'Xác nhận Xóa', message: '' };
+        const doc = allData.documents.find(d => d.ma_tl === deletingId);
+        return {
+            title: 'Xác nhận Xóa Tài liệu',
+            message: `Bạn có chắc chắn muốn xóa tài liệu '${doc?.ten_tai_lieu || ''}' không? Hành động này không thể hoàn tác.`
+        };
+    }, [deletingId, allData.documents]);
+
+    const handlePrint = () => window.print();
+
+    const handleExportCsv = () => {
+        const dataToExport = sortedDocuments.map(doc => ({
+            ma_tl: doc.ma_tl,
+            ten_tai_lieu: doc.ten_tai_lieu,
+            so_hieu: doc.so_hieu,
+            phien_ban: latestVersionMap.get(doc.ma_tl) || 'N/A',
+            loai_tai_lieu: loaiTaiLieuMap.get(doc.loai_tai_lieu) || '',
+            phong_ban_quan_ly: phongBanMap.get(doc.phong_ban_quan_ly) || '',
+            trang_thai: translate(doc.trang_thai),
+            ngay_hieu_luc: formatDateForDisplay(doc.ngay_hieu_luc),
+            ngay_het_hieu_luc: formatDateForDisplay(doc.ngay_het_hieu_luc),
+        }));
+
+        const headers = {
+            ma_tl: 'Mã Tài liệu',
+            ten_tai_lieu: 'Tên Tài liệu',
+            so_hieu: 'Số hiệu',
+            phien_ban: 'Phiên bản',
+            loai_tai_lieu: 'Loại Tài liệu',
+            phong_ban_quan_ly: 'Phòng ban',
+            trang_thai: 'Trạng thái',
+            ngay_hieu_luc: 'Ngày hiệu lực',
+            ngay_het_hieu_luc: 'Ngày hết hiệu lực',
+        };
+
+        exportToCsv(dataToExport, headers, 'danh_sach_tai_lieu.csv');
+    };
+
+    const getRowClassName = (doc: DanhMucTaiLieu) => {
+        if (doc.trang_thai === DocumentStatus.HET_HIEU_LUC) {
+            return 'italic text-gray-500';
+        }
+        return '';
+    };
+
+    const renderActions = (doc: DanhMucTaiLieu) => (
+        <div className="flex items-center justify-end space-x-3">
+             <button
+                onClick={(e) => { e.stopPropagation(); handleOpenRelatedModal(doc); }}
+                className="text-gray-500 hover:text-gray-800"
+                title="Xem tài liệu liên quan"
+            >
+                <Icon type="link" className="h-5 w-5" />
+            </button>
+            {canUpdate && (
+                <button 
+                    onClick={(e) => { e.stopPropagation(); openModal(doc); }} 
+                    className="text-blue-600 hover:text-blue-800" 
+                    title="Chỉnh sửa"
+                >
+                    <Icon type="pencil" className="h-5 w-5" />
+                </button>
+            )}
+            {canDelete && (
+                <button 
+                    onClick={(e) => { e.stopPropagation(); setDeletingId(doc.ma_tl); }} 
+                    className="text-red-600 hover:text-red-800" 
+                    title="Xóa"
+                >
+                    <Icon type="trash" className="h-5 w-5" />
+                </button>
+            )}
+        </div>
+    );
+
+    const tableColumns = [
+        { header: getSortableHeader('Mã', 'ma_tl'), accessor: (item: DanhMucTaiLieu) => item.ma_tl },
+        { header: getSortableHeader('Tên tài liệu', 'ten_tai_lieu'), accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu, className: 'font-medium text-gray-900' },
+        { header: getSortableHeader('Số hiệu', 'so_hieu'), accessor: (item: DanhMucTaiLieu) => item.so_hieu },
+        { header: getSortableHeader('Phiên bản', 'phien_ban'), accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A' },
+        { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item: DanhMucTaiLieu) => <Badge status={item.trang_thai} /> },
+        { header: getSortableHeader('Phòng ban', 'phong_ban_quan_ly'), accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly) },
+        { 
+            header: getSortableHeader('Ngày hiệu lực', 'ngay_hieu_luc'), 
+            accessor: (item: DanhMucTaiLieu) => formatDateForDisplay(item.ngay_hieu_luc) 
+        },
+         { 
+            header: 'In',
+            accessor: (item: DanhMucTaiLieu) => {
+                if (item.file_pdf) {
+                    return (
+                        <a
+                            href={item.file_pdf}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full"
+                            title="Mở PDF để in"
+                        >
+                            <Icon type="printer" className="h-5 w-5" />
+                        </a>
+                    )
+                }
+                 return (
+                    <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF">
+                        <Icon type="printer" className="h-5 w-5" />
+                    </span>
+                );
+            },
+            className: 'text-center'
+        },
+    ];
+
+    return (
+        <div className="space-y-6">
+            <div className="sm:flex sm:items-center sm:justify-between no-print">
+                <div className="flex-1">
+                    <h1 className="text-3xl font-bold text-gray-900">Quản lý Tài liệu</h1>
+                    <p className="mt-1 text-sm text-gray-500">
+                        Tìm kiếm, lọc và quản lý tất cả các tài liệu trong hệ thống.
+                    </p>
+                </div>
+                <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex items-center gap-x-2">
+                    <ExportDropdown 
+                        onPrint={handlePrint}
+                        onExportCsv={handleExportCsv}
+                    />
+                    {canCreate && (
+                        <button
+                            type="button"
+                            onClick={() => openModal()}
+                            className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        >
+                            <Icon type="plus" className="-ml-1 mr-2 h-5 w-5" />
+                            Thêm Tài liệu
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            <Card>
+                <Card.Body>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 no-print">
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm theo tên, mã, số hiệu..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        />
+                        <select
+                            value={filters.status}
+                            onChange={(e) => setFilters(f => ({ ...f, status: e.target.value as DocumentStatus | '' | 'all_docs' }))}
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        >
+                            <option value="">Tài liệu đang dùng (Mặc định)</option>
+                            <option value="all_docs">Tất cả Trạng thái</option>
+                            {Object.values(DocumentStatus).map(s => <option key={s} value={s}>{translate(s)}</option>)}
+                        </select>
+                        <select
+                            value={filters.department}
+                            onChange={(e) => setFilters(f => ({ ...f, department: e.target.value }))}
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        >
+                            <option value="">Tất cả Phòng ban</option>
+                            {allData.phongBan.map(d => <option key={d.id} value={d.id}>{d.ten}</option>)}
+                        </select>
+                         <select
+                            value={filters.standard}
+                            onChange={(e) => setFilters(f => ({ ...f, standard: e.target.value }))}
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        >
+                            <option value="">Tất cả Tiêu chuẩn</option>
+                            {allData.tieuChuan.filter(s => s.is_active).map(s => <option key={s.id} value={s.id}>{s.ten_viet_tat ? `${s.ten_viet_tat} - ${s.ten}` : s.ten}</option>)}
+                        </select>
+                    </div>
+                </Card.Body>
+                <Table<DanhMucTaiLieu>
+                    columns={tableColumns}
+                    data={sortedDocuments}
+                    onRowClick={onViewDetails}
+                    rowClassName={getRowClassName}
+                    actions={renderActions}
+                />
+            </Card>
+
+             <Modal isOpen={isModalOpen} onClose={closeModal} title={editingDocument ? 'Chỉnh sửa Tài liệu' : 'Thêm mới Tài liệu'}>
+                 <DocumentForm
+                    id="document-form"
+                    onSubmit={handleSave}
+                    initialData={editingDocument}
+                    documents={allData.documents}
+                    categories={{
+                        nhanSu: allData.nhanSu,
+                        phongBan: allData.phongBan,
+                        loaiTaiLieu: allData.loaiTaiLieu,
+                        capDoTaiLieu: allData.capDoTaiLieu,
+                        mucDoBaoMat: allData.mucDoBaoMat,
+                        tieuChuan: allData.tieuChuan,
+                    }}
+                />
+                <Modal.Footer>
+                    <button type="button" onClick={closeModal} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
+                    <button 
+                        type="submit" 
+                        form="document-form"
+                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                    >
+                        Lưu
+                    </button>
+                </Modal.Footer>
+            </Modal>
+            
+             <Modal 
+                isOpen={!!relatedDoc} 
+                onClose={() => setRelatedDoc(null)} 
+                title={`Tài liệu liên quan cho: ${relatedDoc?.ten_tai_lieu || ''}`}
+            >
+                {relatedDoc && relatedDocsData && (
+                    <RelatedDocumentsView 
+                        selectedDoc={relatedDoc}
+                        relatedData={relatedDocsData}
+                        onViewDetailsClick={handleNavigateFromModal}
+                    />
+                )}
+            </Modal>
+
+            <ConfirmationDialog
+                isOpen={!!deletingId}
+                onClose={() => setDeletingId(null)}
+                onConfirm={handleDelete}
+                title={deletionInfo.title}
+                message={deletionInfo.message}
+            />
+
+        </div>
+    );
+};
+
+export default DocumentManagementPage;
