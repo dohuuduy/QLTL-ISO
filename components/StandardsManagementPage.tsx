@@ -8,8 +8,9 @@ import ConfirmationDialog from './ui/ConfirmationDialog';
 import StandardForm from './forms/StandardForm';
 import Badge from './ui/Badge';
 import { formatDateForDisplay } from '../utils/dateUtils';
-import { exportToCsv } from '../utils/exportUtils';
+import { exportToCsv, exportVisibleReportToWord } from '../utils/exportUtils';
 import ExportDropdown from './ui/ExportDropdown';
+import PrintReportLayout from './PrintReportLayout';
 
 interface StandardsManagementPageProps {
     standards: TieuChuan[];
@@ -49,6 +50,21 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
         }
         return sortableItems;
     }, [standards, sortConfig]);
+
+    const printLayoutProps = useMemo(() => {
+        return {
+            title: 'DANH SÁCH TIÊU CHUẨN',
+            filters: {}, // No filters on this page
+            columns: [
+                { header: 'Tên Tiêu chuẩn', accessor: (item: TieuChuan) => item.ten },
+                { header: 'Viết tắt', accessor: (item: TieuChuan) => item.ten_viet_tat || '' },
+                { header: 'Phiên bản', accessor: (item: TieuChuan) => item.phien_ban || '' },
+                { header: 'Ngày áp dụng', accessor: (item: TieuChuan) => formatDateForDisplay(item.ngay_ap_dung) },
+                { header: 'Trạng thái', accessor: (item: TieuChuan) => item.is_active !== false ? 'Hoạt động' : 'Vô hiệu hóa' },
+            ],
+            data: sortedStandards,
+        };
+    }, [sortedStandards]);
 
     const requestSort = (key: keyof TieuChuan) => {
         let direction: 'ascending' | 'descending' = 'ascending';
@@ -186,66 +202,74 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
 
         exportToCsv(dataToExport, headers, 'danh_sach_tieu_chuan.csv');
     };
+
+    const handleExportWord = () => {
+        exportVisibleReportToWord('danh_sach_tieu_chuan');
+    };
     
 
     return (
-        <div className="space-y-6">
-            <div className="sm:flex sm:items-center sm:justify-between no-print">
-                 <div className="flex-1">
-                    <h1 className="text-3xl font-bold text-gray-900">Quản lý Tiêu chuẩn</h1>
-                    <p className="mt-1 text-sm text-gray-500">
-                        Quản lý các tiêu chuẩn chất lượng, môi trường, an toàn và các tiêu chuẩn khác.
-                    </p>
+        <>
+            <PrintReportLayout {...printLayoutProps} currentUser={currentUser} />
+            <div className="space-y-6 no-print">
+                <div className="sm:flex sm:items-center sm:justify-between">
+                     <div className="flex-1">
+                        <h1 className="text-3xl font-bold text-gray-900">Quản lý Tiêu chuẩn</h1>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Quản lý các tiêu chuẩn chất lượng, môi trường, an toàn và các tiêu chuẩn khác.
+                        </p>
+                    </div>
+                     <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex items-center gap-x-2">
+                         <ExportDropdown 
+                            onPrint={handlePrint}
+                            onExportCsv={handleExportCsv}
+                            onExportWord={handleExportWord}
+                        />
+                        {canManage && (
+                            <button
+                                type="button"
+                                onClick={() => openModal()}
+                                className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            >
+                                <Icon type="plus" className="-ml-1 mr-2 h-5 w-5" />
+                                Thêm Tiêu chuẩn
+                            </button>
+                        )}
+                    </div>
                 </div>
-                 <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex items-center gap-x-2">
-                     <ExportDropdown 
-                        onPrint={handlePrint}
-                        onExportCsv={handleExportCsv}
+                
+                <Card>
+                    <Table<TieuChuan>
+                        columns={[
+                            { header: getSortableHeader('Tên Tiêu chuẩn', 'ten'), accessor: 'ten', className: 'font-medium text-gray-900' },
+                            { header: getSortableHeader('Viết tắt', 'ten_viet_tat'), accessor: 'ten_viet_tat' },
+                            { header: getSortableHeader('Phiên bản', 'phien_ban'), accessor: 'phien_ban' },
+                            { header: getSortableHeader('Ngày áp dụng', 'ngay_ap_dung'), accessor: (item) => formatDateForDisplay(item.ngay_ap_dung) },
+                            { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc_ap_dung'), accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc_ap_dung) },
+                            { header: 'Trạng thái', accessor: (item) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} /> },
+                        ]}
+                        data={sortedStandards}
+                        actions={canManage ? renderActions : undefined}
                     />
-                    {canManage && (
-                        <button
-                            type="button"
-                            onClick={() => openModal()}
-                            className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                        >
-                            <Icon type="plus" className="-ml-1 mr-2 h-5 w-5" />
-                            Thêm Tiêu chuẩn
-                        </button>
-                    )}
-                </div>
-            </div>
-            
-            <Card>
-                <Table<TieuChuan>
-                    columns={[
-                        { header: getSortableHeader('Tên Tiêu chuẩn', 'ten'), accessor: 'ten', className: 'font-medium text-gray-900' },
-                        { header: getSortableHeader('Viết tắt', 'ten_viet_tat'), accessor: 'ten_viet_tat' },
-                        { header: getSortableHeader('Phiên bản', 'phien_ban'), accessor: 'phien_ban' },
-                        { header: getSortableHeader('Ngày áp dụng', 'ngay_ap_dung'), accessor: (item) => formatDateForDisplay(item.ngay_ap_dung) },
-                        { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc_ap_dung'), accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc_ap_dung) },
-                        { header: 'Trạng thái', accessor: (item) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} /> },
-                    ]}
-                    data={sortedStandards}
-                    actions={canManage ? renderActions : undefined}
-                />
-            </Card>
+                </Card>
 
-            <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStandard ? 'Chỉnh sửa Tiêu chuẩn' : 'Thêm mới Tiêu chuẩn'}>
-                <StandardForm
-                    onSubmit={handleSave}
-                    onCancel={closeModal}
-                    initialData={editingStandard}
+                <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStandard ? 'Chỉnh sửa Tiêu chuẩn' : 'Thêm mới Tiêu chuẩn'}>
+                    <StandardForm
+                        onSubmit={handleSave}
+                        onCancel={closeModal}
+                        initialData={editingStandard}
+                    />
+                </Modal>
+                
+                <ConfirmationDialog
+                    isOpen={!!deletingId}
+                    onClose={() => setDeletingId(null)}
+                    onConfirm={handleDelete}
+                    title={deletionInfo.title}
+                    message={deletionInfo.message}
                 />
-            </Modal>
-            
-            <ConfirmationDialog
-                isOpen={!!deletingId}
-                onClose={() => setDeletingId(null)}
-                onConfirm={handleDelete}
-                title={deletionInfo.title}
-                message={deletionInfo.message}
-            />
-        </div>
+            </div>
+        </>
     );
 };
 

@@ -3,7 +3,7 @@ import type { DanhMucTaiLieu, PhienBanTaiLieu, PhongBan, TieuChuan, ReportType, 
 import { reportNavItems } from '../constants';
 import { formatDateForDisplay } from '../utils/dateUtils';
 import { translate } from '../utils/translations';
-import { exportReportToCsv } from '../utils/exportUtils';
+import { exportReportToCsv, exportVisibleReportToWord } from '../utils/exportUtils';
 
 import Card from './ui/Card';
 import Table from './ui/Table';
@@ -381,6 +381,29 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
         exportReportToCsv(options as any);
     }
     
+    const handleExportWord = (reportType: ReportType) => {
+        let filename = 'bao_cao';
+        switch(reportType) {
+            case 'by-department':
+                filename = `bao_cao_theo_phong_ban_${(phongBanMap.get(selectedDepartment) || 'chon_phong_ban')}`;
+                break;
+            case 'by-standard':
+                filename = `bao_cao_theo_tieu_chuan_${(tieuChuanMap.get(selectedStandard) || 'chon_tieu_chuan')}`;
+                break;
+            case 'relationships':
+                filename = `bao_cao_quan_he_tai_lieu_${selectedDocumentId}`;
+                break;
+            case 'expiring':
+                filename = `bao_cao_tai_lieu_sap_het_han`;
+                break;
+            case 'by-audit':
+                const auditName = auditReportData.audit?.ten_cuoc_audit || 'chon_audit';
+                filename = `bao_cao_audit_${auditName}`;
+                break;
+        }
+        exportVisibleReportToWord(filename.replace(/[^a-z0-9]/gi, '_').toLowerCase());
+    };
+
     const tabs = reportNavItems.map(({ key, title }) => ({ key, title }));
 
     const renderReportContent = () => {
@@ -396,7 +419,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                     {allData.phongBan.map(pb => <option key={pb.id} value={pb.id}>{pb.ten}</option>)}
                                 </select>
                             </div>
-                            {selectedDepartment && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-department')} />}
+                            {selectedDepartment && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-department')} onExportWord={() => handleExportWord('by-department')} />}
                         </div>
                         {selectedDepartment ? 
                                 departmentReportData.length > 0 ? (
@@ -443,7 +466,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                     {allData.tieuChuan.filter(tc => tc.is_active).map(tc => <option key={tc.id} value={tc.id}>{tc.ten}</option>)}
                                 </select>
                             </div>
-                            {selectedStandard && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-standard')} />}
+                            {selectedStandard && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-standard')} onExportWord={() => handleExportWord('by-standard')} />}
                         </div>
                         {selectedStandard ? 
                                 standardReportData.length > 0 ? (
@@ -490,7 +513,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                     {allData.documents.map(d => <option key={d.ma_tl} value={d.ma_tl}>{d.ten_tai_lieu} ({d.ma_tl})</option>)}
                                 </select>
                             </div>
-                            {selectedDocumentId && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('relationships')} />}
+                            {selectedDocumentId && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('relationships')} onExportWord={() => handleExportWord('relationships')} />}
                         </div>
                             {selectedDocumentId ? 
                                 relationshipReportData.length > 1 ? (
@@ -563,7 +586,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                     </div>
                                 </div>
                             </div>
-                            <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('expiring')} />
+                            <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('expiring')} onExportWord={() => handleExportWord('expiring')} />
                         </div>
                         {expiringReportData.length > 0 ? (
                             <Table<DanhMucTaiLieu & { daysRemaining: number }> data={expiringReportData} onRowClick={onViewDetails} columns={[
@@ -607,7 +630,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                     {allData.auditSchedules.map(a => <option key={a.id} value={a.id}>{`${a.ten_cuoc_audit} (${formatDateForDisplay(a.ngay_bat_dau)})`}</option>)}
                                 </select>
                             </div>
-                            {selectedAuditId && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-audit')} />}
+                            {selectedAuditId && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-audit')} onExportWord={() => handleExportWord('by-audit')} />}
                         </div>
                         {!selectedAuditId ? (
                             <NoData message="Vui lòng chọn một cuộc audit để xem báo cáo." />

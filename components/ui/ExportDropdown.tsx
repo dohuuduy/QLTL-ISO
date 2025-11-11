@@ -4,9 +4,10 @@ import { Icon } from './Icon';
 interface ExportDropdownProps {
     onPrint: () => void;
     onExportCsv: () => void;
+    onExportWord: () => void;
 }
 
-const ExportDropdown: React.FC<ExportDropdownProps> = ({ onPrint, onExportCsv }) => {
+const ExportDropdown: React.FC<ExportDropdownProps> = ({ onPrint, onExportCsv, onExportWord }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -51,11 +52,15 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({ onPrint, onExportCsv })
                     <div className="py-1" role="none">
                         <a href="#" onClick={(e) => { e.preventDefault(); handleAction(onPrint); }} className="text-gray-700 group flex items-center px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">
                             <Icon type="printer" className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-                            In danh sách
+                            In / Lưu dạng PDF
+                        </a>
+                        <a href="#" onClick={(e) => { e.preventDefault(); handleAction(onExportWord); }} className="text-gray-700 group flex items-center px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">
+                           <Icon type="document-text" className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+                           Xuất ra Word (.doc)
                         </a>
                         <a href="#" onClick={(e) => { e.preventDefault(); handleAction(onExportCsv); }} className="text-gray-700 group flex items-center px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">
                            <Icon type="document-arrow-down" className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-                           Xuất ra CSV (Excel)
+                           Xuất dữ liệu (CSV)
                         </a>
                     </div>
                 </div>

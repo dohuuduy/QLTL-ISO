@@ -28,7 +28,7 @@ import ConfirmationDialog from './ui/ConfirmationDialog';
 import DocumentForm from './forms/DocumentForm';
 import { formatDateForDisplay } from '../utils/dateUtils';
 import { translate } from '../utils/translations';
-import { exportToCsv } from '../utils/exportUtils';
+import { exportToCsv, exportVisibleReportToWord } from '../utils/exportUtils';
 import ExportDropdown from './ui/ExportDropdown';
 import RelatedDocumentsView from './RelatedDocumentsView';
 import Pagination from './ui/Pagination';
@@ -405,6 +405,10 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         exportToCsv(dataToExport, headers, 'danh_sach_tai_lieu.csv');
     };
 
+    const handleExportWord = () => {
+        exportVisibleReportToWord('danh_sach_tai_lieu');
+    };
+
     const getRowClassName = (doc: DanhMucTaiLieu) => {
         if (doc.trang_thai === DocumentStatus.HET_HIEU_LUC) {
             return 'italic text-gray-500';
@@ -511,6 +515,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                         <ExportDropdown 
                             onPrint={handlePrint}
                             onExportCsv={handleExportCsv}
+                            onExportWord={handleExportWord}
                         />
                         {canCreate && (
                             <button

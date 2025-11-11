@@ -127,3 +127,61 @@ export const exportReportToCsv = (options: ReportExportOptions) => {
         document.body.removeChild(link);
     }
 };
+
+
+/**
+ * Exports the content of the hidden print layout to a Word (.doc) file.
+ * @param filename The name of the file to download (without extension).
+ */
+export const exportVisibleReportToWord = (filename: string) => {
+    const source = document.querySelector('.print-only.print-report-container');
+    if (!source) {
+        alert("Không tìm thấy nội dung báo cáo để xuất. Vui lòng chọn bộ lọc để tạo báo cáo trước.");
+        return;
+    }
+
+    // Inline the print styles to ensure Word formats the document correctly.
+    const styles = `
+        <style>
+            .print-report-container { font-family: "Times New Roman", Times, serif; line-height: 1.5; color: #000; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header table, .header tr, .header td { border: none !important; }
+            .header .company { font-weight: bold; text-transform: uppercase; text-align: left; vertical-align: top; }
+            .header .nation { font-weight: bold; text-transform: uppercase; text-align: center; }
+            .header .motto { font-style: italic; font-weight: bold; text-align: center; }
+            .report-title { text-align: center; font-weight: bold; font-size: 16pt; text-transform: uppercase; margin: 30px 0 15px; }
+            .filter-section { margin: 15px 0; font-style: italic; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11pt; }
+            th, td { border: 1px solid black !important; padding: 6px 8px; text-align: left; }
+            th { text-align: center; font-weight: bold; }
+            .footer { margin-top: 30px; text-align: right; }
+            .signature { margin-top: 10px; text-align: center; width: 35%; margin-left: auto; }
+            .sign-title { font-weight: bold; text-transform: uppercase; }
+            .sign-note { font-style: italic; margin-top: 5px; }
+            .sign-name { margin-top: 60px; font-weight: bold; }
+        </style>
+    `;
+
+    const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' "+
+        "xmlns:w='urn:schemas-microsoft-com:office:word' "+
+        "xmlns='http://www.w3.org/TR/REC-html40'>"+
+        "<head><meta charset='utf-8'><title>Word Export</title>" + styles + "</head><body>";
+    
+    const footer = "</body></html>";
+    
+    const sourceHtml = source.innerHTML;
+    const fullHtml = header + sourceHtml + footer;
+
+    const blob = new Blob(['\ufeff', fullHtml], {
+        type: 'application/msword'
+    });
+    
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${filename}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+};

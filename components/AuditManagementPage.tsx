@@ -12,7 +12,8 @@ import { formatDateForDisplay } from '../utils/dateUtils';
 import { translate } from '../utils/translations';
 import DatePicker from './ui/DatePicker';
 import ExportDropdown from './ui/ExportDropdown';
-import { exportToCsv } from '../utils/exportUtils';
+import { exportToCsv, exportVisibleReportToWord } from '../utils/exportUtils';
+import PrintReportLayout from './PrintReportLayout';
 
 type AllData = {
     auditSchedules: LichAudit[];
@@ -89,6 +90,25 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
         }
         return sortableItems;
     }, [filteredAudits, sortConfig]);
+
+    const printLayoutProps = useMemo(() => {
+        const filters: Record<string, string> = {};
+        if (dateFilter.start) filters['Từ ngày'] = formatDateForDisplay(dateFilter.start);
+        if (dateFilter.end) filters['Đến ngày'] = formatDateForDisplay(dateFilter.end);
+        
+        return {
+            title: 'LỊCH SỬ AUDIT',
+            filters,
+            columns: [
+                 { header: 'Tên cuộc audit', accessor: (item: LichAudit) => item.ten_cuoc_audit },
+                 { header: 'Loại', accessor: (item: LichAudit) => item.loai_audit === 'internal' ? 'Nội bộ' : 'Bên ngoài' },
+                 { header: 'Trạng thái', accessor: (item: LichAudit) => translate(item.trang_thai) },
+                 { header: 'Ngày bắt đầu', accessor: (item: LichAudit) => formatDateForDisplay(item.ngay_bat_dau) },
+                 { header: 'Trưởng đoàn', accessor: (item: LichAudit) => danhGiaVienMap.get(item.chuyen_gia_danh_gia_truong_id) || '' },
+            ],
+            data: sortedAudits,
+        };
+    }, [sortedAudits, dateFilter, danhGiaVienMap]);
 
     const requestSort = (key: keyof LichAudit) => {
         let direction: 'ascending' | 'descending' = 'ascending';
@@ -179,6 +199,10 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
         exportToCsv(dataToExport, headers, 'lich_audit.csv');
     };
 
+    const handleExportWord = () => {
+        exportVisibleReportToWord('lich_audit');
+    };
+
     const canManage = currentUser.role === 'admin';
 
     const renderActions = (item: LichAudit) => (
@@ -202,117 +226,120 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
     }, [deletingId, allData.auditSchedules]);
 
     return (
-        <div className="space-y-6">
-            <div className="sm:flex sm:items-center sm:justify-between no-print">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Lịch Audit</h1>
-                    <p className="mt-1 text-sm text-gray-500">
-                        Lên kế hoạch và theo dõi các cuộc đánh giá nội bộ và bên ngoài.
-                    </p>
-                </div>
-                {canManage && (
-                    <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                        <button
-                            type="button"
-                            onClick={() => openModal()}
-                            className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none"
-                        >
-                            <Icon type="plus" className="-ml-1 mr-2 h-5 w-5" />
-                            Thêm Lịch Audit
-                        </button>
+        <>
+            <PrintReportLayout {...printLayoutProps} currentUser={currentUser} />
+            <div className="space-y-6 no-print">
+                <div className="sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Lịch Audit</h1>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Lên kế hoạch và theo dõi các cuộc đánh giá nội bộ và bên ngoài.
+                        </p>
                     </div>
-                )}
-            </div>
-            
-            <Card className="no-print">
-                <Card.Body>
-                     <div className="flex flex-wrap items-end gap-4">
-                        <div>
-                            <label htmlFor="start-date" className="block text-sm font-medium text-gray-900">Lọc từ ngày</label>
-                             <DatePicker
-                                id="start-date"
-                                value={dateFilter.start}
-                                onChange={(value) => handleDateFilterChange('start', value)}
-                                className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                        </div>
-                         <div>
-                            <label htmlFor="end-date" className="block text-sm font-medium text-gray-900">Đến ngày</label>
-                            <DatePicker
-                                id="end-date"
-                                value={dateFilter.end}
-                                onChange={(value) => handleDateFilterChange('end', value)}
-                                className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                        </div>
-                         {(dateFilter.start || dateFilter.end) && (
-                             <button
+                    {canManage && (
+                        <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+                            <button
                                 type="button"
-                                onClick={clearDateFilter}
-                                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+                                onClick={() => openModal()}
+                                className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none"
                             >
-                                Xóa bộ lọc
+                                <Icon type="plus" className="-ml-1 mr-2 h-5 w-5" />
+                                Thêm Lịch Audit
                             </button>
-                        )}
-                        <div className="ml-auto">
-                             <ExportDropdown onPrint={handlePrint} onExportCsv={handleExportCsv} />
                         </div>
-                    </div>
-                </Card.Body>
-            </Card>
+                    )}
+                </div>
+                
+                <Card>
+                    <Card.Body>
+                         <div className="flex flex-wrap items-end gap-4">
+                            <div>
+                                <label htmlFor="start-date" className="block text-sm font-medium text-gray-900">Lọc từ ngày</label>
+                                 <DatePicker
+                                    id="start-date"
+                                    value={dateFilter.start}
+                                    onChange={(value) => handleDateFilterChange('start', value)}
+                                    className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                />
+                            </div>
+                             <div>
+                                <label htmlFor="end-date" className="block text-sm font-medium text-gray-900">Đến ngày</label>
+                                <DatePicker
+                                    id="end-date"
+                                    value={dateFilter.end}
+                                    onChange={(value) => handleDateFilterChange('end', value)}
+                                    className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                />
+                            </div>
+                             {(dateFilter.start || dateFilter.end) && (
+                                 <button
+                                    type="button"
+                                    onClick={clearDateFilter}
+                                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+                                >
+                                    Xóa bộ lọc
+                                </button>
+                            )}
+                            <div className="ml-auto">
+                                 <ExportDropdown onPrint={handlePrint} onExportCsv={handleExportCsv} onExportWord={handleExportWord} />
+                            </div>
+                        </div>
+                    </Card.Body>
+                </Card>
 
-            <Card>
-                <Table<LichAudit>
-                    columns={[
-                        { header: getSortableHeader('Tên cuộc audit', 'ten_cuoc_audit'), accessor: 'ten_cuoc_audit', className: 'font-medium text-gray-900' },
-                        { header: getSortableHeader('Loại', 'loai_audit'), accessor: (item) => {
-                                if (item.loai_audit === 'external') {
-                                    const orgName = toChucDanhGiaMap.get(item.to_chuc_danh_gia_id || '');
-                                    return `Bên ngoài ${orgName ? `(${orgName})` : ''}`;
-                                }
-                                return 'Nội bộ';
-                            } 
-                        },
-                        { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item) => <Badge status={item.trang_thai} /> },
-                        { header: getSortableHeader('Ngày bắt đầu', 'ngay_bat_dau'), accessor: (item) => formatDateForDisplay(item.ngay_bat_dau) },
-                        { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc'), accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc) },
-                        { header: getSortableHeader('Trưởng đoàn', 'chuyen_gia_danh_gia_truong_id'), accessor: (item) => danhGiaVienMap.get(item.chuyen_gia_danh_gia_truong_id) },
-                    ]}
-                    data={sortedAudits}
-                    actions={canManage ? renderActions : undefined}
-                />
-            </Card>
+                <Card>
+                    <Table<LichAudit>
+                        columns={[
+                            { header: getSortableHeader('Tên cuộc audit', 'ten_cuoc_audit'), accessor: 'ten_cuoc_audit', className: 'font-medium text-gray-900' },
+                            { header: getSortableHeader('Loại', 'loai_audit'), accessor: (item) => {
+                                    if (item.loai_audit === 'external') {
+                                        const orgName = toChucDanhGiaMap.get(item.to_chuc_danh_gia_id || '');
+                                        return `Bên ngoài ${orgName ? `(${orgName})` : ''}`;
+                                    }
+                                    return 'Nội bộ';
+                                } 
+                            },
+                            { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item) => <Badge status={item.trang_thai} /> },
+                            { header: getSortableHeader('Ngày bắt đầu', 'ngay_bat_dau'), accessor: (item) => formatDateForDisplay(item.ngay_bat_dau) },
+                            { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc'), accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc) },
+                            { header: getSortableHeader('Trưởng đoàn', 'chuyen_gia_danh_gia_truong_id'), accessor: (item) => danhGiaVienMap.get(item.chuyen_gia_danh_gia_truong_id) },
+                        ]}
+                        data={sortedAudits}
+                        actions={canManage ? renderActions : undefined}
+                    />
+                </Card>
 
-            <Modal isOpen={isModalOpen} onClose={closeModal} title={editingAudit ? 'Chỉnh sửa Lịch Audit' : 'Thêm mới Lịch Audit'}>
-                 <AuditScheduleForm
-                    id="audit-form"
-                    onSubmit={handleSave}
-                    onCancel={closeModal}
-                    initialData={editingAudit}
-                    categories={{
-                        nhanSu: allData.nhanSu,
-                        tieuChuan: allData.tieuChuan,
-                        documents: allData.documents,
-                        danhGiaVien: allData.danhGiaVien,
-                        toChucDanhGia: allData.toChucDanhGia,
-                    }}
+                <Modal isOpen={isModalOpen} onClose={closeModal} title={editingAudit ? 'Chỉnh sửa Lịch Audit' : 'Thêm mới Lịch Audit'}>
+                     <AuditScheduleForm
+                        id="audit-form"
+                        onSubmit={handleSave}
+                        onCancel={closeModal}
+                        initialData={editingAudit}
+                        categories={{
+                            nhanSu: allData.nhanSu,
+                            tieuChuan: allData.tieuChuan,
+                            documents: allData.documents,
+                            danhGiaVien: allData.danhGiaVien,
+                            toChucDanhGia: allData.toChucDanhGia,
+                        }}
+                    />
+                     <Modal.Footer>
+                        <button type="button" onClick={closeModal} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
+                        <button type="submit" form="audit-form" className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Lưu
+                        </button>
+                    </Modal.Footer>
+                </Modal>
+                
+                <ConfirmationDialog
+                    isOpen={!!deletingId}
+                    onClose={() => setDeletingId(null)}
+                    onConfirm={handleDelete}
+                    title={deletionInfo.title}
+                    message={deletionInfo.message}
                 />
-                 <Modal.Footer>
-                    <button type="button" onClick={closeModal} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
-                    <button type="submit" form="audit-form" className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        Lưu
-                    </button>
-                </Modal.Footer>
-            </Modal>
-            
-            <ConfirmationDialog
-                isOpen={!!deletingId}
-                onClose={() => setDeletingId(null)}
-                onConfirm={handleDelete}
-                title={deletionInfo.title}
-                message={deletionInfo.message}
-            />
-        </div>
+            </div>
+        </>
     );
 };
 
