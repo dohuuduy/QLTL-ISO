@@ -243,7 +243,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                 <span>{label}</span>
                 <Icon 
                     type={sortIcon} 
-                    className={`h-4 w-4 transition-opacity ${isSorting ? 'opacity-100 text-stone-700' : 'opacity-0 text-stone-400 group-hover:opacity-100'}`} 
+                    className={`h-4 w-4 transition-opacity ${isSorting ? 'opacity-100 text-gray-700' : 'opacity-0 text-gray-400 group-hover:opacity-100'}`} 
                 />
             </button>
         );
@@ -411,7 +411,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
 
     const getRowClassName = (doc: DanhMucTaiLieu) => {
         if (doc.trang_thai === DocumentStatus.HET_HIEU_LUC) {
-            return 'italic text-stone-500';
+            return 'italic text-gray-500';
         }
         return '';
     };
@@ -420,7 +420,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         <div className="flex items-center justify-end space-x-3">
              <button
                 onClick={(e) => { e.stopPropagation(); handleOpenRelatedModal(doc); }}
-                className="text-stone-500 hover:text-stone-800"
+                className="text-gray-500 hover:text-gray-800"
                 title="Xem tài liệu liên quan"
             >
                 <Icon type="link" className="h-5 w-5" />
@@ -428,7 +428,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             {canUpdate && (
                 <button 
                     onClick={(e) => { e.stopPropagation(); openModal(doc); }} 
-                    className="text-rose-600 hover:text-rose-800" 
+                    className="text-blue-600 hover:text-blue-800" 
                     title="Chỉnh sửa"
                 >
                     <Icon type="pencil" className="h-5 w-5" />
@@ -448,7 +448,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
 
     const tableColumns = [
         { 
-            header: <Icon type="star" className="h-5 w-5 text-stone-500 mx-auto" />,
+            header: <Icon type="star" className="h-5 w-5 text-gray-500 mx-auto" />,
             accessor: (item: DanhMucTaiLieu) => (
                 <button 
                     onClick={(e) => { e.stopPropagation(); onToggleBookmark(item.ma_tl); }}
@@ -457,14 +457,14 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                 >
                     <Icon 
                         type={item.is_bookmarked ? 'star-solid' : 'star'} 
-                        className={`h-5 w-5 ${item.is_bookmarked ? 'text-amber-400' : 'text-stone-300 hover:text-amber-400'}`} 
+                        className={`h-5 w-5 ${item.is_bookmarked ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}`} 
                     />
                 </button>
             ),
             className: 'w-12'
         },
         { header: getSortableHeader('Mã', 'ma_tl'), accessor: (item: DanhMucTaiLieu) => item.ma_tl },
-        { header: getSortableHeader('Tên tài liệu', 'ten_tai_lieu'), accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu, className: 'font-medium text-stone-900' },
+        { header: getSortableHeader('Tên tài liệu', 'ten_tai_lieu'), accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu, className: 'font-medium text-gray-900' },
         { header: getSortableHeader('Số hiệu', 'so_hieu'), accessor: (item: DanhMucTaiLieu) => item.so_hieu },
         { header: getSortableHeader('Phiên bản', 'phien_ban'), accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A' },
         { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item: DanhMucTaiLieu) => <Badge status={item.trang_thai} /> },
@@ -483,7 +483,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center justify-center text-stone-500 hover:text-rose-700 w-full"
+                            className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full"
                             title="Mở PDF để in"
                         >
                             <Icon type="printer" className="h-5 w-5" />
@@ -491,7 +491,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                     )
                 }
                  return (
-                    <span className="inline-flex items-center justify-center text-stone-300 w-full cursor-not-allowed" title="Không có file PDF">
+                    <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF">
                         <Icon type="printer" className="h-5 w-5" />
                     </span>
                 );
@@ -506,8 +506,8 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             <div className="space-y-6 no-print">
                 <div className="sm:flex sm:items-center sm:justify-between">
                     <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-stone-900">Quản lý Tài liệu</h1>
-                        <p className="mt-1 text-sm text-stone-500">
+                        <h1 className="text-3xl font-bold text-gray-900">Quản lý Tài liệu</h1>
+                        <p className="mt-1 text-sm text-gray-500">
                             Tìm kiếm, lọc và quản lý tất cả các tài liệu trong hệ thống.
                         </p>
                     </div>
@@ -521,7 +521,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             <button
                                 type="button"
                                 onClick={() => openModal()}
-                                className="btn-primary"
+                                className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                             >
                                 <Icon type="plus" className="-ml-1 mr-2 h-5 w-5" />
                                 Thêm Tài liệu
@@ -539,13 +539,13 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                     placeholder="Tìm kiếm theo tên, mã, số hiệu..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="block w-full rounded-md border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-200 shadow-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 sm:text-sm dark:placeholder-stone-400"
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                 />
                             </div>
                             <select
                                 value={filters.status}
                                 onChange={(e) => setFilters(f => ({ ...f, status: e.target.value as DocumentStatus | '' | 'all_docs' }))}
-                                className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-200 shadow-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 sm:text-sm"
+                                className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                             >
                                 <option value="">Tài liệu đang dùng (Mặc định)</option>
                                 <option value="all_docs">Tất cả Trạng thái</option>
@@ -554,7 +554,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             <select
                                 value={filters.department}
                                 onChange={(e) => setFilters(f => ({ ...f, department: e.target.value }))}
-                                className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-200 shadow-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 sm:text-sm"
+                                className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                             >
                                 <option value="">Tất cả Phòng ban</option>
                                 {allData.phongBan.map(d => <option key={d.id} value={d.id}>{d.ten}</option>)}
@@ -562,7 +562,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             <select
                                 value={filters.standard}
                                 onChange={(e) => setFilters(f => ({ ...f, standard: e.target.value }))}
-                                className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-200 shadow-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 sm:text-sm"
+                                className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                             >
                                 <option value="">Tất cả Tiêu chuẩn</option>
                                 {allData.tieuChuan.filter(s => s.is_active).map(s => <option key={s.id} value={s.id}>{s.ten_viet_tat ? `${s.ten_viet_tat} - ${s.ten}` : s.ten}</option>)}
@@ -571,8 +571,8 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                 onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
                                 className={`inline-flex items-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ${
                                     showBookmarkedOnly
-                                        ? 'bg-amber-50 text-amber-800 ring-amber-300'
-                                        : 'bg-white text-stone-900 ring-stone-300 hover:bg-stone-50'
+                                        ? 'bg-yellow-50 text-yellow-800 ring-yellow-300'
+                                        : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50'
                                 }`}
                             >
                                 <Icon type={showBookmarkedOnly ? 'star-solid' : 'star'} className="-ml-0.5 h-4 w-4" />
@@ -593,13 +593,13 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             totalPages={totalPages}
                             onPageChange={setCurrentPage}
                         >
-                            <div className="flex items-center gap-2 text-sm text-stone-700">
+                            <div className="flex items-center gap-2 text-sm text-gray-700">
                                 <span>Hiển thị</span>
                                 <select
                                     id="items-per-page"
                                     value={itemsPerPage}
                                     onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                                    className="rounded-md border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-200 shadow-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 sm:text-sm py-1"
+                                    className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-1"
                                 >
                                     <option value={10}>10</option>
                                     <option value={20}>20</option>
@@ -630,11 +630,11 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                         }}
                     />
                     <Modal.Footer>
-                        <button type="button" onClick={closeModal} className="btn-secondary">Hủy</button>
+                        <button type="button" onClick={closeModal} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
                         <button 
                             type="submit" 
                             form="document-form"
-                            className="ml-3 btn-primary"
+                            className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300 disabled:cursor-not-allowed"
                         >
                             Lưu
                         </button>

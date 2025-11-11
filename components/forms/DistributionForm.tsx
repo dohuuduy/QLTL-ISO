@@ -3,7 +3,6 @@ import type { PhanPhoiTaiLieu, PhienBanTaiLieu, NhanSu, PhongBan } from '../../t
 import { DistributionStatus } from '../../constants';
 import { translate } from '../../utils/translations';
 import DatePicker from '../ui/DatePicker';
-import Modal from '../ui/Modal';
 
 interface DistributionFormProps {
     onSubmit: (data: any) => void;
@@ -67,8 +66,8 @@ const DistributionForm: React.FC<DistributionFormProps> = ({ onSubmit, onCancel,
     const activeOrCurrentlySelected = (list: any[], selectedId: string) => 
         list.filter(item => item.is_active !== false || item.id === selectedId);
 
-    const inputStyles = "mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900/50 py-2.5 px-3 text-gray-900 dark:text-slate-200 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm placeholder-gray-400 dark:placeholder-slate-500";
-    const labelStyles = "block text-sm font-medium text-gray-900 dark:text-slate-200";
+    const inputStyles = "mt-1 block w-full rounded-md border-gray-300 bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
+    const labelStyles = "block text-sm font-medium text-gray-900";
 
     return (
         <form onSubmit={handleSubmit}>
@@ -137,10 +136,11 @@ const DistributionForm: React.FC<DistributionFormProps> = ({ onSubmit, onCancel,
                     </>
                 )}
             </div>
-            <Modal.Footer>
-                <button type="button" onClick={onCancel} className="btn-secondary">Hủy</button>
-                <button type="submit" className="btn-primary ml-3">Lưu</button>
-            </Modal.Footer>
+            
+            <div className="bg-slate-50 px-6 py-4 flex justify-end gap-x-3 rounded-b-xl border-t border-gray-200">
+                <button type="button" onClick={onCancel} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
+                <button type="submit" className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Lưu</button>
+            </div>
         </form>
     );
 };

@@ -275,8 +275,8 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
     }, [categories.tieuChuan, formData.iso_tham_chieu, isoRefSearchTerm]);
 
 
-    const inputStyles = "mt-1 block w-full rounded-md bg-white dark:bg-slate-900/50 py-2.5 px-3 text-gray-900 dark:text-slate-200 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm placeholder-gray-400 dark:placeholder-slate-500";
-    const labelStyles = "block text-sm font-medium text-gray-900 dark:text-slate-200";
+    const inputStyles = "mt-1 block w-full rounded-md bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
+    const labelStyles = "block text-sm font-medium text-gray-900";
 
     const TabButton: React.FC<{ tabId: 'basic' | 'references'; title: string }> = ({ tabId, title }) => (
         <button
@@ -284,8 +284,8 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
             onClick={() => setActiveTab(tabId)}
             className={`whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm ${
                 activeTab === tabId
-                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
-                    : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:border-gray-300 dark:hover:border-slate-600'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
         >
             {title}
@@ -294,7 +294,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
 
     return (
         <form id={id} onSubmit={handleSubmit} noValidate>
-             <div className="border-b border-gray-200 dark:border-slate-700">
+             <div className="border-b border-gray-200">
                 <nav className="-mb-px flex space-x-6 px-6" aria-label="Tabs">
                     <TabButton tabId="basic" title="Thông tin Cơ bản" />
                     <TabButton tabId="references" title="Tham chiếu & Liên kết" />
@@ -306,17 +306,17 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                         <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                             <div className="sm:col-span-4">
                                 <label htmlFor="ten_tai_lieu" className={labelStyles}>Tên tài liệu</label>
-                                <input type="text" name="ten_tai_lieu" id="ten_tai_lieu" value={formData.ten_tai_lieu} onChange={handleChange} required className={`${inputStyles} ${errors.ten_tai_lieu ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`} placeholder="VD: Quy trình Quản lý Nhà thầu phụ" />
+                                <input type="text" name="ten_tai_lieu" id="ten_tai_lieu" value={formData.ten_tai_lieu} onChange={handleChange} required className={`${inputStyles} ${errors.ten_tai_lieu ? 'border-red-500' : 'border-gray-300'}`} placeholder="VD: Quy trình Quản lý Nhà thầu phụ" />
                                 {errors.ten_tai_lieu && <p className="mt-1 text-sm text-red-600">{errors.ten_tai_lieu}</p>}
                             </div>
                             <div className="sm:col-span-2">
                                 <label htmlFor="so_hieu" className={labelStyles}>Số hiệu (tùy chọn)</label>
-                                <input type="text" name="so_hieu" id="so_hieu" value={formData.so_hieu} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} placeholder="VD: QT-01-HCNS" />
+                                <input type="text" name="so_hieu" id="so_hieu" value={formData.so_hieu} onChange={handleChange} className={`${inputStyles} border-gray-300`} placeholder="VD: QT-01-HCNS" />
                             </div>
 
                             <div className="sm:col-span-3">
                                 <label htmlFor="loai_tai_lieu" className={labelStyles}>Loại tài liệu</label>
-                                <select id="loai_tai_lieu" name="loai_tai_lieu" value={formData.loai_tai_lieu} onChange={handleChange} required className={`${inputStyles} ${errors.loai_tai_lieu ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`}>
+                                <select id="loai_tai_lieu" name="loai_tai_lieu" value={formData.loai_tai_lieu} onChange={handleChange} required className={`${inputStyles} ${errors.loai_tai_lieu ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn loại</option>
                                     {activeOrCurrentlySelected(categories.loaiTaiLieu, formData.loai_tai_lieu).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
                                 </select>
@@ -324,7 +324,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                             </div>
                             <div className="sm:col-span-3">
                                 <label htmlFor="phong_ban_quan_ly" className={labelStyles}>Phòng ban quản lý</label>
-                                <select id="phong_ban_quan_ly" name="phong_ban_quan_ly" value={formData.phong_ban_quan_ly} onChange={handleChange} required className={`${inputStyles} ${errors.phong_ban_quan_ly ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`}>
+                                <select id="phong_ban_quan_ly" name="phong_ban_quan_ly" value={formData.phong_ban_quan_ly} onChange={handleChange} required className={`${inputStyles} ${errors.phong_ban_quan_ly ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn phòng ban</option>
                                     {activeOrCurrentlySelected(categories.phongBan, formData.phong_ban_quan_ly).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
                                 </select>
@@ -333,7 +333,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                             
                             <div className="sm:col-span-3">
                                 <label htmlFor="cap_do" className={labelStyles}>Cấp độ</label>
-                                <select id="cap_do" name="cap_do" value={formData.cap_do} onChange={handleChange} required className={`${inputStyles} ${errors.cap_do ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`}>
+                                <select id="cap_do" name="cap_do" value={formData.cap_do} onChange={handleChange} required className={`${inputStyles} ${errors.cap_do ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn cấp độ</option>
                                     {activeOrCurrentlySelected(categories.capDoTaiLieu, formData.cap_do).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
                                 </select>
@@ -341,7 +341,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                             </div>
                             <div className="sm:col-span-3">
                                 <label htmlFor="muc_do_bao_mat" className={labelStyles}>Mức độ bảo mật</label>
-                                <select id="muc_do_bao_mat" name="muc_do_bao_mat" value={formData.muc_do_bao_mat} onChange={handleChange} required className={`${inputStyles} ${errors.muc_do_bao_mat ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`}>
+                                <select id="muc_do_bao_mat" name="muc_do_bao_mat" value={formData.muc_do_bao_mat} onChange={handleChange} required className={`${inputStyles} ${errors.muc_do_bao_mat ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn mức độ</option>
                                     {activeOrCurrentlySelected(categories.mucDoBaoMat, formData.muc_do_bao_mat).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
                                 </select>
@@ -350,17 +350,17 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
 
                             <div className="sm:col-span-6">
                                 <label htmlFor="mo_ta_tom_tat" className={labelStyles}>Mô tả tóm tắt</label>
-                                <textarea id="mo_ta_tom_tat" name="mo_ta_tom_tat" rows={3} value={formData.mo_ta_tom_tat} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} placeholder="Mô tả ngắn gọn về mục đích và nội dung của tài liệu..." />
+                                <textarea id="mo_ta_tom_tat" name="mo_ta_tom_tat" rows={3} value={formData.mo_ta_tom_tat} onChange={handleChange} className={`${inputStyles} border-gray-300`} placeholder="Mô tả ngắn gọn về mục đích và nội dung của tài liệu..." />
                             </div>
                             
                             <div className="sm:col-span-6">
                                 <label htmlFor="pham_vi_ap_dung" className={labelStyles}>Phạm vi áp dụng (phân cách bởi dấu phẩy)</label>
-                                <input type="text" name="pham_vi_ap_dung" id="pham_vi_ap_dung" value={formData.pham_vi_ap_dung.join(', ')} onChange={handleArrayChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} placeholder="VD: Nhà máy A, Khối văn phòng" />
+                                <input type="text" name="pham_vi_ap_dung" id="pham_vi_ap_dung" value={formData.pham_vi_ap_dung.join(', ')} onChange={handleArrayChange} className={`${inputStyles} border-gray-300`} placeholder="VD: Nhà máy A, Khối văn phòng" />
                             </div>
 
                             <div className="sm:col-span-2">
                                 <label htmlFor="nguoi_soan_thao" className={labelStyles}>Người soạn thảo</label>
-                                <select id="nguoi_soan_thao" name="nguoi_soan_thao" value={formData.nguoi_soan_thao} onChange={handleChange} required className={`${inputStyles} ${errors.nguoi_soan_thao ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`}>
+                                <select id="nguoi_soan_thao" name="nguoi_soan_thao" value={formData.nguoi_soan_thao} onChange={handleChange} required className={`${inputStyles} ${errors.nguoi_soan_thao ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn người</option>
                                     {categories.nhanSu.filter(u => u.is_active !== false || u.id === formData.nguoi_soan_thao).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
                                 </select>
@@ -368,7 +368,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                             </div>
                             <div className="sm:col-span-2">
                                 <label htmlFor="nguoi_ra_soat" className={labelStyles}>Người rà soát</label>
-                                <select id="nguoi_ra_soat" name="nguoi_ra_soat" value={formData.nguoi_ra_soat} onChange={handleChange} required className={`${inputStyles} ${errors.nguoi_ra_soat ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`}>
+                                <select id="nguoi_ra_soat" name="nguoi_ra_soat" value={formData.nguoi_ra_soat} onChange={handleChange} required className={`${inputStyles} ${errors.nguoi_ra_soat ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn người</option>
                                     {categories.nhanSu.filter(u => u.is_active !== false || u.id === formData.nguoi_ra_soat).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
                                 </select>
@@ -376,7 +376,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                             </div>
                             <div className="sm:col-span-2">
                                 <label htmlFor="nguoi_phe_duyet" className={labelStyles}>Người phê duyệt</label>
-                                <select id="nguoi_phe_duyet" name="nguoi_phe_duyet" value={formData.nguoi_phe_duyet} onChange={handleChange} required className={`${inputStyles} ${errors.nguoi_phe_duyet ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`}>
+                                <select id="nguoi_phe_duyet" name="nguoi_phe_duyet" value={formData.nguoi_phe_duyet} onChange={handleChange} required className={`${inputStyles} ${errors.nguoi_phe_duyet ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn người</option>
                                     {categories.nhanSu.filter(u => u.is_active !== false || u.id === formData.nguoi_phe_duyet).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
                                 </select>
@@ -385,17 +385,17 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                             
                             <div className="sm:col-span-2">
                                 <label htmlFor="ngay_ban_hanh" className={labelStyles}>Ngày ban hành</label>
-                                <DatePicker id="ngay_ban_hanh" value={formData.ngay_ban_hanh} onChange={value => handleDateChange('ngay_ban_hanh', value)} required className={`${inputStyles} ${errors.ngay_ban_hanh ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`} />
+                                <DatePicker id="ngay_ban_hanh" value={formData.ngay_ban_hanh} onChange={value => handleDateChange('ngay_ban_hanh', value)} required className={`${inputStyles} ${errors.ngay_ban_hanh ? 'border-red-500' : 'border-gray-300'}`} />
                                 {errors.ngay_ban_hanh && <p className="mt-1 text-sm text-red-600">{errors.ngay_ban_hanh}</p>}
                             </div>
                             <div className="sm:col-span-2">
                                 <label htmlFor="ngay_hieu_luc" className={labelStyles}>Ngày hiệu lực</label>
-                                <DatePicker id="ngay_hieu_luc" value={formData.ngay_hieu_luc} onChange={value => handleDateChange('ngay_hieu_luc', value)} required className={`${inputStyles} ${errors.ngay_hieu_luc || dateError ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`} />
+                                <DatePicker id="ngay_hieu_luc" value={formData.ngay_hieu_luc} onChange={value => handleDateChange('ngay_hieu_luc', value)} required className={`${inputStyles} ${errors.ngay_hieu_luc || dateError ? 'border-red-500' : 'border-gray-300'}`} />
                                 {errors.ngay_hieu_luc && <p className="mt-1 text-sm text-red-600">{errors.ngay_hieu_luc}</p>}
                             </div>
                             <div className="sm:col-span-2">
                                 <label htmlFor="ngay_het_hieu_luc" className={labelStyles}>Ngày hết hiệu lực (tùy chọn)</label>
-                                <DatePicker id="ngay_het_hieu_luc" value={formData.ngay_het_hieu_luc} onChange={value => handleDateChange('ngay_het_hieu_luc', value)} className={`${inputStyles} ${dateError ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`} />
+                                <DatePicker id="ngay_het_hieu_luc" value={formData.ngay_het_hieu_luc} onChange={value => handleDateChange('ngay_het_hieu_luc', value)} className={`${inputStyles} ${dateError ? 'border-red-500' : 'border-gray-300'}`} />
                                 {dateError && <p className="mt-2 text-sm text-red-600">{dateError}</p>}
                             </div>
                         </div>
@@ -407,7 +407,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                         <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                              <div className="sm:col-span-6">
                                 <label htmlFor="ma_tl_cha" className={labelStyles}>Tài liệu cha (tùy chọn)</label>
-                                <select id="ma_tl_cha" name="ma_tl_cha" value={formData.ma_tl_cha || ''} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`}>
+                                <select id="ma_tl_cha" name="ma_tl_cha" value={formData.ma_tl_cha || ''} onChange={handleChange} className={`${inputStyles} border-gray-300`}>
                                     <option value="">Không có</option>
                                     {potentialParentDocuments.map(doc => <option key={doc.ma_tl} value={doc.ma_tl}>{doc.ten_tai_lieu} ({doc.ma_tl})</option>)}
                                 </select>
@@ -415,7 +415,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
 
                              <div className="sm:col-span-6">
                                 <fieldset>
-                                    <legend className="text-base font-medium text-gray-900 dark:text-slate-200">Tham chiếu</legend>
+                                    <legend className="text-base font-medium text-gray-900">Tham chiếu</legend>
                                     <div className="mt-4 space-y-4">
                                         <div ref={standardsDropdownRef} className="relative">
                                             <label className={labelStyles}>Tiêu chuẩn áp dụng</label>
@@ -423,19 +423,19 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsStandardsDropdownOpen(prev => !prev)}
-                                                    className={`${inputStyles} border-gray-300 dark:border-slate-600 flex items-center justify-between text-left`}
+                                                    className={`${inputStyles} border-gray-300 flex items-center justify-between text-left`}
                                                 >
                                                     <div className="flex flex-wrap gap-2 items-center min-h-[22px]">
                                                         {(formData.tieu_chuan_ids || []).length > 0 ? (
                                                             (formData.tieu_chuan_ids || []).map(id => {
                                                                 const standard = categories.tieuChuan.find(tc => tc.id === id);
                                                                 return (
-                                                                    <span key={id} className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-100 dark:bg-indigo-900/50 px-2 py-1 text-xs font-medium text-indigo-800 dark:text-indigo-300">
+                                                                    <span key={id} className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
                                                                         {getStandardDisplay(standard)}
                                                                         <button
                                                                             type="button"
                                                                             onClick={(e) => { e.stopPropagation(); handleRemoveStandard(id); }}
-                                                                            className="h-3.5 w-3.5 rounded-full text-indigo-600 hover:bg-indigo-200 dark:hover:bg-indigo-800/50"
+                                                                            className="h-3.5 w-3.5 rounded-full text-blue-600 hover:bg-blue-200"
                                                                         >
                                                                             <Icon type="x-mark" className="h-3.5 w-3.5" />
                                                                         </button>
@@ -443,21 +443,21 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                                                 );
                                                             })
                                                         ) : (
-                                                            <span className="text-gray-400 dark:text-slate-500">Chọn tiêu chuẩn...</span>
+                                                            <span className="text-gray-400">Chọn tiêu chuẩn...</span>
                                                         )}
                                                     </div>
                                                     <Icon type="chevron-down" className="h-5 w-5 text-gray-400" />
                                                 </button>
                                                 
                                                 {isStandardsDropdownOpen && (
-                                                    <div className="absolute z-10 mt-1 w-full rounded-md bg-white dark:bg-slate-800 shadow-lg border border-gray-200 dark:border-slate-600 max-h-60 overflow-hidden flex flex-col">
-                                                        <div className="p-2 border-b border-gray-200 dark:border-slate-700">
+                                                    <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-hidden flex flex-col">
+                                                        <div className="p-2 border-b border-gray-200">
                                                             <input
                                                                 type="text"
                                                                 value={standardsSearchTerm}
                                                                 onChange={(e) => setStandardsSearchTerm(e.target.value)}
                                                                 placeholder="Tìm kiếm tiêu chuẩn..."
-                                                                className="w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-1.5 px-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                                                className="w-full rounded-md border-gray-300 py-1.5 px-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                                             />
                                                         </div>
                                                         <ul className="overflow-y-auto">
@@ -466,13 +466,13 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                                                     <li
                                                                         key={tc.id}
                                                                         onClick={() => handleSelectStandard(tc.id)}
-                                                                        className="px-3 py-2 text-sm text-gray-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                                                                        className="px-3 py-2 text-sm text-gray-800 hover:bg-slate-100 cursor-pointer"
                                                                     >
                                                                         {getStandardDisplay(tc)}
                                                                     </li>
                                                                 ))
                                                             ) : (
-                                                                <li className="px-3 py-2 text-sm text-gray-500 dark:text-slate-400">Không tìm thấy tiêu chuẩn.</li>
+                                                                <li className="px-3 py-2 text-sm text-gray-500">Không tìm thấy tiêu chuẩn.</li>
                                                             )}
                                                         </ul>
                                                     </div>
@@ -486,19 +486,19 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsIsoRefDropdownOpen(prev => !prev)}
-                                                    className={`${inputStyles} border-gray-300 dark:border-slate-600 flex items-center justify-between text-left`}
+                                                    className={`${inputStyles} border-gray-300 flex items-center justify-between text-left`}
                                                 >
                                                     <div className="flex flex-wrap gap-2 items-center min-h-[22px]">
                                                         {(formData.iso_tham_chieu || []).length > 0 ? (
                                                             (formData.iso_tham_chieu || []).map(id => {
                                                                 const standard = categories.tieuChuan.find(tc => tc.id === id);
                                                                 return (
-                                                                    <span key={id} className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-100 dark:bg-indigo-900/50 px-2 py-1 text-xs font-medium text-indigo-800 dark:text-indigo-300">
+                                                                    <span key={id} className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
                                                                         {getStandardDisplay(standard)}
                                                                         <button
                                                                             type="button"
                                                                             onClick={(e) => { e.stopPropagation(); handleRemoveIsoRef(id); }}
-                                                                            className="h-3.5 w-3.5 rounded-full text-indigo-600 hover:bg-indigo-200 dark:hover:bg-indigo-800/50"
+                                                                            className="h-3.5 w-3.5 rounded-full text-blue-600 hover:bg-blue-200"
                                                                         >
                                                                             <Icon type="x-mark" className="h-3.5 w-3.5" />
                                                                         </button>
@@ -506,21 +506,21 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                                                 );
                                                             })
                                                         ) : (
-                                                            <span className="text-gray-400 dark:text-slate-500">Chọn ISO tham chiếu...</span>
+                                                            <span className="text-gray-400">Chọn ISO tham chiếu...</span>
                                                         )}
                                                     </div>
                                                     <Icon type="chevron-down" className="h-5 w-5 text-gray-400" />
                                                 </button>
                                                 
                                                 {isIsoRefDropdownOpen && (
-                                                    <div className="absolute z-10 mt-1 w-full rounded-md bg-white dark:bg-slate-800 shadow-lg border border-gray-200 dark:border-slate-600 max-h-60 overflow-hidden flex flex-col">
-                                                        <div className="p-2 border-b border-gray-200 dark:border-slate-700">
+                                                    <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-hidden flex flex-col">
+                                                        <div className="p-2 border-b border-gray-200">
                                                             <input
                                                                 type="text"
                                                                 value={isoRefSearchTerm}
                                                                 onChange={(e) => setIsoRefSearchTerm(e.target.value)}
                                                                 placeholder="Tìm kiếm tiêu chuẩn..."
-                                                                className="w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-1.5 px-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                                                className="w-full rounded-md border-gray-300 py-1.5 px-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                                             />
                                                         </div>
                                                         <ul className="overflow-y-auto">
@@ -529,13 +529,13 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                                                     <li
                                                                         key={tc.id}
                                                                         onClick={() => handleSelectIsoRef(tc.id)}
-                                                                        className="px-3 py-2 text-sm text-gray-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                                                                        className="px-3 py-2 text-sm text-gray-800 hover:bg-slate-100 cursor-pointer"
                                                                     >
                                                                         {getStandardDisplay(tc)}
                                                                     </li>
                                                                 ))
                                                             ) : (
-                                                                <li className="px-3 py-2 text-sm text-gray-500 dark:text-slate-400">Không tìm thấy tiêu chuẩn.</li>
+                                                                <li className="px-3 py-2 text-sm text-gray-500">Không tìm thấy tiêu chuẩn.</li>
                                                             )}
                                                         </ul>
                                                     </div>
@@ -545,11 +545,11 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
 
                                         <div>
                                             <label htmlFor="tieu_chuan_khac" className={labelStyles}>Tiêu chuẩn khác (phân cách bởi dấu phẩy)</label>
-                                            <input type="text" name="tieu_chuan_khac" id="tieu_chuan_khac" value={formData.tieu_chuan_khac.join(', ')} onChange={handleArrayChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} />
+                                            <input type="text" name="tieu_chuan_khac" id="tieu_chuan_khac" value={formData.tieu_chuan_khac.join(', ')} onChange={handleArrayChange} className={`${inputStyles} border-gray-300`} />
                                         </div>
                                         <div>
                                             <label htmlFor="phap_ly_tham_chieu" className={labelStyles}>Pháp lý tham chiếu (phân cách bởi dấu phẩy)</label>
-                                            <input type="text" name="phap_ly_tham_chieu" id="phap_ly_tham_chieu" value={formData.phap_ly_tham_chieu.join(', ')} onChange={handleArrayChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} />
+                                            <input type="text" name="phap_ly_tham_chieu" id="phap_ly_tham_chieu" value={formData.phap_ly_tham_chieu.join(', ')} onChange={handleArrayChange} className={`${inputStyles} border-gray-300`} />
                                         </div>
                                     </div>
                                 </fieldset>
@@ -557,20 +557,20 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                             
                              <div className="sm:col-span-6">
                                 <fieldset>
-                                    <legend className="text-base font-medium text-gray-900 dark:text-slate-200">Tập tin đính kèm</legend>
+                                    <legend className="text-base font-medium text-gray-900">Tập tin đính kèm</legend>
                                      <div className="mt-4 space-y-4">
                                         <div>
                                             <label htmlFor="link_drive" className={labelStyles}>Link Google Drive</label>
-                                            <input type="url" name="link_drive" id="link_drive" value={formData.link_drive || ''} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} placeholder="https://docs.google.com/..." />
+                                            <input type="url" name="link_drive" id="link_drive" value={formData.link_drive || ''} onChange={handleChange} className={`${inputStyles} border-gray-300`} placeholder="https://docs.google.com/..." />
                                         </div>
                                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                             <div>
                                                 <label htmlFor="file_pdf" className={labelStyles}>Link File PDF</label>
-                                                <input type="url" name="file_pdf" id="file_pdf" value={formData.file_pdf || ''} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} placeholder="https://example.com/file.pdf" />
+                                                <input type="url" name="file_pdf" id="file_pdf" value={formData.file_pdf || ''} onChange={handleChange} className={`${inputStyles} border-gray-300`} placeholder="https://example.com/file.pdf" />
                                             </div>
                                             <div>
                                                 <label htmlFor="file_docx" className={labelStyles}>Link File DOCX</label>
-                                                <input type="url" name="file_docx" id="file_docx" value={formData.file_docx || ''} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} placeholder="https://example.com/file.docx" />
+                                                <input type="url" name="file_docx" id="file_docx" value={formData.file_docx || ''} onChange={handleChange} className={`${inputStyles} border-gray-300`} placeholder="https://example.com/file.docx" />
                                             </div>
                                         </div>
                                     </div>

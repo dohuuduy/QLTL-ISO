@@ -3,7 +3,6 @@ import type { LichRaSoat, NhanSu, TanSuatRaSoat } from '../../types';
 import { ReviewResult } from '../../constants';
 import { translate } from '../../utils/translations';
 import DatePicker from '../ui/DatePicker';
-import Modal from '../ui/Modal';
 
 interface ReviewScheduleFormProps {
     onSubmit: (data: any) => void;
@@ -54,8 +53,8 @@ const ReviewScheduleForm: React.FC<ReviewScheduleFormProps> = ({ onSubmit, onCan
     const activeOrCurrentlySelected = (list: any[], selectedId: string) => 
         list.filter(item => item.is_active !== false || item.id === selectedId);
 
-    const inputStyles = "mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900/50 py-2.5 px-3 text-gray-900 dark:text-slate-200 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm placeholder-gray-400 dark:placeholder-slate-500";
-    const labelStyles = "block text-sm font-medium text-gray-900 dark:text-slate-200";
+    const inputStyles = "mt-1 block w-full rounded-md border-gray-300 bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
+    const labelStyles = "block text-sm font-medium text-gray-900";
     
     const isLoggingResult = !!formData.ket_qua_ra_soat;
 
@@ -83,7 +82,7 @@ const ReviewScheduleForm: React.FC<ReviewScheduleFormProps> = ({ onSubmit, onCan
                     </select>
                 </div>
                 
-                 <div className="border-t border-gray-200 dark:border-slate-700 pt-4 space-y-4">
+                 <div className="border-t border-gray-200 pt-4 space-y-4">
                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                          <div>
                             <label htmlFor="ket_qua_ra_soat" className={labelStyles}>Kết quả rà soát (tùy chọn)</label>
@@ -105,15 +104,15 @@ const ReviewScheduleForm: React.FC<ReviewScheduleFormProps> = ({ onSubmit, onCan
                     <textarea name="ghi_chu" id="ghi_chu" value={formData.ghi_chu} onChange={handleChange} rows={3} className={inputStyles} placeholder="Thêm ghi chú nếu có..." />
                 </div>
                 {isLoggingResult && (
-                    <div className="mt-2 p-3 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800/50 rounded-md text-sm text-indigo-800 dark:text-indigo-200">
+                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-800">
                         <p><strong>Lưu ý:</strong> Khi bạn lưu lại với kết quả rà soát, lịch này sẽ được đánh dấu là hoàn thành và một lịch mới cho chu kỳ tiếp theo sẽ được tự động tạo ra.</p>
                     </div>
                 )}
             </div>
-            <Modal.Footer>
-                <button type="button" onClick={onCancel} className="btn-secondary">Hủy</button>
-                <button type="submit" className="btn-primary ml-3">Lưu</button>
-            </Modal.Footer>
+            <div className="bg-slate-50 px-6 py-4 flex justify-end gap-x-3 rounded-b-xl border-t border-gray-200">
+                <button type="button" onClick={onCancel} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
+                <button type="submit" className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Lưu</button>
+            </div>
         </form>
     );
 };

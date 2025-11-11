@@ -44,33 +44,6 @@ const App: React.FC = () => {
     const [initialReportType, setInitialReportType] = useState<ReportType | null>(null);
     const [initialDocFilter, setInitialDocFilter] = useState<string | null>(null);
     
-    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-        if (typeof window !== 'undefined' && window.localStorage) {
-            const savedTheme = window.localStorage.getItem('theme');
-            if (savedTheme === 'dark' || savedTheme === 'light') {
-                return savedTheme;
-            }
-            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                return 'dark';
-            }
-        }
-        return 'light';
-    });
-
-    useEffect(() => {
-        const root = window.document.documentElement;
-        if (theme === 'dark') {
-            root.classList.add('dark');
-        } else {
-            root.classList.remove('dark');
-        }
-        localStorage.setItem('theme', theme);
-    }, [theme]);
-
-    const toggleTheme = () => {
-        setTheme(theme === 'light' ? 'dark' : 'light');
-    };
-
     const isUpdating = useRef(false);
 
     const fetchData = useCallback(async () => {
@@ -645,10 +618,10 @@ const App: React.FC = () => {
 
 
     const LoadingIndicator: React.FC<{ message: string }> = ({ message }) => (
-        <div className="flex h-screen items-center justify-center bg-stone-50 dark:bg-stone-900">
+        <div className="flex h-screen items-center justify-center bg-slate-50">
             <div className="flex flex-col items-center space-y-4">
                 <div className="spinner"></div>
-                <p className="text-stone-600 dark:text-stone-400 animate-pulse">{message}</p>
+                <p className="text-gray-600 animate-pulse">{message}</p>
             </div>
         </div>
     );
@@ -685,7 +658,7 @@ const App: React.FC = () => {
                 <div className="max-w-2xl text-center">
                     <h2 className="text-xl font-bold text-red-800">Đã xảy ra lỗi</h2>
                     <div className="mt-2 text-red-700 bg-red-100 p-4 rounded-md">{error}</div>
-                    <button onClick={fetchData} className="mt-4 btn-primary">
+                    <button onClick={fetchData} className="mt-4 inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700">
                         Thử lại
                     </button>
                 </div>
@@ -775,8 +748,6 @@ const App: React.FC = () => {
             currentView={view}
             onNavigateToReport={handleNavigateToReport}
             chucVuList={data.chucVu}
-            theme={theme}
-            onToggleTheme={toggleTheme}
         >
             {renderContent()}
         </Layout>

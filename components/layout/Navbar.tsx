@@ -14,27 +14,11 @@ const Avatar: React.FC<{ name: string }> = ({ name }) => {
     };
 
     return (
-        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-600">
-            <span className="text-sm font-medium leading-none text-zinc-700 dark:text-zinc-300">{getInitials(name)}</span>
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-200">
+            <span className="text-sm font-medium leading-none text-slate-700">{getInitials(name)}</span>
         </span>
     );
 };
-
-interface ThemeSwitcherProps {
-  theme: 'light' | 'dark';
-  onToggle: () => void;
-}
-
-const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ theme, onToggle }) => (
-    <button
-        type="button"
-        onClick={onToggle}
-        className="relative rounded-full p-2 text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-zinc-100 dark:focus:ring-offset-zinc-900"
-        aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-    >
-        <Icon type={theme === 'light' ? 'moon' : 'sun'} className="h-6 w-6" />
-    </button>
-);
 
 
 interface NavbarProps {
@@ -49,14 +33,12 @@ interface NavbarProps {
     onMarkAllNotificationsRead: () => void;
     onNavigateToDocument: (docId: string) => void;
     chucVuList: ChucVu[];
-    theme: 'light' | 'dark';
-    onToggleTheme: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ 
     onLogoClick, onToggleSidebar, isSidebarCollapsed, onToggleMobileMenu, 
     currentUser, onLogout, notifications, onMarkNotificationRead, onMarkAllNotificationsRead, onNavigateToDocument,
-    chucVuList, theme, onToggleTheme
+    chucVuList
 }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -84,10 +66,10 @@ const Navbar: React.FC<NavbarProps> = ({
     }, [menuRef, notificationsRef]);
 
     return (
-        <div className="relative z-10 flex h-16 flex-shrink-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm shadow-sm border-b border-zinc-200/50 dark:border-zinc-700/50 no-print">
+        <div className="relative z-10 flex h-16 flex-shrink-0 bg-white shadow-sm border-b border-gray-200 no-print">
             <button
                 type="button"
-                className="border-r border-zinc-200/50 dark:border-zinc-700/50 px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500 md:hidden"
+                className="border-r border-gray-200 px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden"
                 onClick={onToggleMobileMenu}
             >
                 <span className="sr-only">Open sidebar</span>
@@ -98,13 +80,13 @@ const Navbar: React.FC<NavbarProps> = ({
                 <div className="flex items-center">
                      {/* Desktop: Logo and Title */}
                     <button onClick={onLogoClick} className="hidden md:flex items-center space-x-3">
-                        <Icon type="document-duplicate" className="h-8 w-8 text-teal-600 dark:text-teal-500" />
-                        <span className="text-xl font-bold text-zinc-800 dark:text-zinc-200">DocManager ISO</span>
+                        <Icon type="document-duplicate" className="h-8 w-8 text-blue-600" />
+                        <span className="text-xl font-bold text-gray-800">DocManager ISO</span>
                     </button>
                     {/* Desktop: Sidebar toggle button */}
                      <button
                         type="button"
-                        className="hidden md:inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-zinc-400 hover:text-gray-500 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 ml-4"
+                        className="hidden md:inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-slate-100 ml-4"
                         onClick={onToggleSidebar}
                     >
                          <Icon 
@@ -114,18 +96,17 @@ const Navbar: React.FC<NavbarProps> = ({
                     </button>
                 </div>
 
-                <div className="flex items-center space-x-2 sm:space-x-4">
-                    <ThemeSwitcher theme={theme} onToggle={onToggleTheme} />
+                <div className="flex items-center space-x-4">
                     <div className="relative" ref={notificationsRef}>
                         <button
                             type="button"
                             onClick={() => setIsNotificationsOpen(prev => !prev)}
-                            className="relative rounded-full p-2 text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-zinc-100 dark:focus:ring-offset-zinc-900"
+                            className="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                         >
                             <span className="sr-only">View notifications</span>
                             <Icon type="bell" className="h-6 w-6" />
                              {unreadCount > 0 && (
-                                <span className="absolute top-1 right-1 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-zinc-800">
+                                <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white">
                                     <span className="sr-only">{unreadCount} unread notifications</span>
                                 </span>
                             )}
@@ -146,25 +127,25 @@ const Navbar: React.FC<NavbarProps> = ({
                         <div className="relative" ref={menuRef}>
                             <button 
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="flex items-center space-x-2 rounded-md p-1 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-zinc-100 dark:focus:ring-offset-zinc-900"
+                                className="flex items-center space-x-2 rounded-md p-1 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                             >
                                 <Avatar name={currentUser.ten} />
-                                <span className="hidden text-sm font-medium text-gray-700 dark:text-zinc-300 lg:block">{currentUser.ten}</span>
-                                <Icon type="chevron-down" className="h-5 w-5 text-gray-400 dark:text-zinc-400 hidden lg:block" />
+                                <span className="hidden text-sm font-medium text-gray-700 lg:block">{currentUser.ten}</span>
+                                <Icon type="chevron-down" className="h-5 w-5 text-gray-400 hidden lg:block" />
                             </button>
 
                             {isMenuOpen && (
-                                <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-zinc-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-zinc-700 focus:outline-none">
-                                    <div className="px-4 py-2 border-b border-gray-200 dark:border-zinc-700">
-                                        <p className="text-sm font-medium text-gray-900 dark:text-zinc-100 truncate">{currentUser.ten}</p>
-                                        <p className="text-sm text-gray-500 dark:text-zinc-400 truncate">{chucVuTen}</p>
+                                <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                    <div className="px-4 py-2 border-b">
+                                        <p className="text-sm font-medium text-gray-900 truncate">{currentUser.ten}</p>
+                                        <p className="text-sm text-gray-500 truncate">{chucVuTen}</p>
                                     </div>
                                     <button
                                         onClick={() => {
                                             onLogout();
                                             setIsMenuOpen(false);
                                         }}
-                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700"
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                     >
                                         Đăng xuất
                                     </button>

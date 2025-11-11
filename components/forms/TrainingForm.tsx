@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import type { DaoTaoTruyenThong, NhanSu, PhongBan } from '../../types';
 import DatePicker from '../ui/DatePicker';
 import { Icon } from '../ui/Icon';
-import Modal from '../ui/Modal';
 
 interface TrainingFormProps {
     onSubmit: (data: any) => void;
@@ -78,8 +77,8 @@ const TrainingForm: React.FC<TrainingFormProps> = ({ onSubmit, onCancel, initial
             .sort((a, b) => a.ten.localeCompare(b.ten));
     }, [phongBanList, formData.phong_ban_tham_gia]);
     
-    const inputStyles = "mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900/50 py-2.5 px-3 text-gray-900 dark:text-slate-200 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm placeholder-gray-400 dark:placeholder-slate-500";
-    const labelStyles = "block text-sm font-medium text-gray-900 dark:text-slate-200";
+    const inputStyles = "mt-1 block w-full rounded-md border-gray-300 bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
+    const labelStyles = "block text-sm font-medium text-gray-900";
 
     return (
         <form onSubmit={handleSubmit}>
@@ -109,38 +108,38 @@ const TrainingForm: React.FC<TrainingFormProps> = ({ onSubmit, onCancel, initial
                         <button
                             type="button"
                             onClick={() => setIsDeptDropdownOpen(prev => !prev)}
-                            className={`${inputStyles} border-gray-300 dark:border-slate-600 flex items-center justify-between text-left`}
+                            className={`${inputStyles} border-gray-300 flex items-center justify-between text-left`}
                         >
                             <div className="flex flex-wrap gap-2 items-center min-h-[22px]">
                                 {(formData.phong_ban_tham_gia || []).length > 0 ? (
                                     (formData.phong_ban_tham_gia || []).map(id => {
                                         const dept = phongBanList.find(pb => pb.id === id);
                                         return (
-                                            <span key={id} className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-100 dark:bg-indigo-900/50 px-2 py-1 text-xs font-medium text-indigo-800 dark:text-indigo-300">
+                                            <span key={id} className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
                                                 {dept?.ten || id}
-                                                <button type="button" onClick={(e) => { e.stopPropagation(); handleRemoveDept(id); }} className="h-3.5 w-3.5 rounded-full text-indigo-600 hover:bg-indigo-200 dark:hover:bg-indigo-800/50">
+                                                <button type="button" onClick={(e) => { e.stopPropagation(); handleRemoveDept(id); }} className="h-3.5 w-3.5 rounded-full text-blue-600 hover:bg-blue-200">
                                                     <Icon type="x-mark" className="h-3.5 w-3.5" />
                                                 </button>
                                             </span>
                                         );
                                     })
                                 ) : (
-                                    <span className="text-gray-400 dark:text-slate-500">Chọn phòng ban...</span>
+                                    <span className="text-gray-400">Chọn phòng ban...</span>
                                 )}
                             </div>
                             <Icon type="chevron-down" className="h-5 w-5 text-gray-400" />
                         </button>
                         {isDeptDropdownOpen && (
-                            <div className="absolute z-10 mt-1 w-full rounded-md bg-white dark:bg-slate-800 shadow-lg border border-gray-200 dark:border-slate-600 max-h-48 overflow-y-auto">
+                            <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-48 overflow-y-auto">
                                 <ul>
                                     {availableDepartments.length > 0 ? (
                                         availableDepartments.map(pb => (
-                                            <li key={pb.id} onClick={() => handleSelectDept(pb.id)} className="px-3 py-2 text-sm text-gray-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">
+                                            <li key={pb.id} onClick={() => handleSelectDept(pb.id)} className="px-3 py-2 text-sm text-gray-800 hover:bg-slate-100 cursor-pointer">
                                                 {pb.ten}
                                             </li>
                                         ))
                                     ) : (
-                                        <li className="px-3 py-2 text-sm text-gray-500 dark:text-slate-400">Không có phòng ban nào.</li>
+                                        <li className="px-3 py-2 text-sm text-gray-500">Không có phòng ban nào.</li>
                                     )}
                                 </ul>
                             </div>
@@ -153,10 +152,11 @@ const TrainingForm: React.FC<TrainingFormProps> = ({ onSubmit, onCancel, initial
                     <input type="number" name="so_nguoi_tham_gia" id="so_nguoi_tham_gia" value={formData.so_nguoi_tham_gia} onChange={handleChange} className={inputStyles} min="0" />
                 </div>
             </div>
-            <Modal.Footer>
-                <button type="button" onClick={onCancel} className="btn-secondary">Hủy</button>
-                <button type="submit" className="btn-primary ml-3">Lưu</button>
-            </Modal.Footer>
+
+            <div className="bg-slate-50 px-6 py-4 flex justify-end gap-x-3 rounded-b-xl border-t border-gray-200">
+                <button type="button" onClick={onCancel} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
+                <button type="submit" className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Lưu</button>
+            </div>
         </form>
     );
 };

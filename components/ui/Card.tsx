@@ -13,14 +13,14 @@ interface CardSubComponents {
 
 const Card: React.FC<CardProps> & CardSubComponents = ({ children, className = '' }) => {
     return (
-        <div className={`bg-white/80 dark:bg-stone-800/50 backdrop-blur-sm shadow-md border border-stone-200/50 dark:border-stone-700/50 rounded-xl ${className}`}>
+        <div className={`bg-white shadow-sm border border-gray-200 rounded-xl ${className}`}>
             {children}
         </div>
     );
 };
 
 const CardHeader: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => {
-    return <div className={`px-4 py-4 sm:px-6 border-b border-stone-200/80 dark:border-stone-700/80 ${className}`}>{children}</div>;
+    return <div className={`px-4 py-4 sm:px-6 border-b border-gray-200 ${className}`}>{children}</div>;
 };
 
 const CardBody: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => {
@@ -28,7 +28,7 @@ const CardBody: React.FC<{ children: React.ReactNode; className?: string }> = ({
 };
 
 const CardFooter: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => {
-    return <div className={`px-4 py-4 sm:px-6 bg-stone-50/80 dark:bg-stone-800/40 border-t border-stone-200/80 dark:border-stone-700/80 rounded-b-xl ${className}`}>{children}</div>;
+    return <div className={`px-4 py-4 sm:px-6 bg-slate-50 border-t border-gray-200 rounded-b-xl ${className}`}>{children}</div>;
 };
 
 Card.Header = CardHeader;

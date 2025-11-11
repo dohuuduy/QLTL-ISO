@@ -16,14 +16,14 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, isCollapsed, isActive, o
         onClick={onClick}
         className={`group flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
             isActive
-                ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
-                : 'text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100'
+                ? 'bg-blue-50 text-blue-700'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
         }`}
     >
         <Icon
             type={icon}
             className={`h-6 w-6 transition-colors duration-200 ${
-                isActive ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-400 dark:text-zinc-400 group-hover:text-zinc-500 dark:group-hover:text-zinc-300'
+                isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'
             }`}
         />
         <span className={`ml-4 whitespace-nowrap transition-opacity duration-200 ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
@@ -89,10 +89,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     const sidebarContent = (
          <div className="flex flex-col h-full">
             {/* Mobile Header: Logo and Title inside sidebar */}
-            <div className="md:hidden flex-shrink-0 px-4 flex items-center border-b border-zinc-200 dark:border-zinc-700 h-16">
+            <div className="md:hidden flex-shrink-0 px-4 flex items-center border-b border-gray-200 h-16">
                  <button onClick={() => handleNavigation('dashboard')} className="flex items-center space-x-3">
-                    <Icon type="document-duplicate" className="h-8 w-8 text-teal-600" />
-                    <span className="text-xl font-bold text-zinc-800 dark:text-zinc-200">DocManager ISO</span>
+                    <Icon type="document-duplicate" className="h-8 w-8 text-blue-600" />
+                    <span className="text-xl font-bold text-gray-800">DocManager ISO</span>
                 </button>
             </div>
             <div className="flex-1 flex flex-col overflow-y-auto">
@@ -114,7 +114,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                 <button 
                                                     key={subItem.key}
                                                     onClick={() => handleReportNavigation(subItem.key)}
-                                                    className="flex items-center w-full px-4 py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-200"
+                                                    className="flex items-center w-full px-4 py-2 text-xs font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900"
                                                 >
                                                     {subItem.title}
                                                 </button>
@@ -140,7 +140,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                      {currentUser.role === 'admin' && (
                          <>
                             <div className="px-4 pt-4 pb-2">
-                                <span className={`text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase ${isCollapsed ? 'hidden' : 'block'}`}>
+                                <span className={`text-xs font-semibold text-gray-500 uppercase ${isCollapsed ? 'hidden' : 'block'}`}>
                                     Quản trị
                                 </span>
                             </div>
@@ -161,14 +161,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
                                     className={`group flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
                                         isCategoriesActive
-                                            ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
-                                            : 'text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100'
+                                            ? 'bg-blue-50 text-blue-700'
+                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                                     }`}
                                 >
                                     <Icon
                                         type="archive"
                                         className={`h-6 w-6 transition-colors duration-200 ${
-                                            isCategoriesActive ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-400 dark:text-zinc-400 group-hover:text-zinc-500 dark:group-hover:text-zinc-300'
+                                            isCategoriesActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'
                                         }`}
                                     />
                                     <span className={`ml-4 whitespace-nowrap transition-opacity duration-200 ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
@@ -187,8 +187,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             <button 
                                                 key={item.key}
                                                 onClick={() => handleNavigation(item.key)}
-                                                className={`flex items-center w-full px-4 py-2 text-xs font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-200 ${
-                                                    currentView === item.key ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-500 dark:text-zinc-400'
+                                                className={`flex items-center w-full px-4 py-2 text-xs font-medium rounded-md hover:bg-gray-100 hover:text-gray-900 ${
+                                                    currentView === item.key ? 'text-blue-600' : 'text-gray-500'
                                                 }`}
                                             >
                                                 {item.label}
@@ -220,7 +220,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {isMobileOpen && (
                 <div className="fixed inset-0 z-30 flex md:hidden no-print" role="dialog" aria-modal="true">
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-75" aria-hidden="true" onClick={onCloseMobileMenu}></div>
-                    <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-zinc-800">
+                    <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
                          <div className="absolute top-0 right-0 -mr-12 pt-2">
                             <button
                                 type="button"
@@ -238,7 +238,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
 
             {/* Desktop Sidebar */}
-            <div className={`hidden md:flex md:flex-shrink-0 bg-white dark:bg-zinc-800 border-r border-zinc-200 dark:border-zinc-700 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'} no-print`}>
+            <div className={`hidden md:flex md:flex-shrink-0 bg-white border-r border-gray-200 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'} no-print`}>
                 {sidebarContent}
             </div>
         </>

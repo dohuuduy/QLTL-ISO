@@ -17,14 +17,12 @@ interface LayoutProps {
     currentView: string;
     onNavigateToReport: (reportType: ReportType) => void;
     chucVuList: ChucVu[];
-    theme: 'light' | 'dark';
-    onToggleTheme: () => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
     children, currentUser, onLogout, onNavigate, 
     notifications, onMarkNotificationRead, onMarkAllNotificationsRead, onNavigateToDocument,
-    currentView, onNavigateToReport, chucVuList, theme, onToggleTheme
+    currentView, onNavigateToReport, chucVuList
 }) => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -38,7 +36,7 @@ const Layout: React.FC<LayoutProps> = ({
     }
 
     return (
-        <div className="flex h-screen bg-zinc-100 dark:bg-zinc-900">
+        <div className="flex h-screen bg-slate-100">
             <Sidebar
                 isCollapsed={isSidebarCollapsed}
                 isMobileOpen={isMobileMenuOpen}
@@ -61,10 +59,8 @@ const Layout: React.FC<LayoutProps> = ({
                     onMarkAllNotificationsRead={onMarkAllNotificationsRead}
                     onNavigateToDocument={onNavigateToDocument}
                     chucVuList={chucVuList}
-                    theme={theme}
-                    onToggleTheme={onToggleTheme}
                 />
-                <main className="flex-1 overflow-x-hidden overflow-y-auto">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100">
                     <div className="container mx-auto px-6 py-8">
                         {children}
                     </div>
