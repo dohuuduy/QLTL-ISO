@@ -28,9 +28,9 @@ const ActionableDocuments: React.FC<ActionableDocumentsProps> = ({ documents, ve
         return (
             <Card>
                 <Card.Body className="p-6 text-center">
-                    <Icon type="check-circle" className="mx-auto h-12 w-12 text-green-500" />
-                    <h3 className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Hộp thư đến trống</h3>
-                    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Bạn không có tài liệu nào cần xử lý.</p>
+                    <Icon type="check-circle" className="mx-auto h-12 w-12 text-emerald-500" />
+                    <h3 className="mt-2 text-sm font-semibold text-stone-900 dark:text-stone-100">Hộp thư đến trống</h3>
+                    <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Bạn không có tài liệu nào cần xử lý.</p>
                 </Card.Body>
             </Card>
         );
@@ -39,7 +39,7 @@ const ActionableDocuments: React.FC<ActionableDocumentsProps> = ({ documents, ve
     return (
         <Card>
              <Card.Header>
-                <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Tài liệu cần xử lý</h3>
+                <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100">Tài liệu cần xử lý</h3>
             </Card.Header>
              <Table<DanhMucTaiLieu>
                 columns={[
@@ -57,7 +57,7 @@ const ActionableDocuments: React.FC<ActionableDocumentsProps> = ({ documents, ve
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         onClick={(e) => e.stopPropagation()}
-                                        className="inline-flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:text-teal-700 dark:hover:text-teal-400 w-full"
+                                        className="inline-flex items-center justify-center text-stone-500 dark:text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 w-full"
                                         title="Mở PDF để in"
                                     >
                                         <Icon type="printer" className="h-5 w-5" />
@@ -65,7 +65,7 @@ const ActionableDocuments: React.FC<ActionableDocumentsProps> = ({ documents, ve
                                 )
                             }
                             return (
-                                <span className="inline-flex items-center justify-center text-zinc-300 dark:text-zinc-600 w-full cursor-not-allowed" title="Không có file PDF">
+                                <span className="inline-flex items-center justify-center text-stone-300 dark:text-stone-600 w-full cursor-not-allowed" title="Không có file PDF">
                                     <Icon type="printer" className="h-5 w-5" />
                                 </span>
                             );

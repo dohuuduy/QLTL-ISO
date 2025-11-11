@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { 
     DanhMucTaiLieu, PhienBanTaiLieu, NhatKyThayDoi, PhanPhoiTaiLieu, LichRaSoat, DaoTaoTruyenThong, RuiRoCoHoi, NhanSu, PhongBan, LoaiTaiLieu, CapDoTaiLieu, MucDoBaoMat, TanSuatRaSoat, HangMucThayDoi, AuditLog, TieuChuan
@@ -165,7 +164,7 @@ const TabContentWrapper: React.FC<{
                 <button
                     type="button"
                     onClick={onButtonClick}
-                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none no-print"
+                    className="btn-primary no-print"
                 >
                     <Icon type="plus" className="-ml-1 mr-2 h-4 w-4" />
                     {buttonLabel}
@@ -641,7 +640,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                             </label>
                             <button
                                 type="button"
-                                className={`${showOlderVersions ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+                                className={`${showOlderVersions ? 'bg-rose-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2`}
                                 role="switch"
                                 id="show-older-versions-toggle"
                                 aria-checked={showOlderVersions}
@@ -659,7 +658,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                             <button
                                 type="button"
                                 onClick={() => openModal('versions')}
-                                className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none"
+                                className="btn-primary"
                             >
                                 <Icon type="plus" className="-ml-1 mr-2 h-4 w-4" />
                                 Thêm Phiên bản

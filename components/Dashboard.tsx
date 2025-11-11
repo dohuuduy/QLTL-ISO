@@ -35,7 +35,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100">Dashboard</h1>
             
             {/* KPI cards in a horizontal row */}
             <KpiDashboard documents={documents} />

@@ -23,41 +23,41 @@
 </script>
 <style>
     :root {
-        --color-primary-500: 20 184 166; /* teal-500 */
-        --color-primary-600: 13 148 136; /* teal-600 */
-        --color-primary-700: 15 118 110; /* teal-700 */
+        --color-primary-500: 244 63 94; /* rose-500 */
+        --color-primary-600: 225 29 72; /* rose-600 */
+        --color-primary-700: 190 18 60; /* rose-700 */
         
-        --color-background-start: 244 244 245; /* zinc-100 */
-        --color-background-end: 228 228 231;   /* zinc-200 */
+        --color-background-start: 245 245 244; /* stone-100 */
+        --color-background-end: 231 229 228;   /* stone-200 */
         
-        --color-text-base: 24 24 27;     /* zinc-900 */
-        --color-text-muted: 113 113 122; /* zinc-500 */
+        --color-text-base: 28 25 23;     /* stone-900 */
+        --color-text-muted: 120 113 108; /* stone-500 */
         
-        --color-border: 228 228 231;   /* zinc-200 */
+        --color-border: 231 229 228;   /* stone-200 */
         --color-surface: 255 255 255;
         
-        --color-scrollbar-track: 228 228 231; /* zinc-200 */
-        --color-scrollbar-thumb: 212 212 216; /* zinc-300 */
-        --color-scrollbar-thumb-hover: 161 161 170; /* zinc-400 */
+        --color-scrollbar-track: 231 229 228; /* stone-200 */
+        --color-scrollbar-thumb: 214 211 209; /* stone-300 */
+        --color-scrollbar-thumb-hover: 168 162 158; /* stone-400 */
     }
 
     html.dark {
-        --color-primary-500: 45 212 191; /* teal-400 */
-        --color-primary-600: 20 184 166; /* teal-500 */
-        --color-primary-700: 13 148 136; /* teal-600 */
+        --color-primary-500: 251 113 133; /* rose-400 */
+        --color-primary-600: 244 63 94; /* rose-500 */
+        --color-primary-700: 225 29 72; /* rose-600 */
 
-        --color-background-start: 24 24 27; /* zinc-900 */
-        --color-background-end: 9 9 11;     /* zinc-950 */
+        --color-background-start: 28 25 23; /* stone-900 */
+        --color-background-end: 9 9 11;     /* zinc-950 - Keep this very dark for depth */
         
-        --color-text-base: 244 244 245; /* zinc-100 */
-        --color-text-muted: 113 113 122; /* zinc-500 */
+        --color-text-base: 245 245 244; /* stone-100 */
+        --color-text-muted: 120 113 108; /* stone-500 */
 
-        --color-border: 63 63 70;      /* zinc-700 */
-        --color-surface: 39 39 42;      /* zinc-800 */
+        --color-border: 68 64 60;      /* stone-700 */
+        --color-surface: 41 37 36;      /* stone-800 */
         
-        --color-scrollbar-track: 39 39 42; /* zinc-800 */
-        --color-scrollbar-thumb: 82 82 91; /* zinc-600 */
-        --color-scrollbar-thumb-hover: 113 113 122; /* zinc-500 */
+        --color-scrollbar-track: 41 37 36; /* stone-800 */
+        --color-scrollbar-thumb: 87 83 78; /* stone-600 */
+        --color-scrollbar-thumb-hover: 120 113 108; /* stone-500 */
     }
 
     body {
@@ -146,11 +146,11 @@
         transition-duration: 150ms;
     }
     html.light .btn-secondary:hover {
-        background-color: rgb(244 244 245); /* zinc-100 */
+        background-color: rgb(245 245 244); /* stone-100 */
     }
     html.dark .btn-secondary:hover {
-        background-color: rgb(63 63 70); /* zinc-700 */
-        border-color: rgb(82 82 91); /* zinc-600 */
+        background-color: rgb(68 64 60); /* stone-700 */
+        border-color: rgb(87 83 78); /* stone-600 */
     }
     .link {
         color: rgb(var(--color-primary-600));

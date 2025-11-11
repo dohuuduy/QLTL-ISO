@@ -645,10 +645,10 @@ const App: React.FC = () => {
 
 
     const LoadingIndicator: React.FC<{ message: string }> = ({ message }) => (
-        <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="flex h-screen items-center justify-center bg-stone-50 dark:bg-stone-900">
             <div className="flex flex-col items-center space-y-4">
                 <div className="spinner"></div>
-                <p className="text-gray-600 dark:text-slate-400 animate-pulse">{message}</p>
+                <p className="text-stone-600 dark:text-stone-400 animate-pulse">{message}</p>
             </div>
         </div>
     );
@@ -685,7 +685,7 @@ const App: React.FC = () => {
                 <div className="max-w-2xl text-center">
                     <h2 className="text-xl font-bold text-red-800">Đã xảy ra lỗi</h2>
                     <div className="mt-2 text-red-700 bg-red-100 p-4 rounded-md">{error}</div>
-                    <button onClick={fetchData} className="mt-4 inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">
+                    <button onClick={fetchData} className="mt-4 btn-primary">
                         Thử lại
                     </button>
                 </div>

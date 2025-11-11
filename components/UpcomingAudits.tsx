@@ -27,12 +27,12 @@ const UpcomingAudits: React.FC<UpcomingAuditsProps> = ({ schedules, nhanSuMap, o
         return (
             <Card>
                 <Card.Header>
-                    <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Lịch Audit Sắp tới</h3>
+                    <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100">Lịch Audit Sắp tới</h3>
                 </Card.Header>
                 <Card.Body>
                     <div className="text-center py-6">
-                        <Icon type="calendar" className="mx-auto h-10 w-10 text-zinc-400 dark:text-zinc-500" />
-                        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Không có cuộc audit nào sắp diễn ra.</p>
+                        <Icon type="calendar" className="mx-auto h-10 w-10 text-stone-400 dark:text-stone-500" />
+                        <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">Không có cuộc audit nào sắp diễn ra.</p>
                     </div>
                 </Card.Body>
             </Card>
@@ -42,23 +42,23 @@ const UpcomingAudits: React.FC<UpcomingAuditsProps> = ({ schedules, nhanSuMap, o
     return (
         <Card>
             <Card.Header className="flex items-center justify-between">
-                <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Lịch Audit Sắp tới</h3>
+                <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100">Lịch Audit Sắp tới</h3>
                 <button
                     onClick={onNavigate}
-                    className="text-sm font-medium text-teal-600 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300"
+                    className="text-sm font-medium text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300"
                 >
                     Xem tất cả
                 </button>
             </Card.Header>
             <Card.Body className="p-0">
-                <ul role="list" className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                <ul role="list" className="divide-y divide-stone-200 dark:divide-stone-700">
                     {upcomingSchedules.map(audit => (
-                        <li key={audit.id} className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-700/50">
+                        <li key={audit.id} className="p-4 hover:bg-stone-50 dark:hover:bg-stone-700/50">
                             <div className="flex items-center justify-between">
-                                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate pr-2">{audit.ten_cuoc_audit}</p>
+                                <p className="text-sm font-medium text-stone-900 dark:text-stone-100 truncate pr-2">{audit.ten_cuoc_audit}</p>
                                 <Badge status={audit.trang_thai} size="sm" />
                             </div>
-                            <div className="mt-2 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                            <div className="mt-2 flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
                                 <div>
                                     <p>Bắt đầu: {formatDateForDisplay(audit.ngay_bat_dau)}</p>
                                     <p>Trưởng đoàn: {nhanSuMap.get(audit.chuyen_gia_danh_gia_truong_id) || 'N/A'}</p>
