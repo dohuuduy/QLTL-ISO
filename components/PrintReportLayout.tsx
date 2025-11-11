@@ -20,8 +20,7 @@ const PrintReportLayout: React.FC<PrintReportLayoutProps> = ({ title, filters, c
                     <tbody>
                         <tr>
                             <td style={{ textAlign: 'left', border: 'none', verticalAlign: 'top', width: '40%' }}>
-                                <div className="company">CÔNG TY TNHH ABC</div>
-                                <div>Số: ....../BC-ABC</div>
+                                <div className="company">CTY CP THỦY SẢN CÀ MAU</div>
                             </td>
                             <td style={{ textAlign: 'center', border: 'none', verticalAlign: 'top' }}>
                                 <div className="nation">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
@@ -74,7 +73,7 @@ const PrintReportLayout: React.FC<PrintReportLayoutProps> = ({ title, filters, c
             </main>
 
             <footer className="footer">
-                <i>Hà Nội, {formattedDate}</i>
+                <i>Cà Mau, {formattedDate}</i>
             </footer>
 
             <section className="signature">
