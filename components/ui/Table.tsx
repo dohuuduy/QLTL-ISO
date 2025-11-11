@@ -20,19 +20,19 @@ const Table = <T extends { [key: string]: any }>({ columns, data, onRowClick, ac
             <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                     <table className="min-w-full">
-                        <thead className="bg-slate-50">
+                        <thead className="bg-slate-100 border-b-2 border-slate-300">
                             <tr>
                                 {columns.map((col, index) => (
                                     <th
                                         key={index}
                                         scope="col"
-                                        className={`py-3.5 px-4 text-left text-sm font-semibold text-slate-600 uppercase tracking-wider ${col.className || ''}`}
+                                        className={`py-3 px-4 text-left text-sm font-semibold text-gray-900 uppercase ${col.className || ''}`}
                                     >
                                         {col.header}
                                     </th>
                                 ))}
                                 {actions && (
-                                     <th scope="col" className="relative py-3.5 px-4 text-right text-sm font-semibold text-slate-600 uppercase tracking-wider no-print">
+                                     <th scope="col" className="relative py-3 px-4 text-right text-sm font-semibold text-gray-900 uppercase no-print">
                                         Hành động
                                     </th>
                                 )}

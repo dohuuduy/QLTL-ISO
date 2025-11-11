@@ -43,10 +43,10 @@ const ActionableDocuments: React.FC<ActionableDocumentsProps> = ({ documents, ve
             </Card.Header>
              <Table<DanhMucTaiLieu>
                 columns={[
-                    { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
-                    { header: 'Số hiệu', accessor: 'so_hieu' },
-                    { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
-                    { header: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} /> },
+                    { header: 'Tên tài liệu', accessor: 'ten_tai_lieu', className: 'min-w-[12rem]' },
+                    { header: 'Số hiệu', accessor: 'so_hieu', className: 'w-32' },
+                    { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A', className: 'w-24 text-center' },
+                    { header: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} />, className: 'w-40' },
                     {
                         header: 'In',
                         accessor: (item: DanhMucTaiLieu) => {
@@ -70,7 +70,7 @@ const ActionableDocuments: React.FC<ActionableDocumentsProps> = ({ documents, ve
                                 </span>
                             );
                         },
-                        className: 'text-center'
+                        className: 'w-16 text-center'
                     }
                 ]}
                 data={myActionableDocs}

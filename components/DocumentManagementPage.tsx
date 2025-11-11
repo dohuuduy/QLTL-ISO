@@ -461,17 +461,18 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                     />
                 </button>
             ),
-            className: 'w-12'
+            className: 'w-12 text-center'
         },
-        { header: getSortableHeader('Mã', 'ma_tl'), accessor: (item: DanhMucTaiLieu) => item.ma_tl },
-        { header: getSortableHeader('Tên tài liệu', 'ten_tai_lieu'), accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu, className: 'font-medium text-gray-900' },
-        { header: getSortableHeader('Số hiệu', 'so_hieu'), accessor: (item: DanhMucTaiLieu) => item.so_hieu },
-        { header: getSortableHeader('Phiên bản', 'phien_ban'), accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A' },
-        { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item: DanhMucTaiLieu) => <Badge status={item.trang_thai} /> },
-        { header: getSortableHeader('Phòng ban', 'phong_ban_quan_ly'), accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly) },
+        { header: getSortableHeader('Mã', 'ma_tl'), accessor: (item: DanhMucTaiLieu) => item.ma_tl, className: 'w-28' },
+        { header: getSortableHeader('Tên tài liệu', 'ten_tai_lieu'), accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu, className: 'font-medium text-gray-900 min-w-[20rem]' },
+        { header: getSortableHeader('Số hiệu', 'so_hieu'), accessor: (item: DanhMucTaiLieu) => item.so_hieu, className: 'w-32' },
+        { header: getSortableHeader('Phiên bản', 'phien_ban'), accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A', className: 'w-24 text-center' },
+        { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item: DanhMucTaiLieu) => <Badge status={item.trang_thai} />, className: 'w-40' },
+        { header: getSortableHeader('Phòng ban', 'phong_ban_quan_ly'), accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly), className: 'w-48' },
         { 
             header: getSortableHeader('Ngày hiệu lực', 'ngay_hieu_luc'), 
-            accessor: (item: DanhMucTaiLieu) => formatDateForDisplay(item.ngay_hieu_luc) 
+            accessor: (item: DanhMucTaiLieu) => formatDateForDisplay(item.ngay_hieu_luc),
+            className: 'w-36 text-center'
         },
          { 
             header: 'In',
@@ -496,7 +497,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                     </span>
                 );
             },
-            className: 'text-center'
+            className: 'w-16 text-center'
         },
     ];
 
@@ -584,16 +585,22 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                     {allData.tieuChuan.filter(s => s.is_active).map(s => <option key={s.id} value={s.id}>{s.ten_viet_tat || s.ten}</option>)}
                                 </select>
                             </div>
-                            <div className="flex items-center">
+                            <div>
+                                <label htmlFor="bookmark-toggle" className="form-label">&nbsp;</label>
                                 <button
+                                    id="bookmark-toggle"
+                                    type="button"
                                     onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
-                                    className={`w-full inline-flex items-center justify-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ${
+                                    className={`w-full inline-flex items-center justify-center gap-x-1.5 rounded-md border shadow-sm transition-colors duration-150 py-2.5 px-4 text-sm font-medium ${
                                         showBookmarkedOnly
-                                            ? 'bg-yellow-50 text-yellow-800 ring-yellow-300'
-                                            : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50'
+                                            ? 'bg-yellow-100 text-yellow-900 border-yellow-400 hover:bg-yellow-200'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                                     }`}
                                 >
-                                    <Icon type={showBookmarkedOnly ? 'star-solid' : 'star'} className="-ml-0.5 h-4 w-4" />
+                                    <Icon 
+                                        type={showBookmarkedOnly ? 'star-solid' : 'star'} 
+                                        className={`-ml-0.5 h-5 w-5 ${showBookmarkedOnly ? 'text-yellow-500' : 'text-gray-400'}`} 
+                                    />
                                     <span>Đã đánh dấu</span>
                                 </button>
                             </div>

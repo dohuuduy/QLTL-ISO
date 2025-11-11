@@ -9,12 +9,13 @@ interface NavItemProps {
     isCollapsed: boolean;
     isActive?: boolean;
     onClick: () => void;
+    fontWeight?: 'font-medium' | 'font-semibold';
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon, label, isCollapsed, isActive, onClick }) => (
+const NavItem: React.FC<NavItemProps> = ({ icon, label, isCollapsed, isActive, onClick, fontWeight = 'font-medium' }) => (
     <button
         onClick={onClick}
-        className={`group flex items-center w-full py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+        className={`group flex items-center w-full py-3 text-sm ${fontWeight} rounded-lg transition-colors duration-200 ${
             isActive
                 ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 pl-3'
                 : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 px-4'
@@ -97,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </button>
             </div>
             <div className="flex-1 flex flex-col overflow-y-auto">
-                <nav className="flex-1 px-2 py-4 space-y-1">
+                <nav className="flex-1 py-4 space-y-1">
                     {mainNavItems.map(item => {
                         if (item.view === 'reports') {
                             return (
@@ -108,6 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         isCollapsed={isCollapsed}
                                         isActive={isReportsActive}
                                         onClick={() => handleNavigation(item.view)}
+                                        fontWeight="font-semibold"
                                     />
                                     {isReportsActive && !isCollapsed && (
                                         <div className="pl-8 pt-1 space-y-1">
@@ -115,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                 <button 
                                                     key={subItem.key}
                                                     onClick={() => handleReportNavigation(subItem.key)}
-                                                    className="flex items-center w-full px-4 py-2 text-xs font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900"
+                                                    className="flex items-center w-full px-4 py-2 text-sm font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900"
                                                 >
                                                     {subItem.title}
                                                 </button>
@@ -134,6 +136,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 isCollapsed={isCollapsed}
                                 isActive={currentView === item.view}
                                 onClick={() => handleNavigation(item.view)}
+                                fontWeight="font-semibold"
                             />
                         )
                     })}
@@ -141,7 +144,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                      {currentUser.role === 'admin' && (
                          <>
                             <div className="px-4 pt-4 pb-2">
-                                <span className={`text-xs font-semibold text-gray-500 uppercase ${isCollapsed ? 'hidden' : 'block'}`}>
+                                <span className={`text-sm font-semibold text-gray-500 uppercase ${isCollapsed ? 'hidden' : 'block'}`}>
                                     Quản trị
                                 </span>
                             </div>
@@ -188,7 +191,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             <button 
                                                 key={item.key}
                                                 onClick={() => handleNavigation(item.key)}
-                                                className={`flex items-center w-full px-4 py-2 text-xs font-medium rounded-md hover:bg-gray-100 hover:text-gray-900 ${
+                                                className={`flex items-center w-full px-4 py-2 text-sm font-medium rounded-md hover:bg-gray-100 hover:text-gray-900 ${
                                                     currentView === item.key ? 'text-blue-600' : 'text-gray-500'
                                                 }`}
                                             >
