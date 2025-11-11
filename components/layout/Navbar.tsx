@@ -23,8 +23,6 @@ const Avatar: React.FC<{ name: string }> = ({ name }) => {
 
 interface NavbarProps {
     onLogoClick: () => void;
-    onToggleSidebar: () => void;
-    isSidebarCollapsed: boolean;
     onToggleMobileMenu: () => void;
     currentUser?: NhanSu;
     onLogout: () => void;
@@ -36,7 +34,7 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ 
-    onLogoClick, onToggleSidebar, isSidebarCollapsed, onToggleMobileMenu, 
+    onLogoClick, onToggleMobileMenu, 
     currentUser, onLogout, notifications, onMarkNotificationRead, onMarkAllNotificationsRead, onNavigateToDocument,
     chucVuList
 }) => {
@@ -82,17 +80,6 @@ const Navbar: React.FC<NavbarProps> = ({
                     <button onClick={onLogoClick} className="hidden md:flex items-center gap-x-2">
                         <Icon type="document-duplicate" className="h-8 w-8 text-blue-600" />
                         <span className="text-xl font-bold tracking-tight text-slate-900">DocManager ISO</span>
-                    </button>
-                    {/* Desktop: Sidebar toggle button */}
-                     <button
-                        type="button"
-                        className="hidden md:inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-slate-100 ml-4"
-                        onClick={onToggleSidebar}
-                    >
-                         <Icon 
-                            type="chevron-double-left" 
-                            className={`h-6 w-6 transition-transform duration-300 ${!isSidebarCollapsed ? '' : 'rotate-180'}`} 
-                        />
                     </button>
                 </div>
 

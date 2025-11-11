@@ -40,10 +40,11 @@ interface SidebarProps {
     currentUser: NhanSu;
     currentView: string;
     onNavigateToReport: (reportType: ReportType) => void;
+    onToggleSidebar: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
-    isCollapsed, isMobileOpen, onCloseMobileMenu, onNavigate, currentUser, currentView, onNavigateToReport
+    isCollapsed, isMobileOpen, onCloseMobileMenu, onNavigate, currentUser, currentView, onNavigateToReport, onToggleSidebar
 }) => {
     
     const [isCategoriesOpen, setIsCategoriesOpen] = useState(currentView.startsWith('settings-'));
@@ -238,8 +239,18 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
 
             {/* Desktop Sidebar */}
-            <div className={`hidden md:flex md:flex-shrink-0 bg-white border-r border-slate-200 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'} no-print`}>
+            <div className={`hidden md:flex md:flex-shrink-0 relative bg-white border-r border-slate-200 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'} no-print`}>
                 {sidebarContent}
+                 <button
+                    onClick={onToggleSidebar}
+                    className="absolute top-1/2 -right-3 z-20 h-6 w-6 transform -translate-y-1/2 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    aria-label={isCollapsed ? "Mở rộng sidebar" : "Thu gọn sidebar"}
+                >
+                    <Icon
+                        type="chevron-double-left"
+                        className={`h-4 w-4 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
+                    />
+                </button>
             </div>
         </>
     );

@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
@@ -45,12 +43,11 @@ const Layout: React.FC<LayoutProps> = ({
                 currentUser={currentUser}
                 currentView={currentView}
                 onNavigateToReport={onNavigateToReport}
+                onToggleSidebar={toggleSidebar}
             />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Navbar
                     onLogoClick={() => onNavigate('dashboard')}
-                    onToggleSidebar={toggleSidebar}
-                    isSidebarCollapsed={isSidebarCollapsed}
                     onToggleMobileMenu={toggleMobileMenu}
                     currentUser={currentUser}
                     onLogout={onLogout}
