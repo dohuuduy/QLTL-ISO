@@ -32,6 +32,7 @@ import { exportToCsv } from '../utils/exportUtils';
 import ExportDropdown from './ui/ExportDropdown';
 import RelatedDocumentsView from './RelatedDocumentsView';
 import Pagination from './ui/Pagination';
+import PrintReportLayout from './PrintReportLayout';
 
 type AllData = {
     documents: DanhMucTaiLieu[];
@@ -183,6 +184,42 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
 
         return { parent, children, replaces, replacedBy, sameStandard, sameDepartment };
     }, [relatedDoc, allData.documents]);
+
+    const printLayoutProps = useMemo(() => {
+        if (sortedDocuments.length === 0) return null;
+
+        const activeFilters: Record<string, string> = {};
+        if (filters.status && filters.status !== 'all_docs') {
+            activeFilters['Trạng thái'] = translate(filters.status);
+        } else if (filters.status === 'all_docs') {
+            activeFilters['Trạng thái'] = 'Tất cả';
+        } else {
+            activeFilters['Trạng thái'] = 'Tài liệu đang dùng';
+        }
+        if (filters.department) {
+            activeFilters['Phòng ban'] = phongBanMap.get(filters.department) || 'N/A';
+        }
+        if (filters.standard) {
+            activeFilters['Tiêu chuẩn'] = allData.tieuChuan.find(t => t.id === filters.standard)?.ten || 'N/A';
+        }
+        if (searchTerm) {
+            activeFilters['Từ khóa tìm kiếm'] = searchTerm;
+        }
+
+        return {
+            title: 'DANH SÁCH TÀI LIỆU',
+            filters: activeFilters,
+            columns: [
+                { header: 'Mã TL', accessor: (item: DanhMucTaiLieu) => item.ma_tl },
+                { header: 'Tên tài liệu', accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu },
+                { header: 'Phiên bản', accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A' },
+                { header: 'Phòng ban', accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly) },
+                { header: 'Trạng thái', accessor: (item: DanhMucTaiLieu) => translate(item.trang_thai) },
+                { header: 'Ngày hiệu lực', accessor: (item: DanhMucTaiLieu) => formatDateForDisplay(item.ngay_hieu_luc) },
+            ],
+            data: sortedDocuments,
+        };
+    }, [sortedDocuments, filters, searchTerm, phongBanMap, latestVersionMap, allData.tieuChuan]);
 
     const requestSort = (key: string) => {
         let direction: 'ascending' | 'descending' = 'ascending';
@@ -460,166 +497,168 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
     ];
 
     return (
-        <div className="space-y-6">
-            <div className="sm:flex sm:items-center sm:justify-between no-print">
-                <div className="flex-1">
-                    <h1 className="text-3xl font-bold text-gray-900">Quản lý Tài liệu</h1>
-                    <p className="mt-1 text-sm text-gray-500">
-                        Tìm kiếm, lọc và quản lý tất cả các tài liệu trong hệ thống.
-                    </p>
-                </div>
-                <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex items-center gap-x-2">
-                    <ExportDropdown 
-                        onPrint={handlePrint}
-                        onExportCsv={handleExportCsv}
-                    />
-                    {canCreate && (
-                        <button
-                            type="button"
-                            onClick={() => openModal()}
-                            className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                        >
-                            <Icon type="plus" className="-ml-1 mr-2 h-5 w-5" />
-                            Thêm Tài liệu
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            <Card>
-                <Card.Body>
-                     <div className="flex flex-wrap items-center gap-4 mb-4 no-print">
-                        <div className="relative flex-grow min-w-[200px]">
-                            <input
-                                type="text"
-                                placeholder="Tìm kiếm theo tên, mã, số hiệu..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                            />
-                        </div>
-                        <select
-                            value={filters.status}
-                            onChange={(e) => setFilters(f => ({ ...f, status: e.target.value as DocumentStatus | '' | 'all_docs' }))}
-                            className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        >
-                            <option value="">Tài liệu đang dùng (Mặc định)</option>
-                            <option value="all_docs">Tất cả Trạng thái</option>
-                            {Object.values(DocumentStatus).map(s => <option key={s} value={s}>{translate(s)}</option>)}
-                        </select>
-                        <select
-                            value={filters.department}
-                            onChange={(e) => setFilters(f => ({ ...f, department: e.target.value }))}
-                            className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        >
-                            <option value="">Tất cả Phòng ban</option>
-                            {allData.phongBan.map(d => <option key={d.id} value={d.id}>{d.ten}</option>)}
-                        </select>
-                         <select
-                            value={filters.standard}
-                            onChange={(e) => setFilters(f => ({ ...f, standard: e.target.value }))}
-                            className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        >
-                            <option value="">Tất cả Tiêu chuẩn</option>
-                            {allData.tieuChuan.filter(s => s.is_active).map(s => <option key={s.id} value={s.id}>{s.ten_viet_tat ? `${s.ten_viet_tat} - ${s.ten}` : s.ten}</option>)}
-                        </select>
-                        <button
-                            onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
-                            className={`inline-flex items-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ${
-                                showBookmarkedOnly
-                                    ? 'bg-yellow-50 text-yellow-800 ring-yellow-300'
-                                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50'
-                            }`}
-                        >
-                            <Icon type={showBookmarkedOnly ? 'star-solid' : 'star'} className="-ml-0.5 h-4 w-4" />
-                            <span className="hidden sm:inline">Đã đánh dấu</span>
-                        </button>
+        <>
+            {printLayoutProps && <PrintReportLayout {...printLayoutProps} currentUser={currentUser} />}
+            <div className="space-y-6 no-print">
+                <div className="sm:flex sm:items-center sm:justify-between">
+                    <div className="flex-1">
+                        <h1 className="text-3xl font-bold text-gray-900">Quản lý Tài liệu</h1>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Tìm kiếm, lọc và quản lý tất cả các tài liệu trong hệ thống.
+                        </p>
                     </div>
-                </Card.Body>
-                <Table<DanhMucTaiLieu>
-                    columns={tableColumns}
-                    data={paginatedDocuments}
-                    onRowClick={onViewDetails}
-                    rowClassName={getRowClassName}
-                    actions={renderActions}
-                />
-                {sortedDocuments.length > 0 && (
-                    <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={setCurrentPage}
-                    >
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                            <span>Hiển thị</span>
-                            <select
-                                id="items-per-page"
-                                value={itemsPerPage}
-                                onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                                className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-1"
+                    <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex items-center gap-x-2">
+                        <ExportDropdown 
+                            onPrint={handlePrint}
+                            onExportCsv={handleExportCsv}
+                        />
+                        {canCreate && (
+                            <button
+                                type="button"
+                                onClick={() => openModal()}
+                                className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                             >
-                                <option value={10}>10</option>
-                                <option value={20}>20</option>
-                                <option value={50}>50</option>
-                                <option value={100}>100</option>
+                                <Icon type="plus" className="-ml-1 mr-2 h-5 w-5" />
+                                Thêm Tài liệu
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                <Card>
+                    <Card.Body>
+                        <div className="flex flex-wrap items-center gap-4 mb-4">
+                            <div className="relative flex-grow min-w-[200px]">
+                                <input
+                                    type="text"
+                                    placeholder="Tìm kiếm theo tên, mã, số hiệu..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                />
+                            </div>
+                            <select
+                                value={filters.status}
+                                onChange={(e) => setFilters(f => ({ ...f, status: e.target.value as DocumentStatus | '' | 'all_docs' }))}
+                                className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            >
+                                <option value="">Tài liệu đang dùng (Mặc định)</option>
+                                <option value="all_docs">Tất cả Trạng thái</option>
+                                {Object.values(DocumentStatus).map(s => <option key={s} value={s}>{translate(s)}</option>)}
                             </select>
-                            <span>
-                                dòng trên mỗi trang. (Tổng số {sortedDocuments.length} tài liệu)
-                            </span>
+                            <select
+                                value={filters.department}
+                                onChange={(e) => setFilters(f => ({ ...f, department: e.target.value }))}
+                                className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            >
+                                <option value="">Tất cả Phòng ban</option>
+                                {allData.phongBan.map(d => <option key={d.id} value={d.id}>{d.ten}</option>)}
+                            </select>
+                            <select
+                                value={filters.standard}
+                                onChange={(e) => setFilters(f => ({ ...f, standard: e.target.value }))}
+                                className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            >
+                                <option value="">Tất cả Tiêu chuẩn</option>
+                                {allData.tieuChuan.filter(s => s.is_active).map(s => <option key={s.id} value={s.id}>{s.ten_viet_tat ? `${s.ten_viet_tat} - ${s.ten}` : s.ten}</option>)}
+                            </select>
+                            <button
+                                onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
+                                className={`inline-flex items-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ${
+                                    showBookmarkedOnly
+                                        ? 'bg-yellow-50 text-yellow-800 ring-yellow-300'
+                                        : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50'
+                                }`}
+                            >
+                                <Icon type={showBookmarkedOnly ? 'star-solid' : 'star'} className="-ml-0.5 h-4 w-4" />
+                                <span className="hidden sm:inline">Đã đánh dấu</span>
+                            </button>
                         </div>
-                    </Pagination>
-                )}
-            </Card>
-
-             <Modal isOpen={isModalOpen} onClose={closeModal} title={editingDocument ? 'Chỉnh sửa Tài liệu' : 'Thêm mới Tài liệu'}>
-                 <DocumentForm
-                    id="document-form"
-                    onSubmit={handleSave}
-                    initialData={editingDocument}
-                    documents={allData.documents}
-                    categories={{
-                        nhanSu: allData.nhanSu,
-                        phongBan: allData.phongBan,
-                        loaiTaiLieu: allData.loaiTaiLieu,
-                        capDoTaiLieu: allData.capDoTaiLieu,
-                        mucDoBaoMat: allData.mucDoBaoMat,
-                        tieuChuan: allData.tieuChuan,
-                    }}
-                />
-                <Modal.Footer>
-                    <button type="button" onClick={closeModal} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
-                    <button 
-                        type="submit" 
-                        form="document-form"
-                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300 disabled:cursor-not-allowed"
-                    >
-                        Lưu
-                    </button>
-                </Modal.Footer>
-            </Modal>
-            
-             <Modal 
-                isOpen={!!relatedDoc} 
-                onClose={() => setRelatedDoc(null)} 
-                title={`Tài liệu liên quan cho: ${relatedDoc?.ten_tai_lieu || ''}`}
-            >
-                {relatedDoc && relatedDocsData && (
-                    <RelatedDocumentsView 
-                        selectedDoc={relatedDoc}
-                        relatedData={relatedDocsData}
-                        onViewDetailsClick={handleNavigateFromModal}
+                    </Card.Body>
+                    <Table<DanhMucTaiLieu>
+                        columns={tableColumns}
+                        data={paginatedDocuments}
+                        onRowClick={onViewDetails}
+                        rowClassName={getRowClassName}
+                        actions={renderActions}
                     />
-                )}
-            </Modal>
+                    {sortedDocuments.length > 0 && (
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        >
+                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                                <span>Hiển thị</span>
+                                <select
+                                    id="items-per-page"
+                                    value={itemsPerPage}
+                                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                    className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-1"
+                                >
+                                    <option value={10}>10</option>
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                    <option value={100}>100</option>
+                                </select>
+                                <span>
+                                    dòng trên mỗi trang. (Tổng số {sortedDocuments.length} tài liệu)
+                                </span>
+                            </div>
+                        </Pagination>
+                    )}
+                </Card>
 
-            <ConfirmationDialog
-                isOpen={!!deletingId}
-                onClose={() => setDeletingId(null)}
-                onConfirm={handleDelete}
-                title={deletionInfo.title}
-                message={deletionInfo.message}
-            />
+                <Modal isOpen={isModalOpen} onClose={closeModal} title={editingDocument ? 'Chỉnh sửa Tài liệu' : 'Thêm mới Tài liệu'}>
+                    <DocumentForm
+                        id="document-form"
+                        onSubmit={handleSave}
+                        initialData={editingDocument}
+                        documents={allData.documents}
+                        categories={{
+                            nhanSu: allData.nhanSu,
+                            phongBan: allData.phongBan,
+                            loaiTaiLieu: allData.loaiTaiLieu,
+                            capDoTaiLieu: allData.capDoTaiLieu,
+                            mucDoBaoMat: allData.mucDoBaoMat,
+                            tieuChuan: allData.tieuChuan,
+                        }}
+                    />
+                    <Modal.Footer>
+                        <button type="button" onClick={closeModal} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
+                        <button 
+                            type="submit" 
+                            form="document-form"
+                            className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                        >
+                            Lưu
+                        </button>
+                    </Modal.Footer>
+                </Modal>
+                
+                <Modal 
+                    isOpen={!!relatedDoc} 
+                    onClose={() => setRelatedDoc(null)} 
+                    title={`Tài liệu liên quan cho: ${relatedDoc?.ten_tai_lieu || ''}`}
+                >
+                    {relatedDoc && relatedDocsData && (
+                        <RelatedDocumentsView 
+                            selectedDoc={relatedDoc}
+                            relatedData={relatedDocsData}
+                            onViewDetailsClick={handleNavigateFromModal}
+                        />
+                    )}
+                </Modal>
 
-        </div>
+                <ConfirmationDialog
+                    isOpen={!!deletingId}
+                    onClose={() => setDeletingId(null)}
+                    onConfirm={handleDelete}
+                    title={deletionInfo.title}
+                    message={deletionInfo.message}
+                />
+            </div>
+        </>
     );
 };
 
