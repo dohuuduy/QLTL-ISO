@@ -243,7 +243,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {sidebarContent}
                  <button
                     onClick={onToggleSidebar}
-                    className="absolute top-1/2 -right-3 z-20 h-6 w-6 transform -translate-y-1/2 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    className="absolute top-20 -right-3 z-20 h-6 w-6 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     aria-label={isCollapsed ? "Mở rộng sidebar" : "Thu gọn sidebar"}
                 >
                     <Icon
