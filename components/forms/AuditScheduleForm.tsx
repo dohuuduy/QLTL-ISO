@@ -4,6 +4,7 @@ import { AuditStatus } from '../../constants';
 import DatePicker from '../ui/DatePicker';
 import { translate } from '../../utils/translations';
 import { Icon } from '../ui/Icon';
+import Modal from '../ui/Modal';
 
 interface AuditScheduleFormProps {
     id: string;
@@ -94,6 +95,9 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
         });
     };
     
+    const inputStyles = "mt-1 block w-full rounded-md bg-white dark:bg-slate-900/50 py-2.5 px-3 text-gray-900 dark:text-slate-200 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm placeholder-gray-400 dark:placeholder-slate-500";
+    const labelStyles = "block text-sm font-medium text-gray-900 dark:text-slate-200";
+
     // Helper component for multi-select dropdowns
     const MultiSelectDropdown: React.FC<{
         label: string;
@@ -136,41 +140,41 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
                     <button
                         type="button"
                         onClick={() => setIsOpen(prev => !prev)}
-                        className={`${inputStyles} border-gray-300 flex items-center justify-between text-left`}
+                        className={`${inputStyles} border-gray-300 dark:border-slate-600 flex items-center justify-between text-left`}
                     >
                         <div className="flex flex-wrap gap-2 items-center min-h-[22px]">
                             {selectedIds.length > 0 ? (
                                 selectedIds.map(id => {
                                     const item = items.find(i => i.id === id);
                                     return (
-                                        <span key={id} className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+                                        <span key={id} className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-100 dark:bg-indigo-900/50 px-2 py-1 text-xs font-medium text-indigo-800 dark:text-indigo-300">
                                             {item ? getDisplay(item) : id}
-                                            <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(id); }} className="h-3.5 w-3.5 rounded-full text-blue-600 hover:bg-blue-200">
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(id); }} className="h-3.5 w-3.5 rounded-full text-indigo-600 hover:bg-indigo-200 dark:hover:bg-indigo-800/50">
                                                 <Icon type="x-mark" className="h-3.5 w-3.5" />
                                             </button>
                                         </span>
                                     );
                                 })
                             ) : (
-                                <span className="text-gray-400">{placeholder}</span>
+                                <span className="text-gray-400 dark:text-slate-500">{placeholder}</span>
                             )}
                         </div>
                         <Icon type="chevron-down" className="h-5 w-5 text-gray-400" />
                     </button>
                     {isOpen && (
-                        <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-hidden flex flex-col">
-                            <div className="p-2 border-b border-gray-200">
-                                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Tìm kiếm..." className="w-full rounded-md border-gray-300 py-1.5 px-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"/>
+                        <div className="absolute z-10 mt-1 w-full rounded-md bg-white dark:bg-slate-800 shadow-lg border border-gray-200 dark:border-slate-600 max-h-60 overflow-hidden flex flex-col">
+                            <div className="p-2 border-b border-gray-200 dark:border-slate-700">
+                                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Tìm kiếm..." className="w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-1.5 px-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"/>
                             </div>
                             <ul className="overflow-y-auto">
                                 {availableItems.length > 0 ? (
                                     availableItems.map(item => (
-                                        <li key={item.id || item.ma_tl} onClick={() => onAdd(item.id || item.ma_tl)} className="px-3 py-2 text-sm text-gray-800 hover:bg-slate-100 cursor-pointer">
+                                        <li key={item.id || item.ma_tl} onClick={() => onAdd(item.id || item.ma_tl)} className="px-3 py-2 text-sm text-gray-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">
                                             {getDisplay(item)}
                                         </li>
                                     ))
                                 ) : (
-                                    <li className="px-3 py-2 text-sm text-gray-500">Không tìm thấy.</li>
+                                    <li className="px-3 py-2 text-sm text-gray-500 dark:text-slate-400">Không tìm thấy.</li>
                                 )}
                             </ul>
                         </div>
@@ -193,27 +197,24 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
         });
     };
 
-    const inputStyles = "mt-1 block w-full rounded-md bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
-    const labelStyles = "block text-sm font-medium text-gray-900";
-
     return (
         <form id={id} onSubmit={handleSubmit} noValidate>
             <div className="p-6 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="sm:col-span-2">
                         <label htmlFor="ten_cuoc_audit" className={labelStyles}>Tên cuộc audit</label>
-                        <input type="text" name="ten_cuoc_audit" id="ten_cuoc_audit" value={formData.ten_cuoc_audit} onChange={handleChange} className={`${inputStyles} border-gray-300`} required placeholder="VD: Đánh giá nội bộ Quý 3/2024" />
+                        <input type="text" name="ten_cuoc_audit" id="ten_cuoc_audit" value={formData.ten_cuoc_audit} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} required placeholder="VD: Đánh giá nội bộ Quý 3/2024" />
                     </div>
                     <div>
                         <label htmlFor="loai_audit" className={labelStyles}>Loại audit</label>
-                        <select name="loai_audit" id="loai_audit" value={formData.loai_audit} onChange={handleChange} className={`${inputStyles} border-gray-300`} required>
+                        <select name="loai_audit" id="loai_audit" value={formData.loai_audit} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} required>
                             <option value="internal">Nội bộ</option>
                             <option value="external">Bên ngoài</option>
                         </select>
                     </div>
                      <div>
                         <label htmlFor="trang_thai" className={labelStyles}>Trạng thái</label>
-                        <select name="trang_thai" id="trang_thai" value={formData.trang_thai} onChange={handleChange} className={`${inputStyles} border-gray-300`} required>
+                        <select name="trang_thai" id="trang_thai" value={formData.trang_thai} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} required>
                             {Object.values(AuditStatus).map(s => <option key={s} value={s}>{translate(s)}</option>)}
                         </select>
                     </div>
@@ -222,7 +223,7 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
                 {formData.loai_audit === 'external' && (
                     <div>
                         <label htmlFor="to_chuc_danh_gia_id" className={labelStyles}>Tổ chức đánh giá</label>
-                        <select name="to_chuc_danh_gia_id" id="to_chuc_danh_gia_id" value={formData.to_chuc_danh_gia_id} onChange={handleChange} className={`${inputStyles} border-gray-300`} required>
+                        <select name="to_chuc_danh_gia_id" id="to_chuc_danh_gia_id" value={formData.to_chuc_danh_gia_id} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} required>
                             <option value="">-- Chọn tổ chức --</option>
                             {categories.toChucDanhGia.filter(o => o.is_active).map(org => <option key={org.id} value={org.id}>{org.ten}</option>)}
                         </select>
@@ -231,17 +232,17 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
 
                 <div>
                     <label htmlFor="pham_vi" className={labelStyles}>Phạm vi</label>
-                    <textarea name="pham_vi" id="pham_vi" rows={2} value={formData.pham_vi} onChange={handleChange} className={`${inputStyles} border-gray-300`} placeholder="Mô tả phạm vi của cuộc đánh giá..." />
+                    <textarea name="pham_vi" id="pham_vi" rows={2} value={formData.pham_vi} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} placeholder="Mô tả phạm vi của cuộc đánh giá..." />
                 </div>
                 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                      <div>
                         <label htmlFor="ngay_bat_dau" className={labelStyles}>Ngày bắt đầu</label>
-                        <DatePicker id="ngay_bat_dau" value={formData.ngay_bat_dau} onChange={(val) => handleDateChange('ngay_bat_dau', val)} className={`${inputStyles} ${dateError ? 'border-red-500' : 'border-gray-300'}`} required />
+                        <DatePicker id="ngay_bat_dau" value={formData.ngay_bat_dau} onChange={(val) => handleDateChange('ngay_bat_dau', val)} className={`${inputStyles} ${dateError ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`} required />
                     </div>
                     <div>
                         <label htmlFor="ngay_ket_thuc" className={labelStyles}>Ngày kết thúc</label>
-                        <DatePicker id="ngay_ket_thuc" value={formData.ngay_ket_thuc} onChange={(val) => handleDateChange('ngay_ket_thuc', val)} className={`${inputStyles} ${dateError ? 'border-red-500' : 'border-gray-300'}`} required />
+                        <DatePicker id="ngay_ket_thuc" value={formData.ngay_ket_thuc} onChange={(val) => handleDateChange('ngay_ket_thuc', val)} className={`${inputStyles} ${dateError ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'}`} required />
                         {dateError && <p className="mt-1 text-sm text-red-600">{dateError}</p>}
                     </div>
                 </div>
@@ -272,7 +273,7 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
                 
                  <div>
                     <label htmlFor="chuyen_gia_danh_gia_truong_id" className={labelStyles}>Trưởng đoàn đánh giá</label>
-                    <select name="chuyen_gia_danh_gia_truong_id" id="chuyen_gia_danh_gia_truong_id" value={formData.chuyen_gia_danh_gia_truong_id} onChange={handleChange} className={`${inputStyles} border-gray-300`} required>
+                    <select name="chuyen_gia_danh_gia_truong_id" id="chuyen_gia_danh_gia_truong_id" value={formData.chuyen_gia_danh_gia_truong_id} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} required>
                         <option value="">-- Chọn trưởng đoàn --</option>
                         {categories.danhGiaVien.filter(u => u.is_active).map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
                     </select>
@@ -292,7 +293,7 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
 
                  <div>
                     <label htmlFor="ghi_chu" className={labelStyles}>Ghi chú (tùy chọn)</label>
-                    <textarea name="ghi_chu" id="ghi_chu" rows={2} value={formData.ghi_chu} onChange={handleChange} className={`${inputStyles} border-gray-300`} placeholder="Thêm ghi chú nếu cần..." />
+                    <textarea name="ghi_chu" id="ghi_chu" rows={2} value={formData.ghi_chu} onChange={handleChange} className={`${inputStyles} border-gray-300 dark:border-slate-600`} placeholder="Thêm ghi chú nếu cần..." />
                 </div>
             </div>
         </form>

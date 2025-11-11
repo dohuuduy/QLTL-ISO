@@ -78,7 +78,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ auditLogs, users }) => {
                                 name="userId"
                                 value={filters.userId}
                                 onChange={handleFilterChange}
-                                className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm"
                             >
                                 <option value="">Tất cả người dùng</option>
                                 {users.map(user => (
@@ -92,7 +92,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ auditLogs, users }) => {
                                 id="start-date"
                                 value={filters.startDate}
                                 onChange={(value) => handleDateFilterChange('startDate', value)}
-                                className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm"
                             />
                         </div>
                          <div>
@@ -101,7 +101,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ auditLogs, users }) => {
                                 id="end-date"
                                 value={filters.endDate}
                                 onChange={(value) => handleDateFilterChange('endDate', value)}
-                                className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm"
                             />
                         </div>
                         <button

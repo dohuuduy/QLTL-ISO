@@ -16,7 +16,7 @@ const Tabs: React.FC<TabsProps> = ({ tabs, activeTabIndex, onTabChange }) => {
         <div>
             {/* Screen view: Interactive tabs */}
             <div className="no-print">
-                <div className="border-b border-gray-200">
+                <div className="border-b border-zinc-200 dark:border-zinc-700">
                     <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
                         {tabs.map((tab, index) => (
                             <button
@@ -24,8 +24,8 @@ const Tabs: React.FC<TabsProps> = ({ tabs, activeTabIndex, onTabChange }) => {
                                 onClick={() => onTabChange(index)}
                                 className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
                                     activeTabIndex === index
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        ? 'border-teal-500 text-teal-600 dark:text-teal-400'
+                                        : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-600'
                                 }`}
                                 aria-current={activeTabIndex === index ? 'page' : undefined}
                             >

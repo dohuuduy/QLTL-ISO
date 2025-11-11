@@ -259,7 +259,7 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                                     id="start-date"
                                     value={dateFilter.start}
                                     onChange={(value) => handleDateFilterChange('start', value)}
-                                    className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                    className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm"
                                 />
                             </div>
                              <div>
@@ -268,7 +268,7 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                                     id="end-date"
                                     value={dateFilter.end}
                                     onChange={(value) => handleDateFilterChange('end', value)}
-                                    className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                    className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm"
                                 />
                             </div>
                              {(dateFilter.start || dateFilter.end) && (

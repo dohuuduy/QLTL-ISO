@@ -7,51 +7,50 @@ type BadgeSize = 'sm' | 'md' | 'lg';
 
 const statusColors: Record<BadgeStatus, string> = {
     // DocumentStatus
-    [DocumentStatus.DA_BAN_HANH]: 'bg-green-100 text-green-800',
-    [DocumentStatus.CHO_PHE_DUYET]: 'bg-yellow-100 text-yellow-800',
-    [DocumentStatus.DANG_RA_SOAT]: 'bg-blue-100 text-blue-800',
-    [DocumentStatus.HET_HIEU_LUC]: 'bg-gray-100 text-gray-800',
-    [DocumentStatus.NHAP]: 'bg-purple-100 text-purple-800',
+    [DocumentStatus.DA_BAN_HANH]: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+    [DocumentStatus.CHO_PHE_DUYET]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
+    [DocumentStatus.DANG_RA_SOAT]: 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300',
+    [DocumentStatus.HET_HIEU_LUC]: 'bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300',
+    [DocumentStatus.NHAP]: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300',
     // VersionStatus
-    [VersionStatus.BAN_THAO]: 'bg-indigo-100 text-indigo-800',
-    [VersionStatus.PHE_DUYET]: 'bg-yellow-100 text-yellow-800',
-    [VersionStatus.BAN_HANH]: 'bg-green-100 text-green-800',
-    [VersionStatus.THU_HOI]: 'bg-red-100 text-red-800',
+    [VersionStatus.BAN_THAO]: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300',
+    [VersionStatus.PHE_DUYET]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
+    [VersionStatus.BAN_HANH]: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+    [VersionStatus.THU_HOI]: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
     // DistributionStatus
-    [DistributionStatus.DANG_HIEU_LUC]: 'bg-green-100 text-green-800',
-    [DistributionStatus.MAT_HONG]: 'bg-red-100 text-red-800',
+    [DistributionStatus.DANG_HIEU_LUC]: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+    [DistributionStatus.MAT_HONG]: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
     // ReviewResult
-    [ReviewResult.TIEP_TUC]: 'bg-green-100 text-green-800',
-    [ReviewResult.CAN_SUA]: 'bg-yellow-100 text-yellow-800',
-    [ReviewResult.THU_HOI]: 'bg-red-100 text-red-800',
+    [ReviewResult.TIEP_TUC]: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+    [ReviewResult.CAN_SUA]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
+    [ReviewResult.THU_HOI]: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
     // RiskStatus
-    [RiskStatus.MO]: 'bg-blue-100 text-blue-800',
-    [RiskStatus.DANG_LAM]: 'bg-yellow-100 text-yellow-800',
-    [RiskStatus.DONG]: 'bg-green-100 text-green-800',
+    [RiskStatus.MO]: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
+    [RiskStatus.DANG_LAM]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
+    [RiskStatus.DONG]: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
     // AuditAction
-    create: 'bg-green-100 text-green-800',
-    update: 'bg-blue-100 text-blue-800',
-    delete: 'bg-red-100 text-red-800',
+    create: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+    update: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
+    delete: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
     // User Status
-    'active': 'bg-green-100 text-green-800',
-    'inactive': 'bg-gray-100 text-gray-800',
+    'active': 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+    'inactive': 'bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300',
     // User Roles
-    'admin': 'bg-sky-100 text-sky-800 font-semibold',
-    'user': 'bg-slate-100 text-slate-800',
+    'admin': 'bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-300 font-semibold',
+    'user': 'bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300',
 };
 
 const dotColors: Record<string, string> = {
     [DocumentStatus.DA_BAN_HANH]: 'fill-green-500',
     [DocumentStatus.CHO_PHE_DUYET]: 'fill-yellow-500',
-    [DocumentStatus.DANG_RA_SOAT]: 'fill-blue-500',
-    [DocumentStatus.HET_HIEU_LUC]: 'fill-gray-500',
+    [DocumentStatus.DANG_RA_SOAT]: 'fill-teal-500',
+    [DocumentStatus.HET_HIEU_LUC]: 'fill-zinc-500 dark:fill-zinc-400',
     [DocumentStatus.NHAP]: 'fill-purple-500',
     [VersionStatus.BAN_THAO]: 'fill-indigo-500',
     [VersionStatus.PHE_DUYET]: 'fill-yellow-500',
     [VersionStatus.BAN_HANH]: 'fill-green-500',
     [VersionStatus.THU_HOI]: 'fill-red-500',
     [DistributionStatus.DANG_HIEU_LUC]: 'fill-green-500',
-    // FIX: Removed duplicate key 'thu_hoi'. VersionStatus.THU_HOI provides the value for this key.
     [DistributionStatus.MAT_HONG]: 'fill-red-500',
     [ReviewResult.TIEP_TUC]: 'fill-green-500',
     [ReviewResult.CAN_SUA]: 'fill-yellow-500',
@@ -63,9 +62,9 @@ const dotColors: Record<string, string> = {
     update: 'fill-blue-500',
     delete: 'fill-red-500',
     'active': 'fill-green-500',
-    'inactive': 'fill-gray-500',
+    'inactive': 'fill-zinc-500 dark:fill-zinc-400',
     'admin': 'fill-sky-500',
-    'user': 'fill-slate-500',
+    'user': 'fill-zinc-500 dark:fill-zinc-400',
 };
 
 
@@ -82,8 +81,8 @@ interface BadgeProps {
 }
 
 const Badge: React.FC<BadgeProps> = ({ status, size = 'md', title }) => {
-    const colorClass = statusColors[status] || 'bg-gray-100 text-gray-800';
-    const dotColorClass = dotColors[status] || 'fill-gray-400';
+    const colorClass = statusColors[status] || 'bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300';
+    const dotColorClass = dotColors[status] || 'fill-zinc-400';
     const sizeClass = sizeClasses[size];
     
     return (

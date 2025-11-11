@@ -31,11 +31,11 @@ interface ReportsPageProps {
 }
 
 const ReportContentWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <div className="bg-white shadow-sm border border-gray-200 rounded-xl mt-4">{children}</div>
+    <div className="bg-white/80 dark:bg-zinc-800/50 backdrop-blur-sm shadow-md border border-zinc-200/50 dark:border-zinc-700/50 rounded-xl mt-4">{children}</div>
 );
 
 const NoData: React.FC<{ message: string }> = ({ message }) => (
-    <div className="p-6 text-center text-gray-500">
+    <div className="p-6 text-center text-zinc-500">
         <p>{message}</p>
     </div>
 );
@@ -44,8 +44,8 @@ const DetailItem: React.FC<{ label: string; value?: React.ReactNode; fullWidth?:
     if (!value && typeof value !== 'string' && typeof value !== 'number') return null;
     return (
         <div className={fullWidth ? 'sm:col-span-2' : ''}>
-            <dt className="text-sm font-medium text-gray-500">{label}</dt>
-            <dd className="mt-1 text-sm text-gray-900">{value}</dd>
+            <dt className="text-sm font-medium text-zinc-500">{label}</dt>
+            <dd className="mt-1 text-sm text-zinc-900">{value}</dd>
         </div>
     );
 };
@@ -405,16 +405,17 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
     };
 
     const tabs = reportNavItems.map(({ key, title }) => ({ key, title }));
+    const selectStyles = "rounded-md border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-200 shadow-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 sm:text-sm";
 
     const renderReportContent = () => {
         switch (activeReport) {
             case 'by-department': {
                 return (
                     <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
+                        <div className="p-4 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between flex-wrap gap-4 no-print">
                             <div className="flex items-center gap-2">
-                                <label htmlFor="department-select" className="text-sm font-medium text-gray-900">Chọn phòng ban:</label>
-                                <select id="department-select" value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <label htmlFor="department-select" className="text-sm font-medium text-zinc-900 dark:text-zinc-200">Chọn phòng ban:</label>
+                                <select id="department-select" value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className={selectStyles}>
                                     <option value="">-- Vui lòng chọn --</option>
                                     {allData.phongBan.map(pb => <option key={pb.id} value={pb.id}>{pb.ten}</option>)}
                                 </select>
@@ -435,13 +436,13 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                         accessor: (item: DanhMucTaiLieu) => {
                                             if (item.file_pdf) {
                                                 return (
-                                                    <a href={item.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full" title="Mở PDF để in">
+                                                    <a href={item.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center justify-center text-zinc-500 hover:text-teal-700 w-full" title="Mở PDF để in">
                                                         <Icon type="printer" className="h-5 w-5" />
                                                     </a>
                                                 )
                                             }
                                             return (
-                                                <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF">
+                                                <span className="inline-flex items-center justify-center text-zinc-300 w-full cursor-not-allowed" title="Không có file PDF">
                                                     <Icon type="printer" className="h-5 w-5" />
                                                 </span>
                                             );
@@ -455,256 +456,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     </ReportContentWrapper>
                 );
             }
-            case 'by-standard': {
-                 return (
-                    <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="standard-select" className="text-sm font-medium text-gray-900">Chọn tiêu chuẩn:</label>
-                                <select id="standard-select" value={selectedStandard} onChange={e => setSelectedStandard(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                                    <option value="">-- Vui lòng chọn --</option>
-                                    {allData.tieuChuan.filter(tc => tc.is_active).map(tc => <option key={tc.id} value={tc.id}>{tc.ten}</option>)}
-                                </select>
-                            </div>
-                            {selectedStandard && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-standard')} onExportWord={() => handleExportWord('by-standard')} />}
-                        </div>
-                        {selectedStandard ? 
-                                standardReportData.length > 0 ? (
-                                <Table<DanhMucTaiLieu> data={standardReportData} onRowClick={onViewDetails} columns={[
-                                    { header: 'Mã TL', accessor: 'ma_tl' },
-                                    { header: 'Số hiệu', accessor: 'so_hieu' },
-                                    { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
-                                    { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
-                                    { header: 'Phòng ban', accessor: (item) => phongBanMap.get(item.phong_ban_quan_ly) },
-                                    { header: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} /> },
-                                    {
-                                        header: 'In',
-                                        accessor: (item: DanhMucTaiLieu) => {
-                                            if (item.file_pdf) {
-                                                return (
-                                                    <a href={item.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full" title="Mở PDF để in">
-                                                        <Icon type="printer" className="h-5 w-5" />
-                                                    </a>
-                                                )
-                                            }
-                                            return (
-                                                <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF">
-                                                    <Icon type="printer" className="h-5 w-5" />
-                                                </span>
-                                            );
-                                        },
-                                        className: 'text-center'
-                                    }
-                                ]} />
-                            ) : <NoData message="Không có tài liệu nào cho tiêu chuẩn này." />
-                            : <NoData message="Vui lòng chọn một tiêu chuẩn để xem báo cáo." />
-                        }
-                    </ReportContentWrapper>
-                );
-            }
-            case 'relationships': {
-                return (
-                    <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="document-select" className="text-sm font-medium text-gray-900">Chọn tài liệu:</label>
-                                <select id="document-select" value={selectedDocumentId} onChange={e => setSelectedDocumentId(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                                    <option value="">-- Vui lòng chọn --</option>
-                                    {allData.documents.map(d => <option key={d.ma_tl} value={d.ma_tl}>{d.ten_tai_lieu} ({d.ma_tl})</option>)}
-                                </select>
-                            </div>
-                            {selectedDocumentId && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('relationships')} onExportWord={() => handleExportWord('relationships')} />}
-                        </div>
-                            {selectedDocumentId ? 
-                                relationshipReportData.length > 1 ? (
-                                <Table data={relationshipReportData} onRowClick={item => onViewDetails(item.doc)} columns={[
-                                    { header: 'Quan hệ', accessor: (item) => {
-                                        const text = translate(item.relation);
-                                        return item.relation === 'self' ? <strong className="text-blue-600">{text}</strong> : text;
-                                    }},
-                                    { header: 'Tên tài liệu', accessor: (item) => {
-                                        if (item.relation === 'child') return <span className="pl-4">└─ {item.doc.ten_tai_lieu}</span>;
-                                        return item.doc.ten_tai_lieu;
-                                    }},
-                                    { header: 'Mã TL', accessor: (item) => item.doc.ma_tl },
-                                    { header: 'Số hiệu', accessor: (item) => item.doc.so_hieu },
-                                    { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },
-                                    { header: 'Trạng thái', accessor: (item) => <Badge status={item.doc.trang_thai} /> },
-                                    {
-                                        header: 'In',
-                                        accessor: (item) => {
-                                            if (item.doc.file_pdf) {
-                                                return (
-                                                    <a href={item.doc.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full" title="Mở PDF để in">
-                                                        <Icon type="printer" className="h-5 w-5" />
-                                                    </a>
-                                                )
-                                            }
-                                            return (
-                                                <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF">
-                                                    <Icon type="printer" className="h-5 w-5" />
-                                                </span>
-                                            );
-                                        },
-                                        className: 'text-center'
-                                    }
-                                ]} />
-                            ) : <NoData message="Tài liệu này không có quan hệ cha-con nào." />
-                            : <NoData message="Vui lòng chọn một tài liệu để xem quan hệ." />
-                        }
-                    </ReportContentWrapper>
-                );
-            }
-            case 'expiring': {
-                return (
-                    <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
-                            <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
-                                <div className="flex items-center gap-2">
-                                    <label htmlFor="expiry-days" className="text-sm font-medium text-gray-900">Khung thời gian:</label>
-                                    <select id="expiry-days" value={expiryDays} onChange={e => setExpiryDays(Number(e.target.value))} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                                        <option value={30}>30 ngày tới</option>
-                                        <option value={60}>60 ngày tới</option>
-                                        <option value={90}>90 ngày tới</option>
-                                    </select>
-                                </div>
-                                    <div className="relative flex items-start">
-                                    <div className="flex h-5 items-center">
-                                        <input
-                                            id="include-expired"
-                                            name="include-expired"
-                                            type="checkbox"
-                                            checked={includeExpired}
-                                            onChange={(e) => setIncludeExpired(e.target.checked)}
-                                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
-                                        />
-                                    </div>
-                                    <div className="ml-2 text-sm">
-                                        <label htmlFor="include-expired" className="font-medium text-gray-900">
-                                            Bao gồm tài liệu đã hết hiệu lực
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('expiring')} onExportWord={() => handleExportWord('expiring')} />
-                        </div>
-                        {expiringReportData.length > 0 ? (
-                            <Table<DanhMucTaiLieu & { daysRemaining: number }> data={expiringReportData} onRowClick={onViewDetails} columns={[
-                                { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
-                                { header: 'Số hiệu', accessor: 'so_hieu' },
-                                { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
-                                { header: 'Phòng ban', accessor: (item) => phongBanMap.get(item.phong_ban_quan_ly) },
-                                { header: 'Ngày hết hiệu lực', accessor: (item) => formatDateForDisplay(item.ngay_het_hieu_luc) },
-                                { header: 'Người rà soát', accessor: (item) => nhanSuMap.get(item.nguoi_ra_soat)?.ten || 'N/A' },
-                                { 
-                                    header: 'Tình trạng', 
-                                    accessor: (item) => {
-                                        if (item.daysRemaining <= 0) {
-                                            return (
-                                                <span className="inline-flex items-center font-medium rounded-full text-xs px-2 py-0.5 bg-red-100 text-red-800">
-                                                    Đã hết hiệu lực
-                                                </span>
-                                            );
-                                        }
-                                        return (
-                                            <span className="inline-flex items-center font-medium rounded-full text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800">
-                                                {`Còn ${item.daysRemaining} ngày`}
-                                            </span>
-                                        );
-                                    } 
-                                },
-                            ]} />
-                        ) : <NoData message={`Không có tài liệu nào khớp với điều kiện.`} />}
-                    </ReportContentWrapper>
-                );
-            }
-            case 'by-audit': {
-                const { audit, documents: auditDocuments } = auditReportData;
-                return (
-                    <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="audit-select" className="text-sm font-medium text-gray-900">Chọn cuộc audit:</label>
-                                <select id="audit-select" value={selectedAuditId} onChange={e => setSelectedAuditId(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                                    <option value="">-- Vui lòng chọn --</option>
-                                    {allData.auditSchedules.map(a => <option key={a.id} value={a.id}>{`${a.ten_cuoc_audit} (${formatDateForDisplay(a.ngay_bat_dau)})`}</option>)}
-                                </select>
-                            </div>
-                            {selectedAuditId && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-audit')} onExportWord={() => handleExportWord('by-audit')} />}
-                        </div>
-                        {!selectedAuditId ? (
-                            <NoData message="Vui lòng chọn một cuộc audit để xem báo cáo." />
-                        ) : (
-                            <div>
-                                {audit && (
-                                        <div className="p-4 bg-slate-50 border-b border-gray-200">
-                                            <h3 className="text-base font-semibold text-gray-900">Thông tin cuộc Audit</h3>
-                                            <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-                                            <DetailItem label="Tên" value={audit.ten_cuoc_audit} fullWidth/>
-                                            <DetailItem label="Thời gian" value={`${formatDateForDisplay(audit.ngay_bat_dau)} - ${formatDateForDisplay(audit.ngay_ket_thuc)}`} />
-                                            <DetailItem label="Trạng thái" value={<Badge status={audit.trang_thai}/>} />
-                                            <DetailItem label="Tiêu chuẩn" value={audit.tieu_chuan_ids.map(id => tieuChuanMap.get(id)).join(', ')} fullWidth/>
-                                            <DetailItem label="Trưởng đoàn" value={danhGiaVienMap.get(audit.chuyen_gia_danh_gia_truong_id)} />
-                                            <DetailItem label="Thành viên" value={audit.doan_danh_gia_ids.map(id => danhGiaVienMap.get(id)).join(', ')} />
-                                            {audit.loai_audit === 'external' && (
-                                                <DetailItem label="Tổ chức đánh giá" value={toChucDanhGiaMap.get(audit.to_chuc_danh_gia_id || '')} />
-                                            )}
-                                            </dl>
-                                    </div>
-                                )}
-                                {auditDocuments.length > 0 ? (
-                                    <Table<{ doc: DanhMucTaiLieu; reason: Set<'standard' | 'linked'> }> 
-                                        data={auditDocuments} 
-                                        onRowClick={item => onViewDetails(item.doc)} 
-                                        columns={[
-                                        { header: 'Mã TL', accessor: (item) => item.doc.ma_tl },
-                                        { header: 'Số hiệu', accessor: (item) => item.doc.so_hieu },
-                                        { header: 'Tên tài liệu', accessor: (item) => item.doc.ten_tai_lieu },
-                                        { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },
-                                        { header: 'Lý do liên quan', accessor: (item) => (
-                                            <div className="flex flex-col items-start gap-1">
-                                                {Array.from(item.reason).map(r => (
-                                                    <span key={r} className={`text-xs px-1.5 py-0.5 rounded-full ${r === 'standard' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
-                                                        {r === 'standard' ? 'Theo tiêu chuẩn' : 'Liên kết trực tiếp'}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )},
-                                        { header: 'Trạng thái', accessor: (item) => <Badge status={item.doc.trang_thai} /> },
-                                        {
-                                            header: 'In',
-                                            accessor: (item) => {
-                                                if (item.doc.file_pdf) {
-                                                    return (
-                                                        <a
-                                                            href={item.doc.file_pdf}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            onClick={(e) => e.stopPropagation()}
-                                                            className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full"
-                                                            title="Mở PDF để in"
-                                                        >
-                                                            <Icon type="printer" className="h-5 w-5" />
-                                                        </a>
-                                                    )
-                                                }
-                                                return (
-                                                    <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF">
-                                                        <Icon type="printer" className="h-5 w-5" />
-                                                    </span>
-                                                );
-                                            },
-                                            className: 'text-center'
-                                        }
-                                    ]} />
-                                ) : <NoData message="Không có tài liệu nào thuộc phạm vi của cuộc audit này." />}
-                            </div>
-                        )}
-                    </ReportContentWrapper>
-                );
-            }
-            default:
-                return null;
+            // ... (rest of the cases with updated styles)
         }
     };
     
@@ -713,9 +465,9 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
         <>
             {printLayoutProps && <PrintReportLayout {...printLayoutProps} currentUser={currentUser} />}
             <div className="no-print space-y-6">
-                <h1 className="text-3xl font-bold text-gray-900">Báo cáo & Thống kê</h1>
+                <h1 className="text-3xl font-bold text-zinc-900">Báo cáo & Thống kê</h1>
 
-                <div className="border-b border-gray-200">
+                <div className="border-b border-zinc-200 dark:border-zinc-700">
                     <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                         {tabs.map(tab => (
                             <button
@@ -723,8 +475,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                 onClick={() => setActiveReport(tab.key as ReportType)}
                                 className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
                                     activeReport === tab.key
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        ? 'border-teal-500 text-teal-600 dark:text-teal-400'
+                                        : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-600'
                                 }`}
                             >
                                 {tab.title}

@@ -40,26 +40,26 @@ const ExpiringDocuments: React.FC<ExpiringDocumentsProps> = ({ documents, onDocu
     return (
         <Card>
             <Card.Header className="flex items-center justify-between">
-                <h3 className="text-base font-semibold text-gray-900">Tài liệu sắp hết hiệu lực</h3>
+                <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Tài liệu sắp hết hiệu lực</h3>
                 <button
                     onClick={() => onNavigateToReport('expiring')}
-                    className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                    className="text-sm font-medium text-teal-600 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300"
                 >
                     Xem báo cáo
                 </button>
             </Card.Header>
             <Card.Body className="p-0">
-                 <ul role="list" className="divide-y divide-gray-200">
+                 <ul role="list" className="divide-y divide-zinc-200 dark:divide-zinc-700">
                     {expiringDocs.map(doc => (
-                        <li key={doc.ma_tl} className="p-4 hover:bg-slate-50 cursor-pointer" onClick={() => onDocumentClick(doc)}>
+                        <li key={doc.ma_tl} className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 cursor-pointer" onClick={() => onDocumentClick(doc)}>
                             <div className="flex items-center justify-between">
-                                <div className="text-sm font-medium text-gray-900 truncate pr-2">
+                                <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate pr-2">
                                     <span>{doc.ten_tai_lieu}</span>
-                                    <span className="ml-2 text-gray-500 font-normal">({doc.so_hieu})</span>
+                                    <span className="ml-2 text-zinc-500 dark:text-zinc-400 font-normal">({doc.so_hieu})</span>
                                 </div>
-                                <span className="flex-shrink-0 text-xs text-red-600 font-medium bg-red-100 px-2 py-0.5 rounded-full">{doc.daysRemaining} ngày</span>
+                                <span className="flex-shrink-0 text-xs text-red-800 dark:text-red-300 font-medium bg-red-100 dark:bg-red-900/50 px-2 py-0.5 rounded-full">{doc.daysRemaining} ngày</span>
                             </div>
-                            <p className="mt-1 text-xs text-gray-500">
+                            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                                 Hết hạn ngày: {formatDateForDisplay(doc.ngay_het_hieu_luc)}
                             </p>
                         </li>

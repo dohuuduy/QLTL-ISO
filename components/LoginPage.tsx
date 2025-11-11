@@ -59,14 +59,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 sm:px-6 lg:px-8">
+        <div className="flex min-h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-900 px-4 sm:px-6 lg:px-8">
             <div className="w-full max-w-md space-y-8">
                 <div>
                     <div className="mx-auto flex items-center justify-center space-x-3">
-                        <Icon type="document-duplicate" className="h-12 w-12 text-blue-600" />
-                        <span className="text-3xl font-bold text-gray-800">DocManager ISO</span>
+                        <Icon type="document-duplicate" className="h-12 w-12 text-teal-600" />
+                        <span className="text-3xl font-bold text-zinc-800 dark:text-zinc-200">DocManager ISO</span>
                     </div>
-                    <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900">
+                    <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                         Đăng nhập vào hệ thống
                     </h2>
                 </div>
@@ -82,7 +82,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                                 required
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                className="relative block w-full appearance-none rounded-md border-0 bg-gray-100 px-3 py-3 text-gray-900 placeholder-gray-500 ring-1 ring-inset ring-gray-300 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
+                                className="relative block w-full appearance-none rounded-md border-0 bg-white dark:bg-zinc-800 px-3 py-3 text-zinc-900 dark:text-zinc-200 placeholder-zinc-500 dark:placeholder-zinc-400 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm"
                                 placeholder="Tên đăng nhập"
                             />
                         </div>
@@ -96,13 +96,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="block w-full appearance-none rounded-md border-0 bg-gray-100 px-3 py-3 pr-10 text-gray-900 placeholder-gray-500 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
+                                className="block w-full appearance-none rounded-md border-0 bg-white dark:bg-zinc-800 px-3 py-3 pr-10 text-zinc-900 dark:text-zinc-200 placeholder-zinc-500 dark:placeholder-zinc-400 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm"
                                 placeholder="Mật khẩu"
                             />
                              <button
                                 type="button"
                                 onClick={togglePasswordVisibility}
-                                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
                                 aria-label={isPasswordVisible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                             >
                                 <Icon type={isPasswordVisible ? 'eye-slash' : 'eye'} className="h-5 w-5" />
@@ -117,22 +117,22 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                             type="checkbox"
                             checked={rememberMe}
                             onChange={(e) => setRememberMe(e.target.checked)}
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                            className="h-4 w-4 rounded border-zinc-300 dark:border-zinc-600 text-teal-600 focus:ring-teal-600"
                         />
-                        <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                        <label htmlFor="remember-me" className="ml-2 block text-sm text-zinc-900 dark:text-zinc-300">
                             Ghi nhớ đăng nhập
                         </label>
                     </div>
 
                     {error && (
-                        <div className="text-sm text-red-600 text-center bg-red-50 p-3 rounded-md border border-red-200">{error}</div>
+                        <div className="text-sm text-red-600 dark:text-red-400 text-center bg-red-50 dark:bg-red-900/40 p-3 rounded-md border border-red-200 dark:border-red-800">{error}</div>
                     )}
 
                     <div>
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-75 disabled:cursor-not-allowed"
+                            className="group relative flex w-full justify-center rounded-md px-4 py-2 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:opacity-75 disabled:cursor-not-allowed"
                         >
                             {isLoading && (
                                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

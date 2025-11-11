@@ -99,7 +99,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
                 <button
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-slate-400 hover:text-gray-500 dark:hover:text-slate-300"
                     aria-label="Toggle calendar"
                 >
                     <Icon type="calendar" className="h-5 w-5" />
@@ -107,19 +107,19 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
             </div>
 
             {isOpen && (
-                <div className="absolute z-20 mt-1 w-80 rounded-md bg-white shadow-lg border border-gray-200 p-4">
+                <div className="absolute z-20 mt-1 w-80 rounded-md bg-white dark:bg-slate-800 shadow-lg border border-gray-200 dark:border-slate-600 p-4">
                     <div className="flex items-center justify-between mb-3">
-                        <button type="button" onClick={() => changeMonth(-1)} className="p-1 rounded-full hover:bg-gray-100">
-                             <Icon type="chevron-left" className="h-5 w-5 text-gray-600" />
+                        <button type="button" onClick={() => changeMonth(-1)} className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700">
+                             <Icon type="chevron-left" className="h-5 w-5 text-gray-600 dark:text-slate-300" />
                         </button>
-                        <span className="text-sm font-semibold text-gray-800">{getMonthYearText(displayDate)}</span>
-                        <button type="button" onClick={() => changeMonth(1)} className="p-1 rounded-full hover:bg-gray-100">
-                             <Icon type="chevron-right" className="h-5 w-5 text-gray-600" />
+                        <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">{getMonthYearText(displayDate)}</span>
+                        <button type="button" onClick={() => changeMonth(1)} className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700">
+                             <Icon type="chevron-right" className="h-5 w-5 text-gray-600 dark:text-slate-300" />
                         </button>
                     </div>
                     <div className="grid grid-cols-7 gap-y-1 text-center text-sm">
                         {weekdays.map(day => (
-                            <div key={day} className="w-9 h-9 flex items-center justify-center font-medium text-gray-500">{day}</div>
+                            <div key={day} className="w-9 h-9 flex items-center justify-center font-medium text-gray-500 dark:text-slate-400">{day}</div>
                         ))}
                         {calendarGrid.flat().map((day, index) => {
                             if (!day) return <div key={index}></div>;
@@ -135,10 +135,10 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
                                         type="button"
                                         onClick={() => handleDateSelect(day)}
                                         className={`w-9 h-9 flex items-center justify-center rounded-full transition-colors
-                                            ${isSelected ? 'bg-blue-600 text-white font-semibold' : ''}
-                                            ${!isSelected && isToday ? 'bg-blue-100 text-blue-700 font-semibold' : ''}
-                                            ${!isSelected && !isToday && isCurrentMonthDay ? 'hover:bg-gray-100 text-gray-800' : ''}
-                                            ${!isCurrentMonthDay ? 'text-gray-400 hover:bg-gray-100' : ''}
+                                            ${isSelected ? 'bg-indigo-600 text-white font-semibold' : ''}
+                                            ${!isSelected && isToday ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-semibold' : ''}
+                                            ${!isSelected && !isToday && isCurrentMonthDay ? 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200' : ''}
+                                            ${!isCurrentMonthDay ? 'text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:hover:bg-slate-700' : ''}
                                         `}
                                     >
                                         {day.getDate()}

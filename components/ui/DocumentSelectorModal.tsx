@@ -44,7 +44,7 @@ const DocumentSelectorModal: React.FC<DocumentSelectorModalProps> = ({
                         placeholder="Tìm kiếm theo tên, mã, số hiệu..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="block w-full rounded-md border-gray-300 bg-white py-2 pl-10 pr-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm placeholder-gray-400"
+                        className="block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-2 pl-10 pr-3 text-gray-900 dark:text-slate-200 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm placeholder-gray-400 dark:placeholder-slate-400"
                     />
                 </div>
             </div>
