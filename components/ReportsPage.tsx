@@ -11,6 +11,7 @@ import Badge from './ui/Badge';
 import { Icon } from './ui/Icon';
 import ExportDropdown from './ui/ExportDropdown';
 import PrintReportLayout from './PrintReportLayout';
+import Pagination from './ui/Pagination';
 
 type AllData = {
     documents: DanhMucTaiLieu[];
@@ -61,11 +62,21 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
     const [includeExpired, setIncludeExpired] = useState(true);
     const [selectedAuditId, setSelectedAuditId] = useState('');
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(15);
+
     useEffect(() => {
         if (initialReportType) {
             setActiveReport(initialReportType);
         }
     }, [initialReportType]);
+    
+    // Reset page when filters or tabs change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeReport, selectedDepartment, selectedStandard, selectedDocumentId, expiryDays, includeExpired, selectedAuditId, itemsPerPage]);
+
 
     const { phongBanMap, tieuChuanMap, latestVersionMap, danhGiaVienMap, toChucDanhGiaMap, nhanSuMap } = useMemo(() => ({
         phongBanMap: new Map(allData.phongBan.filter(Boolean).map(pb => [pb.id, pb.ten])),
@@ -170,6 +181,15 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
     }, [allData.documents, allData.auditSchedules, selectedAuditId]);
 
     const printLayoutProps = useMemo(() => {
+        let dataForPrint: any[] = [];
+        switch (activeReport) {
+            case 'by-department': dataForPrint = departmentReportData; break;
+            case 'by-standard': dataForPrint = standardReportData; break;
+            case 'relationships': dataForPrint = relationshipReportData; break;
+            case 'expiring': dataForPrint = expiringReportData; break;
+            case 'by-audit': dataForPrint = auditReportData.documents; break;
+        }
+
         switch (activeReport) {
             case 'by-department': {
                 if (!selectedDepartment) return null;
@@ -183,7 +203,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         { header: 'Trạng thái', accessor: (item: DanhMucTaiLieu) => translate(item.trang_thai) },
                         { header: 'Ngày hiệu lực', accessor: (item: DanhMucTaiLieu) => formatDateForDisplay(item.ngay_hieu_luc) },
                     ],
-                    data: departmentReportData,
+                    data: dataForPrint,
                 };
             }
             case 'by-standard': {
@@ -198,7 +218,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                          { header: 'Phòng ban', accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly) },
                         { header: 'Trạng thái', accessor: (item: DanhMucTaiLieu) => translate(item.trang_thai) },
                     ],
-                    data: standardReportData,
+                    data: dataForPrint,
                 };
             }
             case 'relationships': {
@@ -214,7 +234,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         { header: 'Phiên bản', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },
                         { header: 'Trạng thái', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => translate(item.doc.trang_thai) },
                     ],
-                    data: relationshipReportData,
+                    data: dataForPrint,
                 };
             }
             case 'expiring': {
@@ -230,7 +250,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         { header: 'Người rà soát', accessor: (item: any) => nhanSuMap.get(item.nguoi_ra_soat)?.ten || 'N/A' },
                         { header: 'Tình trạng', accessor: (item: any) => item.daysRemaining <= 0 ? `Đã hết hiệu lực` : `Còn ${item.daysRemaining} ngày` },
                     ],
-                    data: expiringReportData,
+                    data: dataForPrint,
                 };
             }
             case 'by-audit': {
@@ -246,7 +266,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         { header: 'Lý do liên quan', accessor: (item: any) => Array.from(item.reason).map((r: any) => r === 'standard' ? 'Theo tiêu chuẩn' : 'Liên kết trực tiếp').join('; ') },
                         { header: 'Trạng thái', accessor: (item: any) => translate(item.doc.trang_thai) },
                     ],
-                    data: auditReportData.documents,
+                    data: dataForPrint,
                 };
             }
             default: return null;
@@ -406,49 +426,77 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
 
     const tabs = reportNavItems.map(({ key, title }) => ({ key, title }));
 
+    const renderPagination = (totalPages: number, totalItems: number) => {
+        if (totalItems === 0 || totalPages <= 1) return null;
+        return (
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+            >
+                <p className="text-sm text-gray-700">
+                    Hiển thị <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
+                    - <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span>
+                    {' '}trên <span className="font-medium">{totalItems}</span> mục
+                </p>
+            </Pagination>
+        );
+    };
+
+    const ItemsPerPageSelector = () => (
+        <div className="flex items-center gap-2">
+            <label htmlFor="items-per-page" className="form-label !mb-0">Dòng/trang:</label>
+            <select
+                id="items-per-page"
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="form-select !py-2 w-auto"
+            >
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+            </select>
+        </div>
+    );
+
     const renderReportContent = () => {
+        const getPaginatedResult = (data: any[]) => {
+            const totalItems = data.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+            return { paginatedData, totalPages, totalItems };
+        };
+
         switch (activeReport) {
             case 'by-department': {
+                const { paginatedData, totalPages, totalItems } = getPaginatedResult(departmentReportData);
                 return (
                     <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="department-select" className="text-sm font-medium text-gray-900">Chọn phòng ban:</label>
-                                <select id="department-select" value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        <div className="p-4 border-b border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4 items-end no-print">
+                            <div>
+                                <label htmlFor="department-select" className="form-label">Chọn phòng ban:</label>
+                                <select id="department-select" value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="form-select">
                                     <option value="">-- Vui lòng chọn --</option>
                                     {allData.phongBan.map(pb => <option key={pb.id} value={pb.id}>{pb.ten}</option>)}
                                 </select>
                             </div>
-                            {selectedDepartment && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-department')} onExportWord={() => handleExportWord('by-department')} />}
+                            {selectedDepartment && <div className="flex items-center justify-end gap-4"><ItemsPerPageSelector /> <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-department')} onExportWord={() => handleExportWord('by-department')} /></div>}
                         </div>
                         {selectedDepartment ? 
                                 departmentReportData.length > 0 ? (
-                                <Table<DanhMucTaiLieu> data={departmentReportData} onRowClick={onViewDetails} columns={[
-                                    { header: 'Mã TL', accessor: 'ma_tl' },
-                                    { header: 'Số hiệu', accessor: 'so_hieu' },
-                                    { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
-                                    { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
-                                    { header: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} /> },
-                                    { header: 'Ngày hiệu lực', accessor: (item) => formatDateForDisplay(item.ngay_hieu_luc) },
-                                    {
-                                        header: 'In',
-                                        accessor: (item: DanhMucTaiLieu) => {
-                                            if (item.file_pdf) {
-                                                return (
-                                                    <a href={item.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full" title="Mở PDF để in">
-                                                        <Icon type="printer" className="h-5 w-5" />
-                                                    </a>
-                                                )
-                                            }
-                                            return (
-                                                <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF">
-                                                    <Icon type="printer" className="h-5 w-5" />
-                                                </span>
-                                            );
-                                        },
-                                        className: 'text-center'
-                                    }
-                                ]} />
+                                <>
+                                    <Table<DanhMucTaiLieu> data={paginatedData} onRowClick={onViewDetails} columns={[
+                                        { header: 'Mã TL', accessor: 'ma_tl' },
+                                        { header: 'Số hiệu', accessor: 'so_hieu' },
+                                        { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
+                                        { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
+                                        { header: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} /> },
+                                        { header: 'Ngày hiệu lực', accessor: (item) => formatDateForDisplay(item.ngay_hieu_luc) },
+                                        { header: 'In', accessor: (item: DanhMucTaiLieu) => item.file_pdf ? <a href={item.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full" title="Mở PDF để in"><Icon type="printer" className="h-5 w-5" /></a> : <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF"><Icon type="printer" className="h-5 w-5" /></span>, className: 'text-center' }
+                                    ]} />
+                                    {renderPagination(totalPages, totalItems)}
+                                </>
                             ) : <NoData message="Không có tài liệu nào cho phòng ban này." />
                             : <NoData message="Vui lòng chọn một phòng ban để xem báo cáo." />
                         }
@@ -456,46 +504,33 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                 );
             }
             case 'by-standard': {
+                 const { paginatedData, totalPages, totalItems } = getPaginatedResult(standardReportData);
                  return (
                     <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="standard-select" className="text-sm font-medium text-gray-900">Chọn tiêu chuẩn:</label>
-                                <select id="standard-select" value={selectedStandard} onChange={e => setSelectedStandard(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        <div className="p-4 border-b border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4 items-end no-print">
+                            <div>
+                                <label htmlFor="standard-select" className="form-label">Chọn tiêu chuẩn:</label>
+                                <select id="standard-select" value={selectedStandard} onChange={e => setSelectedStandard(e.target.value)} className="form-select">
                                     <option value="">-- Vui lòng chọn --</option>
                                     {allData.tieuChuan.filter(tc => tc.is_active).map(tc => <option key={tc.id} value={tc.id}>{tc.ten}</option>)}
                                 </select>
                             </div>
-                            {selectedStandard && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-standard')} onExportWord={() => handleExportWord('by-standard')} />}
+                            {selectedStandard && <div className="flex items-center justify-end gap-4"><ItemsPerPageSelector /> <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-standard')} onExportWord={() => handleExportWord('by-standard')} /></div>}
                         </div>
                         {selectedStandard ? 
                                 standardReportData.length > 0 ? (
-                                <Table<DanhMucTaiLieu> data={standardReportData} onRowClick={onViewDetails} columns={[
-                                    { header: 'Mã TL', accessor: 'ma_tl' },
-                                    { header: 'Số hiệu', accessor: 'so_hieu' },
-                                    { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
-                                    { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
-                                    { header: 'Phòng ban', accessor: (item) => phongBanMap.get(item.phong_ban_quan_ly) },
-                                    { header: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} /> },
-                                    {
-                                        header: 'In',
-                                        accessor: (item: DanhMucTaiLieu) => {
-                                            if (item.file_pdf) {
-                                                return (
-                                                    <a href={item.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full" title="Mở PDF để in">
-                                                        <Icon type="printer" className="h-5 w-5" />
-                                                    </a>
-                                                )
-                                            }
-                                            return (
-                                                <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF">
-                                                    <Icon type="printer" className="h-5 w-5" />
-                                                </span>
-                                            );
-                                        },
-                                        className: 'text-center'
-                                    }
-                                ]} />
+                                <>
+                                    <Table<DanhMucTaiLieu> data={paginatedData} onRowClick={onViewDetails} columns={[
+                                        { header: 'Mã TL', accessor: 'ma_tl' },
+                                        { header: 'Số hiệu', accessor: 'so_hieu' },
+                                        { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
+                                        { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
+                                        { header: 'Phòng ban', accessor: (item) => phongBanMap.get(item.phong_ban_quan_ly) },
+                                        { header: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} /> },
+                                        { header: 'In', accessor: (item: DanhMucTaiLieu) => item.file_pdf ? <a href={item.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full" title="Mở PDF để in"><Icon type="printer" className="h-5 w-5" /></a> : <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF"><Icon type="printer" className="h-5 w-5" /></span>, className: 'text-center' }
+                                    ]} />
+                                    {renderPagination(totalPages, totalItems)}
+                                </>
                             ) : <NoData message="Không có tài liệu nào cho tiêu chuẩn này." />
                             : <NoData message="Vui lòng chọn một tiêu chuẩn để xem báo cáo." />
                         }
@@ -503,52 +538,33 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                 );
             }
             case 'relationships': {
+                const { paginatedData, totalPages, totalItems } = getPaginatedResult(relationshipReportData);
                 return (
                     <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="document-select" className="text-sm font-medium text-gray-900">Chọn tài liệu:</label>
-                                <select id="document-select" value={selectedDocumentId} onChange={e => setSelectedDocumentId(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        <div className="p-4 border-b border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4 items-end no-print">
+                           <div>
+                                <label htmlFor="document-select" className="form-label">Chọn tài liệu:</label>
+                                <select id="document-select" value={selectedDocumentId} onChange={e => setSelectedDocumentId(e.target.value)} className="form-select">
                                     <option value="">-- Vui lòng chọn --</option>
                                     {allData.documents.map(d => <option key={d.ma_tl} value={d.ma_tl}>{d.ten_tai_lieu} ({d.ma_tl})</option>)}
                                 </select>
                             </div>
-                            {selectedDocumentId && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('relationships')} onExportWord={() => handleExportWord('relationships')} />}
+                            {selectedDocumentId && <div className="flex items-center justify-end gap-4"><ItemsPerPageSelector /> <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('relationships')} onExportWord={() => handleExportWord('relationships')} /></div>}
                         </div>
                             {selectedDocumentId ? 
                                 relationshipReportData.length > 1 ? (
-                                <Table data={relationshipReportData} onRowClick={item => onViewDetails(item.doc)} columns={[
-                                    { header: 'Quan hệ', accessor: (item) => {
-                                        const text = translate(item.relation);
-                                        return item.relation === 'self' ? <strong className="text-blue-600">{text}</strong> : text;
-                                    }},
-                                    { header: 'Tên tài liệu', accessor: (item) => {
-                                        if (item.relation === 'child') return <span className="pl-4">└─ {item.doc.ten_tai_lieu}</span>;
-                                        return item.doc.ten_tai_lieu;
-                                    }},
-                                    { header: 'Mã TL', accessor: (item) => item.doc.ma_tl },
-                                    { header: 'Số hiệu', accessor: (item) => item.doc.so_hieu },
-                                    { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },
-                                    { header: 'Trạng thái', accessor: (item) => <Badge status={item.doc.trang_thai} /> },
-                                    {
-                                        header: 'In',
-                                        accessor: (item) => {
-                                            if (item.doc.file_pdf) {
-                                                return (
-                                                    <a href={item.doc.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full" title="Mở PDF để in">
-                                                        <Icon type="printer" className="h-5 w-5" />
-                                                    </a>
-                                                )
-                                            }
-                                            return (
-                                                <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF">
-                                                    <Icon type="printer" className="h-5 w-5" />
-                                                </span>
-                                            );
-                                        },
-                                        className: 'text-center'
-                                    }
-                                ]} />
+                                <>
+                                    <Table data={paginatedData} onRowClick={item => onViewDetails(item.doc)} columns={[
+                                        { header: 'Quan hệ', accessor: (item) => { const text = translate(item.relation); return item.relation === 'self' ? <strong className="text-blue-600">{text}</strong> : text; }},
+                                        { header: 'Tên tài liệu', accessor: (item) => { if (item.relation === 'child') return <span className="pl-4">└─ {item.doc.ten_tai_lieu}</span>; return item.doc.ten_tai_lieu; }},
+                                        { header: 'Mã TL', accessor: (item) => item.doc.ma_tl },
+                                        { header: 'Số hiệu', accessor: (item) => item.doc.so_hieu },
+                                        { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },
+                                        { header: 'Trạng thái', accessor: (item) => <Badge status={item.doc.trang_thai} /> },
+                                        { header: 'In', accessor: (item) => item.doc.file_pdf ? <a href={item.doc.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full" title="Mở PDF để in"><Icon type="printer" className="h-5 w-5" /></a> : <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF"><Icon type="printer" className="h-5 w-5" /></span>, className: 'text-center' }
+                                    ]} />
+                                    {renderPagination(totalPages, totalItems)}
+                                </>
                             ) : <NoData message="Tài liệu này không có quan hệ cha-con nào." />
                             : <NoData message="Vui lòng chọn một tài liệu để xem quan hệ." />
                         }
@@ -556,81 +572,55 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                 );
             }
             case 'expiring': {
+                const { paginatedData, totalPages, totalItems } = getPaginatedResult(expiringReportData);
                 return (
                     <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
-                            <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
-                                <div className="flex items-center gap-2">
-                                    <label htmlFor="expiry-days" className="text-sm font-medium text-gray-900">Khung thời gian:</label>
-                                    <select id="expiry-days" value={expiryDays} onChange={e => setExpiryDays(Number(e.target.value))} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                                        <option value={30}>30 ngày tới</option>
-                                        <option value={60}>60 ngày tới</option>
-                                        <option value={90}>90 ngày tới</option>
-                                    </select>
-                                </div>
-                                    <div className="relative flex items-start">
-                                    <div className="flex h-5 items-center">
-                                        <input
-                                            id="include-expired"
-                                            name="include-expired"
-                                            type="checkbox"
-                                            checked={includeExpired}
-                                            onChange={(e) => setIncludeExpired(e.target.checked)}
-                                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
-                                        />
-                                    </div>
-                                    <div className="ml-2 text-sm">
-                                        <label htmlFor="include-expired" className="font-medium text-gray-900">
-                                            Bao gồm tài liệu đã hết hiệu lực
-                                        </label>
-                                    </div>
-                                </div>
+                        <div className="p-4 border-b border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4 items-end no-print">
+                            <div>
+                                <label htmlFor="expiry-days" className="form-label">Khung thời gian:</label>
+                                <select id="expiry-days" value={expiryDays} onChange={e => setExpiryDays(Number(e.target.value))} className="form-select">
+                                    <option value={30}>30 ngày tới</option>
+                                    <option value={60}>60 ngày tới</option>
+                                    <option value={90}>90 ngày tới</option>
+                                </select>
                             </div>
-                            <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('expiring')} onExportWord={() => handleExportWord('expiring')} />
+                            <div className="flex items-center self-end pb-2">
+                                <input id="include-expired" name="include-expired" type="checkbox" checked={includeExpired} onChange={(e) => setIncludeExpired(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"/>
+                                <label htmlFor="include-expired" className="ml-2 text-sm font-medium text-gray-900">Bao gồm đã hết hiệu lực</label>
+                            </div>
+                            <div className="flex items-center justify-end gap-4"><ItemsPerPageSelector /> <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('expiring')} onExportWord={() => handleExportWord('expiring')} /></div>
                         </div>
                         {expiringReportData.length > 0 ? (
-                            <Table<DanhMucTaiLieu & { daysRemaining: number }> data={expiringReportData} onRowClick={onViewDetails} columns={[
-                                { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
-                                { header: 'Số hiệu', accessor: 'so_hieu' },
-                                { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
-                                { header: 'Phòng ban', accessor: (item) => phongBanMap.get(item.phong_ban_quan_ly) },
-                                { header: 'Ngày hết hiệu lực', accessor: (item) => formatDateForDisplay(item.ngay_het_hieu_luc) },
-                                { header: 'Người rà soát', accessor: (item) => nhanSuMap.get(item.nguoi_ra_soat)?.ten || 'N/A' },
-                                { 
-                                    header: 'Tình trạng', 
-                                    accessor: (item) => {
-                                        if (item.daysRemaining <= 0) {
-                                            return (
-                                                <span className="inline-flex items-center font-medium rounded-full text-xs px-2 py-0.5 bg-red-100 text-red-800">
-                                                    Đã hết hiệu lực
-                                                </span>
-                                            );
-                                        }
-                                        return (
-                                            <span className="inline-flex items-center font-medium rounded-full text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800">
-                                                {`Còn ${item.daysRemaining} ngày`}
-                                            </span>
-                                        );
-                                    } 
-                                },
-                            ]} />
+                             <>
+                                <Table<DanhMucTaiLieu & { daysRemaining: number }> data={paginatedData} onRowClick={onViewDetails} columns={[
+                                    { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
+                                    { header: 'Số hiệu', accessor: 'so_hieu' },
+                                    { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
+                                    { header: 'Phòng ban', accessor: (item) => phongBanMap.get(item.phong_ban_quan_ly) },
+                                    { header: 'Ngày hết hiệu lực', accessor: (item) => formatDateForDisplay(item.ngay_het_hieu_luc) },
+                                    { header: 'Người rà soát', accessor: (item) => nhanSuMap.get(item.nguoi_ra_soat)?.ten || 'N/A' },
+                                    { header: 'Tình trạng', accessor: (item) => { if (item.daysRemaining <= 0) return <span className="inline-flex items-center font-medium rounded-full text-xs px-2 py-0.5 bg-red-100 text-red-800">Đã hết hiệu lực</span>; return <span className="inline-flex items-center font-medium rounded-full text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800">{`Còn ${item.daysRemaining} ngày`}</span>; }},
+                                ]} />
+                                {renderPagination(totalPages, totalItems)}
+                            </>
                         ) : <NoData message={`Không có tài liệu nào khớp với điều kiện.`} />}
                     </ReportContentWrapper>
                 );
             }
             case 'by-audit': {
                 const { audit, documents: auditDocuments } = auditReportData;
+                const { paginatedData, totalPages, totalItems } = getPaginatedResult(auditDocuments);
                 return (
                     <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="audit-select" className="text-sm font-medium text-gray-900">Chọn cuộc audit:</label>
-                                <select id="audit-select" value={selectedAuditId} onChange={e => setSelectedAuditId(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        <div className="p-4 border-b border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4 items-end no-print">
+                            <div>
+                                <label htmlFor="audit-select" className="form-label">Chọn cuộc audit:</label>
+                                <select id="audit-select" value={selectedAuditId} onChange={e => setSelectedAuditId(e.target.value)} className="form-select">
                                     <option value="">-- Vui lòng chọn --</option>
                                     {allData.auditSchedules.map(a => <option key={a.id} value={a.id}>{`${a.ten_cuoc_audit} (${formatDateForDisplay(a.ngay_bat_dau)})`}</option>)}
                                 </select>
                             </div>
-                            {selectedAuditId && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-audit')} onExportWord={() => handleExportWord('by-audit')} />}
+                            {selectedAuditId && <div className="flex items-center justify-end gap-4"><ItemsPerPageSelector /> <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-audit')} onExportWord={() => handleExportWord('by-audit')} /></div>}
                         </div>
                         {!selectedAuditId ? (
                             <NoData message="Vui lòng chọn một cuộc audit để xem báo cáo." />
@@ -653,50 +643,21 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                     </div>
                                 )}
                                 {auditDocuments.length > 0 ? (
-                                    <Table<{ doc: DanhMucTaiLieu; reason: Set<'standard' | 'linked'> }> 
-                                        data={auditDocuments} 
-                                        onRowClick={item => onViewDetails(item.doc)} 
-                                        columns={[
-                                        { header: 'Mã TL', accessor: (item) => item.doc.ma_tl },
-                                        { header: 'Số hiệu', accessor: (item) => item.doc.so_hieu },
-                                        { header: 'Tên tài liệu', accessor: (item) => item.doc.ten_tai_lieu },
-                                        { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },
-                                        { header: 'Lý do liên quan', accessor: (item) => (
-                                            <div className="flex flex-col items-start gap-1">
-                                                {Array.from(item.reason).map(r => (
-                                                    <span key={r} className={`text-xs px-1.5 py-0.5 rounded-full ${r === 'standard' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
-                                                        {r === 'standard' ? 'Theo tiêu chuẩn' : 'Liên kết trực tiếp'}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )},
-                                        { header: 'Trạng thái', accessor: (item) => <Badge status={item.doc.trang_thai} /> },
-                                        {
-                                            header: 'In',
-                                            accessor: (item) => {
-                                                if (item.doc.file_pdf) {
-                                                    return (
-                                                        <a
-                                                            href={item.doc.file_pdf}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            onClick={(e) => e.stopPropagation()}
-                                                            className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full"
-                                                            title="Mở PDF để in"
-                                                        >
-                                                            <Icon type="printer" className="h-5 w-5" />
-                                                        </a>
-                                                    )
-                                                }
-                                                return (
-                                                    <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF">
-                                                        <Icon type="printer" className="h-5 w-5" />
-                                                    </span>
-                                                );
-                                            },
-                                            className: 'text-center'
-                                        }
-                                    ]} />
+                                    <>
+                                        <Table<{ doc: DanhMucTaiLieu; reason: Set<'standard' | 'linked'> }> 
+                                            data={paginatedData} 
+                                            onRowClick={item => onViewDetails(item.doc)} 
+                                            columns={[
+                                            { header: 'Mã TL', accessor: (item) => item.doc.ma_tl },
+                                            { header: 'Số hiệu', accessor: (item) => item.doc.so_hieu },
+                                            { header: 'Tên tài liệu', accessor: (item) => item.doc.ten_tai_lieu },
+                                            { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },
+                                            { header: 'Lý do liên quan', accessor: (item) => <div className="flex flex-col items-start gap-1">{Array.from(item.reason).map(r => <span key={r} className={`text-xs px-1.5 py-0.5 rounded-full ${r === 'standard' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>{r === 'standard' ? 'Theo tiêu chuẩn' : 'Liên kết trực tiếp'}</span>)}</div>},
+                                            { header: 'Trạng thái', accessor: (item) => <Badge status={item.doc.trang_thai} /> },
+                                            { header: 'In', accessor: (item) => item.doc.file_pdf ? <a href={item.doc.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full" title="Mở PDF để in"><Icon type="printer" className="h-5 w-5" /></a> : <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF"><Icon type="printer" className="h-5 w-5" /></span>, className: 'text-center' }
+                                        ]} />
+                                        {renderPagination(totalPages, totalItems)}
+                                    </>
                                 ) : <NoData message="Không có tài liệu nào thuộc phạm vi của cuộc audit này." />}
                             </div>
                         )}

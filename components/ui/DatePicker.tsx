@@ -91,7 +91,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
                     onChange={handleInputChange}
                     onBlur={handleInputBlur}
                     required={required}
-                    className={`${className} pr-10`}
+                    className={`form-input pr-10 ${className || ''}`}
                     placeholder="dd/MM/yyyy"
                 />
                  {/* The hidden input ensures form submission works as expected with the name attribute */}

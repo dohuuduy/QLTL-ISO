@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import type { NhanSu, DanhMucChung } from '../types';
 import Card from './ui/Card';
@@ -8,6 +7,7 @@ import { Icon } from './ui/Icon';
 import ConfirmationDialog from './ui/ConfirmationDialog';
 import Badge from './ui/Badge';
 import { mockData } from '../data/mockData';
+import Pagination from './ui/Pagination';
 
 type CategoryKey = keyof typeof mockData;
 
@@ -47,10 +47,17 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
     const [modalData, setModalData] = useState<T | null>(null);
     const [deletingItem, setDeletingItem] = useState<T | null>(null);
     const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ten', direction: 'ascending' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(15);
     
     useEffect(() => {
+        setCurrentPage(1);
         setSortConfig({ key: 'ten', direction: 'ascending' });
     }, [categoryKey]);
+    
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [itemsPerPage]);
 
     const requestSort = (key: string) => {
         let direction: 'ascending' | 'descending' = 'ascending';
@@ -93,6 +100,13 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
         }
         return sortableItems;
     }, [items, sortConfig]);
+    
+    const paginatedItems = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return sortedItems.slice(startIndex, startIndex + itemsPerPage);
+    }, [sortedItems, currentPage, itemsPerPage]);
+
+    const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
 
     const openModal = (data: T | null = null) => {
         setModalData(data);
@@ -171,10 +185,40 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
                 </Card.Header>
                 <Table
                     columns={finalColumns}
-                    data={sortedItems}
+                    data={paginatedItems}
                     actions={renderActions}
                     rowClassName={(item: any) => item.role === 'admin' ? 'bg-sky-50' : ''}
                 />
+                 {sortedItems.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                    >
+                        <div className="flex items-center gap-x-4">
+                            <p className="text-sm text-gray-700">
+                                Hiển thị <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
+                                - <span className="font-medium">{Math.min(currentPage * itemsPerPage, sortedItems.length)}</span>
+                                {' '}trên <span className="font-medium">{sortedItems.length}</span> mục
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <label htmlFor="items-per-page" className="text-sm text-gray-700">Hiển thị:</label>
+                                <select
+                                    id="items-per-page"
+                                    value={itemsPerPage}
+                                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                    className="form-select py-1 w-auto"
+                                >
+                                    <option value={10}>10</option>
+                                    <option value={15}>15</option>
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                </select>
+                                <span className="text-sm text-gray-700">dòng/trang</span>
+                            </div>
+                        </div>
+                    </Pagination>
+                )}
             </Card>
 
             <Modal isOpen={isModalOpen} onClose={closeModal} title={modalTitle}>

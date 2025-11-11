@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { 
     DanhMucTaiLieu, PhienBanTaiLieu, NhatKyThayDoi, PhanPhoiTaiLieu, LichRaSoat, DaoTaoTruyenThong, RuiRoCoHoi, NhanSu, PhongBan, LoaiTaiLieu, CapDoTaiLieu, MucDoBaoMat, TanSuatRaSoat, HangMucThayDoi, AuditLog, TieuChuan
@@ -139,6 +138,8 @@ type ModalContent = {
     data?: any;
 };
 
+type TabKey = 'changeLogs' | 'distributions' | 'reviewSchedules' | 'trainings' | 'risks' | 'auditTrail';
+
 const idKeyMap: Record<ModalType, string> = {
     versions: 'id_phien_ban',
     changeLogs: 'id_thay_doi',
@@ -149,7 +150,6 @@ const idKeyMap: Record<ModalType, string> = {
     viewChangeLog: 'id_thay_doi'
 };
 
-const AUDIT_ITEMS_PER_PAGE = 10;
 
 const TabContentWrapper: React.FC<{
     title: string;
@@ -186,8 +186,24 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
     const [confirmDialog, setConfirmDialog] = useState<{ type: ModalType; data: any } | null>(null);
     const [isEditingDocument, setIsEditingDocument] = useState(false);
     const [selectorModalType, setSelectorModalType] = useState<'parent' | 'replacement' | null>(null);
-    const [auditPage, setAuditPage] = useState(1);
     const [showOlderVersions, setShowOlderVersions] = useState(false);
+
+    const [tabPaging, setTabPaging] = useState({
+        changeLogs: { page: 1, perPage: 10 },
+        distributions: { page: 1, perPage: 10 },
+        reviewSchedules: { page: 1, perPage: 10 },
+        trainings: { page: 1, perPage: 10 },
+        risks: { page: 1, perPage: 10 },
+        auditTrail: { page: 1, perPage: 10 },
+    });
+
+    const handlePageChange = (tab: TabKey, page: number) => {
+        setTabPaging(prev => ({ ...prev, [tab]: { ...prev[tab], page } }));
+    };
+
+    const handleItemsPerPageChange = (tab: TabKey, perPage: number) => {
+        setTabPaging(prev => ({ ...prev, [tab]: { page: 1, perPage } }));
+    };
     
     const canUpdateDocument = currentUser.role === 'admin' || !!currentUser.permissions?.canUpdate;
     const canDeleteDocument = currentUser.role === 'admin' || !!currentUser.permissions?.canDelete;
@@ -229,7 +245,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
         reviewSchedules: allData.reviewSchedules.filter(rs => rs.ma_tl === document.ma_tl).sort((a,b) => new Date(b.ngay_ra_soat_ke_tiep).getTime() - new Date(a.ngay_ra_soat_ke_tiep).getTime()),
         trainings: allData.trainings.filter(t => t.ma_tl === document.ma_tl).sort((a,b) => new Date(b.ngay_dao_tao).getTime() - new Date(a.ngay_dao_tao).getTime()),
         risks: allData.risks.filter(r => r.ma_tl === document.ma_tl).sort((a,b) => new Date(b.ngay_nhan_dien).getTime() - new Date(a.ngay_nhan_dien).getTime()),
-        auditTrail: allData.auditTrail.filter(log => log.ma_tl === document.ma_tl).sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()),
+        auditTrail: allData.auditTrail.filter(log => log.entity_id === document.ma_tl || log.details.includes(document.ma_tl)).sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()),
     }), [document.ma_tl, allData]);
 
     const openModal = (type: ModalType, data: any = null) => setModalContent({ type, data });
@@ -390,8 +406,6 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
         );
     };
 
-    const paginatedAuditTrail = relatedData.auditTrail.slice((auditPage - 1) * AUDIT_ITEMS_PER_PAGE, auditPage * AUDIT_ITEMS_PER_PAGE);
-
     const displayVersions = useMemo(() => {
         if (showOlderVersions) {
             return relatedData.versions;
@@ -401,116 +415,148 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
     }, [relatedData.versions, showOlderVersions]);
 
     const tabs = [
-        { title: `Nhật ký Thay đổi (${relatedData.changeLogs.length})`, content: (
-             <TabContentWrapper title="Chi tiết Thay đổi" buttonLabel="Thêm Thay đổi" onButtonClick={() => openModal('changeLogs')} showButton={canUpdateDocument}>
-                <Table<NhatKyThayDoi> 
-                    columns={[
-                        { header: 'Phiên bản', accessor: item => relatedData.versions.find(v => v.id_phien_ban === item.id_phien_ban)?.phien_ban },
-                        { header: 'Hạng mục', accessor: item => hangMucMap.get(item.hang_muc) },
-                        { header: 'Lý do', accessor: item => <p className="truncate max-w-xs">{item.ly_do_thay_doi}</p> },
-                        { header: 'Ngày đề xuất', accessor: item => formatDateForDisplay(item.ngay_de_xuat) },
-                        { header: 'Người đề xuất', accessor: item => nhanSuMap.get(item.nguoi_de_xuat) },
-                    ]} 
-                    data={relatedData.changeLogs} 
-                    actions={item => (
-                        <div className="flex items-center justify-end space-x-2">
-                            <button onClick={(e) => { e.stopPropagation(); openModal('viewChangeLog', item); }} className="p-1 text-gray-500 hover:text-gray-800" title="Xem chi tiết thay đổi">
-                                <Icon type="eye" className="h-5 w-5" />
-                            </button>
-                            {canUpdateDocument && (
-                                <button onClick={(e) => { e.stopPropagation(); openModal('changeLogs', item); }} className="p-1 text-blue-600 hover:text-blue-800" title="Chỉnh sửa">
-                                    <Icon type="pencil" className="h-4 w-4" />
-                                </button>
-                            )}
-                            {canDeleteDocument && (
-                                <button onClick={(e) => { e.stopPropagation(); openConfirm('changeLogs', item); }} className="p-1 text-red-600 hover:text-red-800" title="Xóa">
-                                    <Icon type="trash" className="h-4 w-4" />
-                                </button>
-                            )}
-                        </div>
-                    )}
-                />
-            </TabContentWrapper>
-        )},
-        { title: `Phân phối (${relatedData.distributions.length})`, content: (
-            <TabContentWrapper title="Lịch sử Phân phối" buttonLabel="Thêm Phân phối" onButtonClick={() => openModal('distributions')} showButton={canUpdateDocument}>
-                <Table<PhanPhoiTaiLieu> columns={[
-                    { header: 'Phiên bản', accessor: item => relatedData.versions.find(v => v.id_phien_ban === item.id_phien_ban)?.phien_ban },
-                    { header: 'Phòng ban nhận', accessor: item => phongBanMap.get(item.phong_ban_nhan) },
-                    { header: 'Ngày phân phối', accessor: item => formatDateForDisplay(item.ngay_phan_phoi) },
-                    { header: 'Bản cứng/mềm', accessor: item => `${item.so_luong_ban_cung}/${item.so_luong_ban_mem}` },
-                    { header: 'Trạng thái', accessor: item => <Badge status={item.trang_thai_phan_phoi} /> },
-                ]} data={relatedData.distributions} actions={canUpdateDocument ? item => (
+        { title: `Nhật ký Thay đổi (${relatedData.changeLogs.length})`, key: 'changeLogs' as TabKey, data: relatedData.changeLogs,
+          columns: [
+                { header: 'Phiên bản', accessor: (item: NhatKyThayDoi) => relatedData.versions.find(v => v.id_phien_ban === item.id_phien_ban)?.phien_ban },
+                { header: 'Hạng mục', accessor: (item: NhatKyThayDoi) => hangMucMap.get(item.hang_muc) },
+                { header: 'Lý do', accessor: (item: NhatKyThayDoi) => <p className="truncate max-w-xs">{item.ly_do_thay_doi}</p> },
+                { header: 'Ngày đề xuất', accessor: (item: NhatKyThayDoi) => formatDateForDisplay(item.ngay_de_xuat) },
+                { header: 'Người đề xuất', accessor: (item: NhatKyThayDoi) => nhanSuMap.get(item.nguoi_de_xuat) },
+            ],
+            actions: (item: NhatKyThayDoi) => (
+                <div className="flex items-center justify-end space-x-2">
+                    <button onClick={(e) => { e.stopPropagation(); openModal('viewChangeLog', item); }} className="p-1 text-gray-500 hover:text-gray-800" title="Xem chi tiết thay đổi">
+                        <Icon type="eye" className="h-5 w-5" />
+                    </button>
+                    {canUpdateDocument && <button onClick={(e) => { e.stopPropagation(); openModal('changeLogs', item); }} className="p-1 text-blue-600 hover:text-blue-800" title="Chỉnh sửa"><Icon type="pencil" className="h-4 w-4" /></button>}
+                    {canDeleteDocument && <button onClick={(e) => { e.stopPropagation(); openConfirm('changeLogs', item); }} className="p-1 text-red-600 hover:text-red-800" title="Xóa"><Icon type="trash" className="h-4 w-4" /></button>}
+                </div>
+            )
+        },
+        { title: `Phân phối (${relatedData.distributions.length})`, key: 'distributions' as TabKey, data: relatedData.distributions,
+          columns: [
+                { header: 'Phiên bản', accessor: (item: PhanPhoiTaiLieu) => relatedData.versions.find(v => v.id_phien_ban === item.id_phien_ban)?.phien_ban },
+                { header: 'Phòng ban nhận', accessor: (item: PhanPhoiTaiLieu) => phongBanMap.get(item.phong_ban_nhan) },
+                { header: 'Ngày phân phối', accessor: (item: PhanPhoiTaiLieu) => formatDateForDisplay(item.ngay_phan_phoi) },
+                { header: 'Bản cứng/mềm', accessor: (item: PhanPhoiTaiLieu) => `${item.so_luong_ban_cung}/${item.so_luong_ban_mem}` },
+                { header: 'Trạng thái', accessor: (item: PhanPhoiTaiLieu) => <Badge status={item.trang_thai_phan_phoi} /> },
+            ],
+            actions: canUpdateDocument ? (item: PhanPhoiTaiLieu) => (
                      <div className="flex items-center justify-end space-x-2">
                         <button onClick={() => openModal('distributions', item)} className="text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
                         <button onClick={() => openConfirm('distributions', item)} className="text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
                     </div>
-                ) : undefined}/>
-            </TabContentWrapper>
-        )},
-        { title: `Lịch Rà soát (${relatedData.reviewSchedules.length})`, content: (
-            <TabContentWrapper title="Kế hoạch và Kết quả Rà soát" buttonLabel="Thêm Lịch" onButtonClick={() => openModal('reviewSchedules')} showButton={canUpdateDocument}>
-                 <Table<LichRaSoat> columns={[
-                    { header: 'Ngày rà soát kế tiếp', accessor: item => formatDateForDisplay(item.ngay_ra_soat_ke_tiep) },
-                    { header: 'Tần suất', accessor: item => tanSuatMap.get(item.tan_suat) },
-                    { header: 'Người chịu trách nhiệm', accessor: item => nhanSuMap.get(item.nguoi_chiu_trach_nhiem) },
-                    { header: 'Ngày thực tế', accessor: item => formatDateForDisplay(item.ngay_ra_soat_thuc_te) },
-                    { header: 'Kết quả', accessor: item => item.ket_qua_ra_soat ? <Badge status={item.ket_qua_ra_soat} /> : '' },
-                ]} data={relatedData.reviewSchedules} actions={canUpdateDocument ? item => (
+                ) : undefined
+        },
+        { title: `Lịch Rà soát (${relatedData.reviewSchedules.length})`, key: 'reviewSchedules' as TabKey, data: relatedData.reviewSchedules,
+            columns: [
+                    { header: 'Ngày rà soát kế tiếp', accessor: (item: LichRaSoat) => formatDateForDisplay(item.ngay_ra_soat_ke_tiep) },
+                    { header: 'Tần suất', accessor: (item: LichRaSoat) => tanSuatMap.get(item.tan_suat) },
+                    { header: 'Người chịu trách nhiệm', accessor: (item: LichRaSoat) => nhanSuMap.get(item.nguoi_chiu_trach_nhiem) },
+                    { header: 'Ngày thực tế', accessor: (item: LichRaSoat) => formatDateForDisplay(item.ngay_ra_soat_thuc_te) },
+                    { header: 'Kết quả', accessor: (item: LichRaSoat) => item.ket_qua_ra_soat ? <Badge status={item.ket_qua_ra_soat} /> : '' },
+                ],
+            actions: canUpdateDocument ? (item: LichRaSoat) => (
                      <div className="flex items-center justify-end space-x-2">
                         <button onClick={() => openModal('reviewSchedules', item)} className="text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
                         <button onClick={() => openConfirm('reviewSchedules', item)} className="text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
                     </div>
-                ) : undefined}/>
-            </TabContentWrapper>
-        )},
-        { title: `Đào tạo & TT (${relatedData.trainings.length})`, content: (
-             <TabContentWrapper title="Hoạt động Đào tạo & Truyền thông" buttonLabel="Thêm Đào tạo" onButtonClick={() => openModal('trainings')} showButton={canUpdateDocument}>
-                 <Table<DaoTaoTruyenThong> columns={[
+                ) : undefined
+        },
+        { title: `Đào tạo & TT (${relatedData.trainings.length})`, key: 'trainings' as TabKey, data: relatedData.trainings,
+             columns: [
                     { header: 'Nội dung', accessor: 'noi_dung_dao_tao' },
-                    { header: 'Ngày đào tạo', accessor: item => formatDateForDisplay(item.ngay_dao_tao) },
-                    { header: 'Người đào tạo', accessor: item => nhanSuMap.get(item.nguoi_dao_tao) },
+                    { header: 'Ngày đào tạo', accessor: (item: DaoTaoTruyenThong) => formatDateForDisplay(item.ngay_dao_tao) },
+                    { header: 'Người đào tạo', accessor: (item: DaoTaoTruyenThong) => nhanSuMap.get(item.nguoi_dao_tao) },
                     { header: 'Số người', accessor: 'so_nguoi_tham_gia' },
-                ]} data={relatedData.trainings} actions={canUpdateDocument ? item => (
+                ],
+            actions: canUpdateDocument ? (item: DaoTaoTruyenThong) => (
                      <div className="flex items-center justify-end space-x-2">
                         <button onClick={() => openModal('trainings', item)} className="text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
                         <button onClick={() => openConfirm('trainings', item)} className="text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
                     </div>
-                ) : undefined}/>
-            </TabContentWrapper>
-        )},
-        { title: `Rủi ro & Cơ hội (${relatedData.risks.length})`, content: (
-            <TabContentWrapper title="Quản lý Rủi ro & Cơ hội" buttonLabel="Thêm Rủi ro/Cơ hội" onButtonClick={() => openModal('risks')} showButton={canUpdateDocument}>
-                 <Table<RuiRoCoHoi> columns={[
-                    { header: 'Loại', accessor: item => item.loai === 'rui_ro' ? 'Rủi ro' : 'Cơ hội' },
+                ) : undefined
+        },
+        { title: `Rủi ro & Cơ hội (${relatedData.risks.length})`, key: 'risks' as TabKey, data: relatedData.risks,
+            columns: [
+                    { header: 'Loại', accessor: (item: RuiRoCoHoi) => item.loai === 'rui_ro' ? 'Rủi ro' : 'Cơ hội' },
                     { header: 'Mô tả', accessor: 'mo_ta' },
-                    { header: 'Ngày nhận diện', accessor: item => formatDateForDisplay(item.ngay_nhan_dien) },
-                    { header: 'Người phụ trách', accessor: item => nhanSuMap.get(item.nguoi_phu_trach) },
-                    { header: 'Trạng thái', accessor: item => <Badge status={item.trang_thai} /> },
-                ]} data={relatedData.risks} actions={canUpdateDocument ? item => (
+                    { header: 'Ngày nhận diện', accessor: (item: RuiRoCoHoi) => formatDateForDisplay(item.ngay_nhan_dien) },
+                    { header: 'Người phụ trách', accessor: (item: RuiRoCoHoi) => nhanSuMap.get(item.nguoi_phu_trach) },
+                    { header: 'Trạng thái', accessor: (item: RuiRoCoHoi) => <Badge status={item.trang_thai} /> },
+                ],
+            actions: canUpdateDocument ? (item: RuiRoCoHoi) => (
                     <div className="flex items-center justify-end space-x-2">
                         <button onClick={() => openModal('risks', item)} className="text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
                         <button onClick={() => openConfirm('risks', item)} className="text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
                     </div>
-                ) : undefined}/>
-            </TabContentWrapper>
-        )},
-        { title: `Nhật ký Hệ thống (${relatedData.auditTrail.length})`, content: (
-             <TabContentWrapper title="Lịch sử thay đổi hệ thống">
-                <Table<AuditLog> columns={[
-                    { header: 'Thời gian', accessor: item => formatDateTimeForDisplay(item.timestamp) },
+                ) : undefined
+        },
+        { title: `Nhật ký Hệ thống (${relatedData.auditTrail.length})`, key: 'auditTrail' as TabKey, data: relatedData.auditTrail,
+             columns: [
+                    { header: 'Thời gian', accessor: (item: AuditLog) => formatDateTimeForDisplay(item.timestamp) },
                     { header: 'Người dùng', accessor: 'user_name' },
-                    { header: 'Hành động', accessor: item => <Badge status={item.action} /> },
+                    { header: 'Hành động', accessor: (item: AuditLog) => <Badge status={item.action} /> },
                     { header: 'Chi tiết', accessor: 'details' },
-                ]} data={paginatedAuditTrail} />
-                 <Pagination
-                    currentPage={auditPage}
-                    totalPages={Math.ceil(relatedData.auditTrail.length / AUDIT_ITEMS_PER_PAGE)}
-                    onPageChange={setAuditPage}
-                />
-            </TabContentWrapper>
-        )},
+                ]
+        },
     ];
+
+    const renderedTabs = tabs.map(tabInfo => {
+        const { key, title, data, columns, actions } = tabInfo;
+        const paging = tabPaging[key];
+        const totalItems = data.length;
+        const totalPages = Math.ceil(totalItems / paging.perPage);
+
+        const paginatedData = useMemo(() => {
+            const startIndex = (paging.page - 1) * paging.perPage;
+            return data.slice(startIndex, startIndex + paging.perPage);
+        }, [data, paging]);
+
+        return {
+            title,
+            content: (
+                <TabContentWrapper 
+                    title={title.split('(')[0].trim()} 
+                    buttonLabel={`Thêm ${translate(key)}`} 
+                    onButtonClick={() => openModal(key as ModalType)} 
+                    showButton={canUpdateDocument && key !== 'auditTrail'}
+                >
+                    {/* FIX: Cast props to 'any' to resolve TypeScript union type inference issue with generic Table component. */}
+                    <Table data={paginatedData as any} columns={columns as any} actions={actions as any} />
+                    {totalItems > 0 && totalPages > 1 && (
+                         <Pagination
+                            currentPage={paging.page}
+                            totalPages={totalPages}
+                            onPageChange={page => handlePageChange(key, page)}
+                        >
+                            <div className="flex items-center gap-x-4">
+                                <p className="text-sm text-gray-700">
+                                    Hiển thị <span className="font-medium">{(paging.page - 1) * paging.perPage + 1}</span>
+                                    - <span className="font-medium">{Math.min(paging.page * paging.perPage, totalItems)}</span>
+                                    {' '}trên <span className="font-medium">{totalItems}</span> mục
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor={`${key}-items-per-page`} className="text-sm text-gray-700">Dòng/trang:</label>
+                                    <select
+                                        id={`${key}-items-per-page`}
+                                        value={paging.perPage}
+                                        onChange={(e) => handleItemsPerPageChange(key, Number(e.target.value))}
+                                        className="form-select py-1 w-auto"
+                                    >
+                                        <option value={5}>5</option>
+                                        <option value={10}>10</option>
+                                        <option value={20}>20</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </Pagination>
+                    )}
+                </TabContentWrapper>
+            )
+        }
+    });
+
 
     return (
         <div className="space-y-8">
@@ -554,9 +600,9 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                     </div>
                 </Card.Header>
                 <Card.Body>
-                    <div className="space-y-10">
+                    <div className="divide-y divide-slate-200">
                         {/* General Info */}
-                        <div>
+                        <div className="py-6">
                             <h3 className="font-semibold text-gray-800 text-base">Thông tin chung</h3>
                             <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-4">
                                 <DetailItem label="Loại tài liệu" value={loaiTaiLieuMap.get(document.loai_tai_lieu)} />
@@ -567,7 +613,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                         </div>
 
                         {/* Timeline & Version */}
-                        <div>
+                        <div className="py-6">
                             <h3 className="font-semibold text-gray-800 text-base">Mốc thời gian & Phiên bản</h3>
                             <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-4">
                                 <DetailItem label="Ngày ban hành" value={formatDateForDisplay(document.ngay_ban_hanh)} />
@@ -578,7 +624,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                         </div>
                         
                         {/* Stakeholders */}
-                        <div>
+                        <div className="py-6">
                             <h3 className="font-semibold text-gray-800 text-base">Các bên liên quan</h3>
                             <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
                                 <DetailItem label="Người soạn thảo" value={nhanSuMap.get(document.nguoi_soan_thao)} />
@@ -588,7 +634,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                         </div>
 
                         {/* References and Relationships */}
-                        <div>
+                        <div className="py-6">
                             <h3 className="font-semibold text-gray-800 text-base">Tham chiếu & Liên kết</h3>
                             <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                                  <div className="sm:col-span-2">
@@ -618,7 +664,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                         </div>
                         
                         {/* Attachments */}
-                        <div>
+                        <div className="pt-6">
                              <h3 className="font-semibold text-gray-800 text-base">Tệp đính kèm</h3>
                              <div className="mt-4 flex items-center space-x-4">
                                 {document.link_drive && <a href={document.link_drive} target="_blank" rel="noopener noreferrer" className="link">Google Drive</a>}
@@ -684,7 +730,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
             </Card>
 
             <div className="print-tabs-container">
-                 <Tabs tabs={tabs} activeTabIndex={activeTabIndex} onTabChange={setActiveTabIndex} />
+                 <Tabs tabs={renderedTabs} activeTabIndex={activeTabIndex} onTabChange={setActiveTabIndex} />
             </div>
 
             <Modal isOpen={!!modalContent} onClose={closeModal} title={getModalTitle()}>
@@ -710,7 +756,6 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                 onClose={() => setSelectorModalType(null)}
                 onSelect={(docId) => handleRelationshipChange(selectorModalType!, docId)}
                 title={selectorModalType === 'parent' ? 'Chọn Tài liệu cha' : 'Chọn Tài liệu thay thế'}
-                // FIX: Pass the correct list of documents to the selector modal.
                 documents={selectorModalType === 'parent'
                     ? potentialParentDocuments
                     : allData.documents.filter(d => d.ma_tl !== document.ma_tl)

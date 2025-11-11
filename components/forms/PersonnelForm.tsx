@@ -77,51 +77,48 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
     const activeOrCurrentlySelected = (list: any[], selectedId: string) => 
         list.filter(item => item.is_active !== false || item.id === selectedId);
 
-    const inputStyles = "mt-1 block w-full rounded-md border-gray-300 bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
-    const labelStyles = "block text-sm font-medium text-gray-900";
-    
     const isEditingSelf = initialData?.id === currentUser.id;
 
     return (
         <form onSubmit={handleSubmit}>
             <div className="p-6 space-y-4">
                 <div>
-                    <label htmlFor="ten" className={labelStyles}>Tên nhân sự</label>
+                    <label htmlFor="ten" className="form-label">Tên nhân sự</label>
                     <input
                         type="text"
                         name="ten"
                         id="ten"
                         value={formData.ten}
                         onChange={handleChange}
-                        className={inputStyles}
+                        className="form-input"
                         required
                         placeholder="VD: Nguyễn Văn An"
                     />
                 </div>
                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="ten_dang_nhap" className={labelStyles}>Tên đăng nhập</label>
+                        <label htmlFor="ten_dang_nhap" className="form-label">Tên đăng nhập</label>
                         <input
                             type="text"
                             name="ten_dang_nhap"
                             id="ten_dang_nhap"
                             value={formData.ten_dang_nhap}
                             onChange={handleChange}
-                            className={inputStyles}
+                            className="form-input"
                             required
                             placeholder="VD: an.nv"
                         />
                     </div>
                     <div>
-                        <label htmlFor="mat_khau" className={labelStyles}>Mật khẩu</label>
-                         <div className="relative mt-1">
+                        <label htmlFor="mat_khau" className="form-label">Mật khẩu</label>
+                         <div className="relative">
                             <input
                                 type={isPasswordVisible ? 'text' : 'password'}
                                 name="mat_khau"
                                 id="mat_khau"
                                 value={formData.mat_khau}
                                 onChange={handleChange}
-                                className="block w-full rounded-md border-gray-300 bg-white py-2.5 px-3 pr-10 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400"
+                                className="form-input pr-10"
                                 required
                                 placeholder="Nhập mật khẩu"
                             />
@@ -138,13 +135,13 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
                 </div>
                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="chuc_vu" className={labelStyles}>Chức vụ</label>
+                        <label htmlFor="chuc_vu" className="form-label">Chức vụ</label>
                         <select
                             name="chuc_vu"
                             id="chuc_vu"
                             value={formData.chuc_vu}
                             onChange={handleChange}
-                            className={inputStyles}
+                            className="form-select"
                             required
                         >
                             <option value="">Chọn chức vụ</option>
@@ -154,13 +151,13 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="phong_ban_id" className={labelStyles}>Phòng ban</label>
+                        <label htmlFor="phong_ban_id" className="form-label">Phòng ban</label>
                         <select
                             name="phong_ban_id"
                             id="phong_ban_id"
                             value={formData.phong_ban_id}
                             onChange={handleChange}
-                            className={inputStyles}
+                            className="form-select"
                             required
                         >
                             <option value="">Chọn phòng ban</option>
@@ -173,13 +170,13 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
 
                 {currentUser.role === 'admin' && (
                      <div>
-                        <label htmlFor="role" className={labelStyles}>Vai trò</label>
+                        <label htmlFor="role" className="form-label">Vai trò</label>
                         <select
                             name="role"
                             id="role"
                             value={formData.role}
                             onChange={handleChange}
-                            className={`${inputStyles} disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                            className="form-select disabled:bg-gray-100 disabled:cursor-not-allowed"
                             required
                             disabled={isEditingSelf}
                             title={isEditingSelf ? "Không thể thay đổi vai trò của chính mình." : ""}
@@ -227,8 +224,8 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
             </div>
 
             <div className="bg-slate-50 px-6 py-4 flex justify-end gap-x-3 rounded-b-xl border-t border-gray-200">
-                <button type="button" onClick={onCancel} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
-                <button type="submit" className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Lưu</button>
+                <button type="button" onClick={onCancel} className="btn-secondary">Hủy</button>
+                <button type="submit" className="btn-primary ml-3">Lưu</button>
             </div>
         </form>
     );

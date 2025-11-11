@@ -65,49 +65,47 @@ const StandardForm: React.FC<StandardFormProps> = ({ onSubmit, onCancel, initial
         });
     };
 
-    const inputStyles = "mt-1 block w-full rounded-md border-gray-300 bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
-    const labelStyles = "block text-sm font-medium text-gray-900";
-
     return (
         <form onSubmit={handleSubmit}>
             <div className="p-6 space-y-4">
                 <div>
-                    <label htmlFor="ten" className={labelStyles}>Tên đầy đủ</label>
-                    <input type="text" name="ten" id="ten" value={formData.ten} onChange={handleChange} className={inputStyles} required placeholder="VD: ISO 9001 - Hệ thống quản lý chất lượng" />
+                    <label htmlFor="ten" className="form-label">Tên đầy đủ</label>
+                    <input type="text" name="ten" id="ten" value={formData.ten} onChange={handleChange} className="form-input" required placeholder="VD: ISO 9001 - Hệ thống quản lý chất lượng" />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="ten_viet_tat" className={labelStyles}>Tên viết tắt (tùy chọn)</label>
-                        <input type="text" name="ten_viet_tat" id="ten_viet_tat" value={formData.ten_viet_tat} onChange={handleChange} className={inputStyles} placeholder="VD: QMS" />
+                        <label htmlFor="ten_viet_tat" className="form-label">Tên viết tắt (tùy chọn)</label>
+                        <input type="text" name="ten_viet_tat" id="ten_viet_tat" value={formData.ten_viet_tat} onChange={handleChange} className="form-input" placeholder="VD: QMS" />
                     </div>
                     <div>
-                        <label htmlFor="phien_ban" className={labelStyles}>Phiên bản (tùy chọn)</label>
-                        <input type="text" name="phien_ban" id="phien_ban" value={formData.phien_ban} onChange={handleChange} className={inputStyles} placeholder="VD: 2015" />
+                        <label htmlFor="phien_ban" className="form-label">Phiên bản (tùy chọn)</label>
+                        <input type="text" name="phien_ban" id="phien_ban" value={formData.phien_ban} onChange={handleChange} className="form-input" placeholder="VD: 2015" />
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="ngay_ap_dung" className={labelStyles}>Ngày bắt đầu áp dụng</label>
-                        <DatePicker id="ngay_ap_dung" value={formData.ngay_ap_dung} onChange={(val) => handleDateChange('ngay_ap_dung', val)} className={inputStyles} required />
+                        <label htmlFor="ngay_ap_dung" className="form-label">Ngày bắt đầu áp dụng</label>
+                        <DatePicker id="ngay_ap_dung" value={formData.ngay_ap_dung} onChange={(val) => handleDateChange('ngay_ap_dung', val)} required />
                     </div>
                     <div>
-                        <label htmlFor="ngay_ket_thuc_ap_dung" className={labelStyles}>Ngày kết thúc áp dụng (tùy chọn)</label>
-                        <DatePicker id="ngay_ket_thuc_ap_dung" value={formData.ngay_ket_thuc_ap_dung} onChange={(val) => handleDateChange('ngay_ket_thuc_ap_dung', val)} className={inputStyles} />
+                        <label htmlFor="ngay_ket_thuc_ap_dung" className="form-label">Ngày kết thúc áp dụng (tùy chọn)</label>
+                        <DatePicker id="ngay_ket_thuc_ap_dung" value={formData.ngay_ket_thuc_ap_dung} onChange={(val) => handleDateChange('ngay_ket_thuc_ap_dung', val)} />
                         {dateError && <p className="mt-2 text-sm text-red-600">{dateError}</p>}
                     </div>
                 </div>
 
                 <div>
-                    <label htmlFor="mo_ta" className={labelStyles}>Mô tả (tùy chọn)</label>
-                    <textarea name="mo_ta" id="mo_ta" value={formData.mo_ta} onChange={handleChange} rows={3} className={inputStyles} placeholder="Mô tả ngắn gọn về tiêu chuẩn..." />
+                    <label htmlFor="mo_ta" className="form-label">Mô tả (tùy chọn)</label>
+                    <textarea name="mo_ta" id="mo_ta" value={formData.mo_ta} onChange={handleChange} rows={3} className="form-textarea" placeholder="Mô tả ngắn gọn về tiêu chuẩn..." />
                 </div>
             </div>
 
             <div className="bg-slate-50 px-6 py-4 flex justify-end gap-x-3 rounded-b-xl border-t border-gray-200">
-                <button type="button" onClick={onCancel} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
-                <button type="submit" disabled={!!dateError} className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300 disabled:cursor-not-allowed">Lưu</button>
+                <button type="button" onClick={onCancel} className="btn-secondary">Hủy</button>
+                <button type="submit" disabled={!!dateError} className="btn-primary"
+                >Lưu</button>
             </div>
         </form>
     );

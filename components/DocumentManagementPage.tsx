@@ -521,7 +521,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             <button
                                 type="button"
                                 onClick={() => openModal()}
-                                className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                className="btn-primary"
                             >
                                 <Icon type="plus" className="-ml-1 mr-2 h-5 w-5" />
                                 Thêm Tài liệu
@@ -532,52 +532,71 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
 
                 <Card>
                     <Card.Body>
-                        <div className="flex flex-wrap items-center gap-4 mb-4">
-                            <div className="relative flex-grow min-w-[200px]">
-                                <input
-                                    type="text"
-                                    placeholder="Tìm kiếm theo tên, mã, số hiệu..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                />
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 items-end">
+                            <div className="xl:col-span-2">
+                                <label htmlFor="search-input" className="form-label">Tìm kiếm</label>
+                                <div className="search-input-container">
+                                    <Icon type="search" className="search-input-icon h-5 w-5" />
+                                    <input
+                                        id="search-input"
+                                        type="text"
+                                        placeholder="Tên, mã, số hiệu..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="form-input search-input"
+                                    />
+                                </div>
                             </div>
-                            <select
-                                value={filters.status}
-                                onChange={(e) => setFilters(f => ({ ...f, status: e.target.value as DocumentStatus | '' | 'all_docs' }))}
-                                className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                            >
-                                <option value="">Tài liệu đang dùng (Mặc định)</option>
-                                <option value="all_docs">Tất cả Trạng thái</option>
-                                {Object.values(DocumentStatus).map(s => <option key={s} value={s}>{translate(s)}</option>)}
-                            </select>
-                            <select
-                                value={filters.department}
-                                onChange={(e) => setFilters(f => ({ ...f, department: e.target.value }))}
-                                className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                            >
-                                <option value="">Tất cả Phòng ban</option>
-                                {allData.phongBan.map(d => <option key={d.id} value={d.id}>{d.ten}</option>)}
-                            </select>
-                            <select
-                                value={filters.standard}
-                                onChange={(e) => setFilters(f => ({ ...f, standard: e.target.value }))}
-                                className="block w-full flex-grow min-w-[180px] sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                            >
-                                <option value="">Tất cả Tiêu chuẩn</option>
-                                {allData.tieuChuan.filter(s => s.is_active).map(s => <option key={s.id} value={s.id}>{s.ten_viet_tat ? `${s.ten_viet_tat} - ${s.ten}` : s.ten}</option>)}
-                            </select>
-                            <button
-                                onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
-                                className={`inline-flex items-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ${
-                                    showBookmarkedOnly
-                                        ? 'bg-yellow-50 text-yellow-800 ring-yellow-300'
-                                        : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50'
-                                }`}
-                            >
-                                <Icon type={showBookmarkedOnly ? 'star-solid' : 'star'} className="-ml-0.5 h-4 w-4" />
-                                <span className="hidden sm:inline">Đã đánh dấu</span>
-                            </button>
+                            <div>
+                                <label htmlFor="status-filter" className="form-label">Trạng thái</label>
+                                <select
+                                    id="status-filter"
+                                    value={filters.status}
+                                    onChange={(e) => setFilters(f => ({ ...f, status: e.target.value as DocumentStatus | '' | 'all_docs' }))}
+                                    className="form-select"
+                                >
+                                    <option value="">Tài liệu đang dùng</option>
+                                    <option value="all_docs">Tất cả</option>
+                                    {Object.values(DocumentStatus).map(s => <option key={s} value={s}>{translate(s)}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label htmlFor="department-filter" className="form-label">Phòng ban</label>
+                                <select
+                                    id="department-filter"
+                                    value={filters.department}
+                                    onChange={(e) => setFilters(f => ({ ...f, department: e.target.value }))}
+                                    className="form-select"
+                                >
+                                    <option value="">Tất cả</option>
+                                    {allData.phongBan.map(d => <option key={d.id} value={d.id}>{d.ten}</option>)}
+                                </select>
+                            </div>
+                           <div>
+                                <label htmlFor="standard-filter" className="form-label">Tiêu chuẩn</label>
+                                <select
+                                    id="standard-filter"
+                                    value={filters.standard}
+                                    onChange={(e) => setFilters(f => ({ ...f, standard: e.target.value }))}
+                                    className="form-select"
+                                >
+                                    <option value="">Tất cả</option>
+                                    {allData.tieuChuan.filter(s => s.is_active).map(s => <option key={s.id} value={s.id}>{s.ten_viet_tat || s.ten}</option>)}
+                                </select>
+                            </div>
+                            <div className="flex items-center">
+                                <button
+                                    onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
+                                    className={`w-full inline-flex items-center justify-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ${
+                                        showBookmarkedOnly
+                                            ? 'bg-yellow-50 text-yellow-800 ring-yellow-300'
+                                            : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <Icon type={showBookmarkedOnly ? 'star-solid' : 'star'} className="-ml-0.5 h-4 w-4" />
+                                    <span>Đã đánh dấu</span>
+                                </button>
+                            </div>
                         </div>
                     </Card.Body>
                     <Table<DanhMucTaiLieu>
@@ -593,22 +612,28 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             totalPages={totalPages}
                             onPageChange={setCurrentPage}
                         >
-                            <div className="flex items-center gap-2 text-sm text-gray-700">
-                                <span>Hiển thị</span>
-                                <select
-                                    id="items-per-page"
-                                    value={itemsPerPage}
-                                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                                    className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-1"
-                                >
-                                    <option value={10}>10</option>
-                                    <option value={20}>20</option>
-                                    <option value={50}>50</option>
-                                    <option value={100}>100</option>
-                                </select>
-                                <span>
-                                    dòng trên mỗi trang. (Tổng số {sortedDocuments.length} tài liệu)
-                                </span>
+                            <div className="flex items-center gap-x-4">
+                                <p className="text-sm text-gray-700">
+                                    Hiển thị <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
+                                    - <span className="font-medium">{Math.min(currentPage * itemsPerPage, sortedDocuments.length)}</span>
+                                    {' '}trên <span className="font-medium">{sortedDocuments.length}</span> tài liệu
+                                </p>
+
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="items-per-page" className="text-sm text-gray-700">Hiển thị:</label>
+                                    <select
+                                        id="items-per-page"
+                                        value={itemsPerPage}
+                                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                        className="form-select py-1 w-auto"
+                                    >
+                                        <option value={10}>10</option>
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                        <option value={100}>100</option>
+                                    </select>
+                                    <span className="text-sm text-gray-700">dòng/trang</span>
+                                </div>
                             </div>
                         </Pagination>
                     )}
@@ -630,11 +655,11 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                         }}
                     />
                     <Modal.Footer>
-                        <button type="button" onClick={closeModal} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
+                        <button type="button" onClick={closeModal} className="btn-secondary">Hủy</button>
                         <button 
                             type="submit" 
                             form="document-form"
-                            className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                            className="ml-3 btn-primary"
                         >
                             Lưu
                         </button>

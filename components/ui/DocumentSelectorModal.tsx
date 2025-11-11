@@ -35,16 +35,14 @@ const DocumentSelectorModal: React.FC<DocumentSelectorModalProps> = ({
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={title}>
             <div className="p-4 sm:p-6 border-t border-b border-gray-200">
-                <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <Icon type="search" className="h-5 w-5 text-gray-400" />
-                    </div>
+                <div className="search-input-container">
+                    <Icon type="search" className="search-input-icon h-5 w-5" />
                     <input
                         type="text"
                         placeholder="Tìm kiếm theo tên, mã, số hiệu..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="block w-full rounded-md border-gray-300 bg-white py-2 pl-10 pr-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm placeholder-gray-400"
+                        className="form-input search-input"
                     />
                 </div>
             </div>
@@ -75,7 +73,7 @@ const DocumentSelectorModal: React.FC<DocumentSelectorModalProps> = ({
                 )}
             </div>
             <Modal.Footer>
-                 <button type="button" onClick={onClose} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Đóng</button>
+                 <button type="button" onClick={onClose} className="btn-secondary">Đóng</button>
             </Modal.Footer>
         </Modal>
     );

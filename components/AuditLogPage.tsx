@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { AuditLog, NhanSu } from '../types';
 import Card from './ui/Card';
 import Table from './ui/Table';
@@ -12,8 +12,6 @@ interface AuditLogPageProps {
     users: NhanSu[];
 }
 
-const ITEMS_PER_PAGE = 20;
-
 const AuditLogPage: React.FC<AuditLogPageProps> = ({ auditLogs, users }) => {
     const [filters, setFilters] = useState({
         userId: '',
@@ -21,7 +19,12 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ auditLogs, users }) => {
         endDate: '',
     });
     const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
     
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters, itemsPerPage]);
+
     const userMap = useMemo(() => new Map(users.map(u => [u.id, u.ten])), [users]);
 
     const filteredLogs = useMemo(() => {
@@ -43,25 +46,22 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ auditLogs, users }) => {
     }, [auditLogs, filters]);
     
     const paginatedLogs = useMemo(() => {
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        return filteredLogs.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-    }, [filteredLogs, currentPage]);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredLogs.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredLogs, currentPage, itemsPerPage]);
 
-    const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
-        setCurrentPage(1);
     };
     
      const handleDateFilterChange = (field: 'startDate' | 'endDate', value: string) => {
         setFilters(prev => ({ ...prev, [field]: value }));
-        setCurrentPage(1);
     };
 
     const clearFilters = () => {
         setFilters({ userId: '', startDate: '', endDate: '' });
-        setCurrentPage(1);
     };
     
     return (
@@ -70,15 +70,15 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ auditLogs, users }) => {
             
             <Card>
                  <Card.Body>
-                     <div className="flex flex-wrap items-end gap-4">
+                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
                         <div>
-                            <label htmlFor="userId" className="block text-sm font-medium text-gray-700">Người dùng</label>
+                            <label htmlFor="userId" className="form-label">Người dùng</label>
                             <select
                                 id="userId"
                                 name="userId"
                                 value={filters.userId}
                                 onChange={handleFilterChange}
-                                className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                className="form-select"
                             >
                                 <option value="">Tất cả người dùng</option>
                                 {users.map(user => (
@@ -87,27 +87,25 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ auditLogs, users }) => {
                             </select>
                         </div>
                         <div>
-                            <label htmlFor="start-date" className="block text-sm font-medium text-gray-700">Từ ngày</label>
+                            <label htmlFor="start-date" className="form-label">Từ ngày</label>
                             <DatePicker
                                 id="start-date"
                                 value={filters.startDate}
                                 onChange={(value) => handleDateFilterChange('startDate', value)}
-                                className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                             />
                         </div>
                          <div>
-                            <label htmlFor="end-date" className="block text-sm font-medium text-gray-700">Đến ngày</label>
+                            <label htmlFor="end-date" className="form-label">Đến ngày</label>
                             <DatePicker
                                 id="end-date"
                                 value={filters.endDate}
                                 onChange={(value) => handleDateFilterChange('endDate', value)}
-                                className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                             />
                         </div>
                         <button
                             type="button"
                             onClick={clearFilters}
-                            className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+                            className="btn-secondary"
                         >
                             Xóa bộ lọc
                         </button>
@@ -128,11 +126,28 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ auditLogs, users }) => {
                         totalPages={totalPages}
                         onPageChange={setCurrentPage}
                     >
-                         <p className="text-sm text-gray-700">
-                            Hiển thị <span className="font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span>
-                            - <span className="font-medium">{Math.min(currentPage * ITEMS_PER_PAGE, filteredLogs.length)}</span> 
-                            {' '}trên <span className="font-medium">{filteredLogs.length}</span> kết quả
-                        </p>
+                         <div className="flex items-center gap-x-4">
+                            <p className="text-sm text-gray-700">
+                                Hiển thị <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
+                                - <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredLogs.length)}</span> 
+                                {' '}trên <span className="font-medium">{filteredLogs.length}</span> kết quả
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <label htmlFor="items-per-page" className="text-sm text-gray-700">Hiển thị:</label>
+                                <select
+                                    id="items-per-page"
+                                    value={itemsPerPage}
+                                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                    className="form-select py-1 w-auto"
+                                >
+                                    <option value={10}>10</option>
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                    <option value={100}>100</option>
+                                </select>
+                                <span className="text-sm text-gray-700">dòng/trang</span>
+                            </div>
+                        </div>
                     </Pagination>
                 )}
             </Card>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { LichAudit, NhanSu, TieuChuan, DanhMucTaiLieu, DanhGiaVien, ToChucDanhGia } from '../types';
 import Card from './ui/Card';
@@ -14,6 +14,7 @@ import DatePicker from './ui/DatePicker';
 import ExportDropdown from './ui/ExportDropdown';
 import { exportToCsv, exportVisibleReportToWord } from '../utils/exportUtils';
 import PrintReportLayout from './PrintReportLayout';
+import Pagination from './ui/Pagination';
 
 type AllData = {
     auditSchedules: LichAudit[];
@@ -41,7 +42,13 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ngay_bat_dau', direction: 'descending' });
     const [dateFilter, setDateFilter] = useState({ start: '', end: '' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(15);
     
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [itemsPerPage, sortConfig, dateFilter]);
+
     const { danhGiaVienMap, toChucDanhGiaMap } = useMemo(() => ({
         danhGiaVienMap: new Map(allData.danhGiaVien.filter(Boolean).map(dgv => [dgv.id, dgv.ten])),
         toChucDanhGiaMap: new Map(allData.toChucDanhGia.filter(Boolean).map(org => [org.id, org.ten])),
@@ -90,6 +97,13 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
         }
         return sortableItems;
     }, [filteredAudits, sortConfig]);
+
+    const paginatedAudits = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return sortedAudits.slice(startIndex, startIndex + itemsPerPage);
+    }, [sortedAudits, currentPage, itemsPerPage]);
+
+    const totalPages = Math.ceil(sortedAudits.length / itemsPerPage);
 
     const printLayoutProps = useMemo(() => {
         const filters: Record<string, string> = {};
@@ -241,7 +255,7 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                             <button
                                 type="button"
                                 onClick={() => openModal()}
-                                className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none"
+                                className="btn-primary"
                             >
                                 <Icon type="plus" className="-ml-1 mr-2 h-5 w-5" />
                                 Thêm Lịch Audit
@@ -252,42 +266,38 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                 
                 <Card>
                     <Card.Body>
-                         <div className="flex flex-wrap items-end gap-4">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
                             <div>
-                                <label htmlFor="start-date" className="block text-sm font-medium text-gray-900">Lọc từ ngày</label>
+                                <label htmlFor="start-date" className="form-label">Lọc từ ngày</label>
                                  <DatePicker
                                     id="start-date"
                                     value={dateFilter.start}
                                     onChange={(value) => handleDateFilterChange('start', value)}
-                                    className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                                 />
                             </div>
                              <div>
-                                <label htmlFor="end-date" className="block text-sm font-medium text-gray-900">Đến ngày</label>
+                                <label htmlFor="end-date" className="form-label">Đến ngày</label>
                                 <DatePicker
                                     id="end-date"
                                     value={dateFilter.end}
                                     onChange={(value) => handleDateFilterChange('end', value)}
-                                    className="mt-1 block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                                 />
                             </div>
                              {(dateFilter.start || dateFilter.end) && (
                                  <button
                                     type="button"
                                     onClick={clearDateFilter}
-                                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+                                    className="btn-secondary"
                                 >
                                     Xóa bộ lọc
                                 </button>
                             )}
-                            <div className="ml-auto">
+                            <div className="md:col-start-4 flex justify-end">
                                  <ExportDropdown onPrint={handlePrint} onExportCsv={handleExportCsv} onExportWord={handleExportWord} />
                             </div>
                         </div>
                     </Card.Body>
-                </Card>
-
-                <Card>
+                
                     <Table<LichAudit>
                         columns={[
                             { header: getSortableHeader('Tên cuộc audit', 'ten_cuoc_audit'), accessor: 'ten_cuoc_audit', className: 'font-medium text-gray-900' },
@@ -304,9 +314,38 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                             { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc'), accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc) },
                             { header: getSortableHeader('Trưởng đoàn', 'chuyen_gia_danh_gia_truong_id'), accessor: (item) => danhGiaVienMap.get(item.chuyen_gia_danh_gia_truong_id) },
                         ]}
-                        data={sortedAudits}
+                        data={paginatedAudits}
                         actions={canManage ? renderActions : undefined}
                     />
+                     {sortedAudits.length > 0 && (
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        >
+                            <div className="flex items-center gap-x-4">
+                                <p className="text-sm text-gray-700">
+                                    Hiển thị <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
+                                    - <span className="font-medium">{Math.min(currentPage * itemsPerPage, sortedAudits.length)}</span>
+                                    {' '}trên <span className="font-medium">{sortedAudits.length}</span> mục
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="items-per-page" className="text-sm text-gray-700">Dòng/trang:</label>
+                                    <select
+                                        id="items-per-page"
+                                        value={itemsPerPage}
+                                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                        className="form-select py-1 w-auto"
+                                    >
+                                        <option value={10}>10</option>
+                                        <option value={15}>15</option>
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </Pagination>
+                    )}
                 </Card>
 
                 <Modal isOpen={isModalOpen} onClose={closeModal} title={editingAudit ? 'Chỉnh sửa Lịch Audit' : 'Thêm mới Lịch Audit'}>
@@ -324,8 +363,8 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                         }}
                     />
                      <Modal.Footer>
-                        <button type="button" onClick={closeModal} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
-                        <button type="submit" form="audit-form" className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <button type="button" onClick={closeModal} className="btn-secondary">Hủy</button>
+                        <button type="submit" form="audit-form" className="btn-primary ml-3">
                             Lưu
                         </button>
                     </Modal.Footer>

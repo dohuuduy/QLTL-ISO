@@ -66,37 +66,34 @@ const DistributionForm: React.FC<DistributionFormProps> = ({ onSubmit, onCancel,
     const activeOrCurrentlySelected = (list: any[], selectedId: string) => 
         list.filter(item => item.is_active !== false || item.id === selectedId);
 
-    const inputStyles = "mt-1 block w-full rounded-md border-gray-300 bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
-    const labelStyles = "block text-sm font-medium text-gray-900";
-
     return (
         <form onSubmit={handleSubmit}>
             <div className="p-6 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="id_phien_ban" className={labelStyles}>Phiên bản</label>
-                        <select name="id_phien_ban" id="id_phien_ban" value={formData.id_phien_ban} onChange={handleChange} className={inputStyles} required>
+                        <label htmlFor="id_phien_ban" className="form-label">Phiên bản</label>
+                        <select name="id_phien_ban" id="id_phien_ban" value={formData.id_phien_ban} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn phiên bản</option>
                             {versions.map(v => <option key={v.id_phien_ban} value={v.id_phien_ban}>{v.phien_ban}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="ngay_phan_phoi" className={labelStyles}>Ngày phân phối</label>
-                        <DatePicker id="ngay_phan_phoi" value={formData.ngay_phan_phoi} onChange={value => handleDateChange('ngay_phan_phoi', value)} required className={inputStyles} />
+                        <label htmlFor="ngay_phan_phoi" className="form-label">Ngày phân phối</label>
+                        <DatePicker id="ngay_phan_phoi" value={formData.ngay_phan_phoi} onChange={value => handleDateChange('ngay_phan_phoi', value)} required />
                     </div>
                 </div>
                 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="phong_ban_nhan" className={labelStyles}>Phòng ban nhận</label>
-                        <select name="phong_ban_nhan" id="phong_ban_nhan" value={formData.phong_ban_nhan} onChange={handleChange} className={inputStyles} required>
+                        <label htmlFor="phong_ban_nhan" className="form-label">Phòng ban nhận</label>
+                        <select name="phong_ban_nhan" id="phong_ban_nhan" value={formData.phong_ban_nhan} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn phòng ban</option>
                             {activeOrCurrentlySelected(phongBanList, formData.phong_ban_nhan).map(pb => <option key={pb.id} value={pb.id}>{pb.ten}</option>)}
                         </select>
                     </div>
                      <div>
-                        <label htmlFor="nguoi_nhan" className={labelStyles}>Người nhận</label>
-                        <select name="nguoi_nhan" id="nguoi_nhan" value={formData.nguoi_nhan} onChange={handleChange} className={inputStyles} required>
+                        <label htmlFor="nguoi_nhan" className="form-label">Người nhận</label>
+                        <select name="nguoi_nhan" id="nguoi_nhan" value={formData.nguoi_nhan} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn người</option>
                             {nhanSuList.filter(u => u.is_active !== false || u.id === formData.nguoi_nhan).map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
                         </select>
@@ -105,18 +102,18 @@ const DistributionForm: React.FC<DistributionFormProps> = ({ onSubmit, onCancel,
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="so_luong_ban_cung" className={labelStyles}>Số lượng bản cứng</label>
-                        <input type="number" name="so_luong_ban_cung" id="so_luong_ban_cung" value={formData.so_luong_ban_cung} onChange={handleChange} className={inputStyles} min="0" />
+                        <label htmlFor="so_luong_ban_cung" className="form-label">Số lượng bản cứng</label>
+                        <input type="number" name="so_luong_ban_cung" id="so_luong_ban_cung" value={formData.so_luong_ban_cung} onChange={handleChange} className="form-input" min="0" />
                     </div>
                     <div>
-                        <label htmlFor="so_luong_ban_mem" className={labelStyles}>Số lượng bản mềm</label>
-                        <input type="number" name="so_luong_ban_mem" id="so_luong_ban_mem" value={formData.so_luong_ban_mem} onChange={handleChange} className={inputStyles} min="0" />
+                        <label htmlFor="so_luong_ban_mem" className="form-label">Số lượng bản mềm</label>
+                        <input type="number" name="so_luong_ban_mem" id="so_luong_ban_mem" value={formData.so_luong_ban_mem} onChange={handleChange} className="form-input" min="0" />
                     </div>
                 </div>
                 
                  <div>
-                    <label htmlFor="trang_thai_phan_phoi" className={labelStyles}>Trạng thái</label>
-                    <select name="trang_thai_phan_phoi" id="trang_thai_phan_phoi" value={formData.trang_thai_phan_phoi} onChange={handleChange} className={inputStyles} required>
+                    <label htmlFor="trang_thai_phan_phoi" className="form-label">Trạng thái</label>
+                    <select name="trang_thai_phan_phoi" id="trang_thai_phan_phoi" value={formData.trang_thai_phan_phoi} onChange={handleChange} className="form-select" required>
                         {Object.values(DistributionStatus).map(status => (
                             <option key={status} value={status}>{translate(status)}</option>
                         ))}
@@ -126,20 +123,20 @@ const DistributionForm: React.FC<DistributionFormProps> = ({ onSubmit, onCancel,
                 {formData.trang_thai_phan_phoi === DistributionStatus.THU_HOI && (
                     <>
                         <div>
-                            <label htmlFor="ngay_thu_hoi" className={labelStyles}>Ngày thu hồi</label>
-                            <DatePicker id="ngay_thu_hoi" value={formData.ngay_thu_hoi} onChange={value => handleDateChange('ngay_thu_hoi', value)} className={inputStyles} />
+                            <label htmlFor="ngay_thu_hoi" className="form-label">Ngày thu hồi</label>
+                            <DatePicker id="ngay_thu_hoi" value={formData.ngay_thu_hoi} onChange={value => handleDateChange('ngay_thu_hoi', value)} />
                         </div>
                          <div>
-                            <label htmlFor="ly_do_thu_hoi" className={labelStyles}>Lý do thu hồi</label>
-                            <textarea name="ly_do_thu_hoi" id="ly_do_thu_hoi" value={formData.ly_do_thu_hoi} onChange={handleChange} rows={2} className={inputStyles} placeholder="Nhập lý do thu hồi..." />
+                            <label htmlFor="ly_do_thu_hoi" className="form-label">Lý do thu hồi</label>
+                            <textarea name="ly_do_thu_hoi" id="ly_do_thu_hoi" value={formData.ly_do_thu_hoi} onChange={handleChange} rows={2} className="form-textarea" placeholder="Nhập lý do thu hồi..." />
                         </div>
                     </>
                 )}
             </div>
             
             <div className="bg-slate-50 px-6 py-4 flex justify-end gap-x-3 rounded-b-xl border-t border-gray-200">
-                <button type="button" onClick={onCancel} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
-                <button type="submit" className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Lưu</button>
+                <button type="button" onClick={onCancel} className="btn-secondary">Hủy</button>
+                <button type="submit" className="btn-primary ml-3">Lưu</button>
             </div>
         </form>
     );

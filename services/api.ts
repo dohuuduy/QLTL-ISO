@@ -9,25 +9,23 @@ const isUrlConfigured = () => {
 };
 
 /**
- * A robust fetcher for Google Apps Script that uses a POST request with
- * FormData. This helps avoid CORS preflight issues that can occur with
- * 'application/json' or large 'text/plain' payloads, which often result
- * in "Failed to fetch" errors.
+ * A robust fetcher for Google Apps Script that uses a POST request.
+ * It sends data as 'application/x-www-form-urlencoded' which is a "simple request"
+ * type that avoids CORS preflight issues.
  *
- * NOTE FOR BACKEND: The Google Apps Script must be updated to read the
- * payload from `e.parameter.payload` instead of `e.postData.contents`.
+ * NOTE FOR BACKEND: The Google Apps Script must read the payload from `e.parameter.payload`.
  * e.g., `const payload = JSON.parse(e.parameter.payload);`
  */
 const postToGAS = async (payload: object): Promise<any> => {
-    const formData = new FormData();
-    formData.append('payload', JSON.stringify(payload));
-    
-    // Using FormData avoids the need for a CORS preflight request, making the
-    // call more reliable for large payloads. The browser will automatically set
-    // the correct 'Content-Type: multipart/form-data'.
+    const params = new URLSearchParams();
+    params.append('payload', JSON.stringify(payload));
+
     const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        body: formData,
+        body: params,
+        // No Content-Type header is needed; URLSearchParams sets it automatically.
+        // The mode 'no-cors' is not used here because we need to read the response.
+        // redirect: 'follow' is the default and usually correct for Apps Script.
     });
     
     if (!response.ok) {
@@ -35,8 +33,17 @@ const postToGAS = async (payload: object): Promise<any> => {
         throw new Error(`Network request failed: ${response.status} - ${errorText}`);
     }
 
-    return response.json();
+    // The Apps Script is expected to return a JSON response with 'Content-Type: application/json'.
+    // If it returns 'text/plain' or an HTML error page, .json() will fail. We handle this gracefully.
+    const textResponse = await response.text();
+    try {
+        return JSON.parse(textResponse);
+    } catch (e) {
+        console.error("Failed to parse JSON response:", textResponse);
+        throw new Error("Invalid response from server. Check the Google Apps Script deployment and logs.");
+    }
 };
+
 
 /**
  * Fetches all data from the Google Sheets backend.

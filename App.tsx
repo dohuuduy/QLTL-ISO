@@ -126,7 +126,20 @@ const App: React.FC = () => {
             await updateAllData(updatedData);
         } catch (e: any) {
             console.error("Failed to update data in Google Sheets:", e);
-            setError(`Lỗi kết nối khi đồng bộ dữ liệu. Thay đổi của bạn có thể chưa được lưu. Vui lòng kiểm tra kết nối mạng.`);
+            let detailedError: React.ReactNode = `Lỗi kết nối khi đồng bộ dữ liệu. Thay đổi của bạn có thể chưa được lưu. Lỗi: ${e.message}.`;
+            if (e instanceof TypeError && (e.message.includes('Failed to fetch') || e.message.includes('Network request failed'))) {
+                detailedError = (
+                    <>
+                        Lỗi kết nối mạng (CORS). <strong>Thay đổi của bạn có thể chưa được lưu.</strong>
+                        <br />
+                        Vui lòng kiểm tra lại cấu hình triển khai Google Apps Script. 
+                        Bạn phải <strong>TRIỂN KHAI LẠI (RE-DEPLOY)</strong> kịch bản với một <strong>PHIÊN BẢN MỚI (NEW VERSION)</strong> và đặt quyền truy cập là <strong>"Anyone"</strong>. 
+                        <br />
+                        Chỉ việc lưu lại file kịch bản là không đủ.
+                    </>
+                );
+            }
+            setError(detailedError);
         } finally {
             isUpdating.current = false;
         }

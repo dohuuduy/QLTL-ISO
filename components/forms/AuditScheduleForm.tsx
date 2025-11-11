@@ -131,12 +131,12 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
 
         return (
              <div ref={dropdownRef} className="relative">
-                <label className={labelStyles}>{label}</label>
+                <label className="form-label">{label}</label>
                 <div className="relative">
                     <button
                         type="button"
                         onClick={() => setIsOpen(prev => !prev)}
-                        className={`${inputStyles} border-gray-300 flex items-center justify-between text-left`}
+                        className="form-input flex items-center justify-between text-left"
                     >
                         <div className="flex flex-wrap gap-2 items-center min-h-[22px]">
                             {selectedIds.length > 0 ? (
@@ -160,7 +160,7 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
                     {isOpen && (
                         <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-hidden flex flex-col">
                             <div className="p-2 border-b border-gray-200">
-                                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Tìm kiếm..." className="w-full rounded-md border-gray-300 py-1.5 px-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"/>
+                                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Tìm kiếm..." className="form-input"/>
                             </div>
                             <ul className="overflow-y-auto">
                                 {availableItems.length > 0 ? (
@@ -193,27 +193,24 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
         });
     };
 
-    const inputStyles = "mt-1 block w-full rounded-md bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
-    const labelStyles = "block text-sm font-medium text-gray-900";
-
     return (
         <form id={id} onSubmit={handleSubmit} noValidate>
             <div className="p-6 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="sm:col-span-2">
-                        <label htmlFor="ten_cuoc_audit" className={labelStyles}>Tên cuộc audit</label>
-                        <input type="text" name="ten_cuoc_audit" id="ten_cuoc_audit" value={formData.ten_cuoc_audit} onChange={handleChange} className={`${inputStyles} border-gray-300`} required placeholder="VD: Đánh giá nội bộ Quý 3/2024" />
+                        <label htmlFor="ten_cuoc_audit" className="form-label">Tên cuộc audit</label>
+                        <input type="text" name="ten_cuoc_audit" id="ten_cuoc_audit" value={formData.ten_cuoc_audit} onChange={handleChange} className="form-input" required placeholder="VD: Đánh giá nội bộ Quý 3/2024" />
                     </div>
                     <div>
-                        <label htmlFor="loai_audit" className={labelStyles}>Loại audit</label>
-                        <select name="loai_audit" id="loai_audit" value={formData.loai_audit} onChange={handleChange} className={`${inputStyles} border-gray-300`} required>
+                        <label htmlFor="loai_audit" className="form-label">Loại audit</label>
+                        <select name="loai_audit" id="loai_audit" value={formData.loai_audit} onChange={handleChange} className="form-select" required>
                             <option value="internal">Nội bộ</option>
                             <option value="external">Bên ngoài</option>
                         </select>
                     </div>
                      <div>
-                        <label htmlFor="trang_thai" className={labelStyles}>Trạng thái</label>
-                        <select name="trang_thai" id="trang_thai" value={formData.trang_thai} onChange={handleChange} className={`${inputStyles} border-gray-300`} required>
+                        <label htmlFor="trang_thai" className="form-label">Trạng thái</label>
+                        <select name="trang_thai" id="trang_thai" value={formData.trang_thai} onChange={handleChange} className="form-select" required>
                             {Object.values(AuditStatus).map(s => <option key={s} value={s}>{translate(s)}</option>)}
                         </select>
                     </div>
@@ -221,8 +218,8 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
 
                 {formData.loai_audit === 'external' && (
                     <div>
-                        <label htmlFor="to_chuc_danh_gia_id" className={labelStyles}>Tổ chức đánh giá</label>
-                        <select name="to_chuc_danh_gia_id" id="to_chuc_danh_gia_id" value={formData.to_chuc_danh_gia_id} onChange={handleChange} className={`${inputStyles} border-gray-300`} required>
+                        <label htmlFor="to_chuc_danh_gia_id" className="form-label">Tổ chức đánh giá</label>
+                        <select name="to_chuc_danh_gia_id" id="to_chuc_danh_gia_id" value={formData.to_chuc_danh_gia_id} onChange={handleChange} className="form-select" required>
                             <option value="">-- Chọn tổ chức --</option>
                             {categories.toChucDanhGia.filter(o => o.is_active).map(org => <option key={org.id} value={org.id}>{org.ten}</option>)}
                         </select>
@@ -230,18 +227,18 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
                 )}
 
                 <div>
-                    <label htmlFor="pham_vi" className={labelStyles}>Phạm vi</label>
-                    <textarea name="pham_vi" id="pham_vi" rows={2} value={formData.pham_vi} onChange={handleChange} className={`${inputStyles} border-gray-300`} placeholder="Mô tả phạm vi của cuộc đánh giá..." />
+                    <label htmlFor="pham_vi" className="form-label">Phạm vi</label>
+                    <textarea name="pham_vi" id="pham_vi" rows={2} value={formData.pham_vi} onChange={handleChange} className="form-textarea" placeholder="Mô tả phạm vi của cuộc đánh giá..." />
                 </div>
                 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                      <div>
-                        <label htmlFor="ngay_bat_dau" className={labelStyles}>Ngày bắt đầu</label>
-                        <DatePicker id="ngay_bat_dau" value={formData.ngay_bat_dau} onChange={(val) => handleDateChange('ngay_bat_dau', val)} className={`${inputStyles} ${dateError ? 'border-red-500' : 'border-gray-300'}`} required />
+                        <label htmlFor="ngay_bat_dau" className="form-label">Ngày bắt đầu</label>
+                        <DatePicker id="ngay_bat_dau" value={formData.ngay_bat_dau} onChange={(val) => handleDateChange('ngay_bat_dau', val)} className={dateError ? 'error' : ''} required />
                     </div>
                     <div>
-                        <label htmlFor="ngay_ket_thuc" className={labelStyles}>Ngày kết thúc</label>
-                        <DatePicker id="ngay_ket_thuc" value={formData.ngay_ket_thuc} onChange={(val) => handleDateChange('ngay_ket_thuc', val)} className={`${inputStyles} ${dateError ? 'border-red-500' : 'border-gray-300'}`} required />
+                        <label htmlFor="ngay_ket_thuc" className="form-label">Ngày kết thúc</label>
+                        <DatePicker id="ngay_ket_thuc" value={formData.ngay_ket_thuc} onChange={(val) => handleDateChange('ngay_ket_thuc', val)} className={dateError ? 'error' : ''} required />
                         {dateError && <p className="mt-1 text-sm text-red-600">{dateError}</p>}
                     </div>
                 </div>
@@ -271,8 +268,8 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
                 </div>
                 
                  <div>
-                    <label htmlFor="chuyen_gia_danh_gia_truong_id" className={labelStyles}>Trưởng đoàn đánh giá</label>
-                    <select name="chuyen_gia_danh_gia_truong_id" id="chuyen_gia_danh_gia_truong_id" value={formData.chuyen_gia_danh_gia_truong_id} onChange={handleChange} className={`${inputStyles} border-gray-300`} required>
+                    <label htmlFor="chuyen_gia_danh_gia_truong_id" className="form-label">Trưởng đoàn đánh giá</label>
+                    <select name="chuyen_gia_danh_gia_truong_id" id="chuyen_gia_danh_gia_truong_id" value={formData.chuyen_gia_danh_gia_truong_id} onChange={handleChange} className="form-select" required>
                         <option value="">-- Chọn trưởng đoàn --</option>
                         {categories.danhGiaVien.filter(u => u.is_active).map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
                     </select>
@@ -291,8 +288,8 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
                 </div>
 
                  <div>
-                    <label htmlFor="ghi_chu" className={labelStyles}>Ghi chú (tùy chọn)</label>
-                    <textarea name="ghi_chu" id="ghi_chu" rows={2} value={formData.ghi_chu} onChange={handleChange} className={`${inputStyles} border-gray-300`} placeholder="Thêm ghi chú nếu cần..." />
+                    <label htmlFor="ghi_chu" className="form-label">Ghi chú (tùy chọn)</label>
+                    <textarea name="ghi_chu" id="ghi_chu" rows={2} value={formData.ghi_chu} onChange={handleChange} className="form-textarea" placeholder="Thêm ghi chú nếu cần..." />
                 </div>
             </div>
         </form>

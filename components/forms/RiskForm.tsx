@@ -51,23 +51,20 @@ const RiskForm: React.FC<RiskFormProps> = ({ onSubmit, onCancel, initialData, ma
         onSubmit({ ...initialData, ...formData, ma_tl });
     };
 
-    const inputStyles = "mt-1 block w-full rounded-md border-gray-300 bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
-    const labelStyles = "block text-sm font-medium text-gray-900";
-
     return (
         <form onSubmit={handleSubmit}>
             <div className="p-6 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                      <div>
-                        <label htmlFor="loai" className={labelStyles}>Loại</label>
-                        <select name="loai" id="loai" value={formData.loai} onChange={handleChange} className={inputStyles} required>
+                        <label htmlFor="loai" className="form-label">Loại</label>
+                        <select name="loai" id="loai" value={formData.loai} onChange={handleChange} className="form-select" required>
                             <option value="rui_ro">Rủi ro</option>
                             <option value="co_hoi">Cơ hội</option>
                         </select>
                     </div>
                      <div>
-                        <label htmlFor="muc_do_anh_huong" className={labelStyles}>Mức độ ảnh hưởng</label>
-                        <select name="muc_do_anh_huong" id="muc_do_anh_huong" value={formData.muc_do_anh_huong} onChange={handleChange} className={inputStyles} required>
+                        <label htmlFor="muc_do_anh_huong" className="form-label">Mức độ ảnh hưởng</label>
+                        <select name="muc_do_anh_huong" id="muc_do_anh_huong" value={formData.muc_do_anh_huong} onChange={handleChange} className="form-select" required>
                             <option value="cao">Cao</option>
                             <option value="trung_binh">Trung bình</option>
                             <option value="thap">Thấp</option>
@@ -76,32 +73,32 @@ const RiskForm: React.FC<RiskFormProps> = ({ onSubmit, onCancel, initialData, ma
                 </div>
                 
                 <div>
-                    <label htmlFor="mo_ta" className={labelStyles}>Mô tả</label>
-                    <textarea name="mo_ta" id="mo_ta" value={formData.mo_ta} onChange={handleChange} rows={3} className={inputStyles} required placeholder="Mô tả chi tiết về rủi ro hoặc cơ hội" />
+                    <label htmlFor="mo_ta" className="form-label">Mô tả</label>
+                    <textarea name="mo_ta" id="mo_ta" value={formData.mo_ta} onChange={handleChange} rows={3} className="form-textarea" required placeholder="Mô tả chi tiết về rủi ro hoặc cơ hội" />
                 </div>
 
                 <div>
-                    <label htmlFor="hanh_dong_phong_ngua" className={labelStyles}>Hành động phòng ngừa/khai thác</label>
-                    <textarea name="hanh_dong_phong_ngua" id="hanh_dong_phong_ngua" value={formData.hanh_dong_phong_ngua} onChange={handleChange} rows={3} className={inputStyles} placeholder="Các hành động cần thực hiện" />
+                    <label htmlFor="hanh_dong_phong_ngua" className="form-label">Hành động phòng ngừa/khai thác</label>
+                    <textarea name="hanh_dong_phong_ngua" id="hanh_dong_phong_ngua" value={formData.hanh_dong_phong_ngua} onChange={handleChange} rows={3} className="form-textarea" placeholder="Các hành động cần thực hiện" />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                      <div>
-                        <label htmlFor="nguoi_phu_trach" className={labelStyles}>Người phụ trách</label>
-                        <select name="nguoi_phu_trach" id="nguoi_phu_trach" value={formData.nguoi_phu_trach} onChange={handleChange} className={inputStyles} required>
+                        <label htmlFor="nguoi_phu_trach" className="form-label">Người phụ trách</label>
+                        <select name="nguoi_phu_trach" id="nguoi_phu_trach" value={formData.nguoi_phu_trach} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn người</option>
                             {nhanSuList.map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
                         </select>
                     </div>
                      <div>
-                        <label htmlFor="ngay_nhan_dien" className={labelStyles}>Ngày nhận diện</label>
-                        <DatePicker id="ngay_nhan_dien" value={formData.ngay_nhan_dien} onChange={value => handleDateChange('ngay_nhan_dien', value)} required className={inputStyles} />
+                        <label htmlFor="ngay_nhan_dien" className="form-label">Ngày nhận diện</label>
+                        <DatePicker id="ngay_nhan_dien" value={formData.ngay_nhan_dien} onChange={value => handleDateChange('ngay_nhan_dien', value)} required />
                     </div>
                 </div>
 
                 <div>
-                    <label htmlFor="trang_thai" className={labelStyles}>Trạng thái</label>
-                    <select name="trang_thai" id="trang_thai" value={formData.trang_thai} onChange={handleChange} className={inputStyles} required>
+                    <label htmlFor="trang_thai" className="form-label">Trạng thái</label>
+                    <select name="trang_thai" id="trang_thai" value={formData.trang_thai} onChange={handleChange} className="form-select" required>
                         {Object.values(RiskStatus).map(status => (
                             <option key={status} value={status}>{translate(status)}</option>
                         ))}
@@ -110,8 +107,8 @@ const RiskForm: React.FC<RiskFormProps> = ({ onSubmit, onCancel, initialData, ma
             </div>
 
             <div className="bg-slate-50 px-6 py-4 flex justify-end gap-x-3 rounded-b-xl border-t border-gray-200">
-                <button type="button" onClick={onCancel} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
-                <button type="submit" className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Lưu</button>
+                <button type="button" onClick={onCancel} className="btn-secondary">Hủy</button>
+                <button type="submit" className="btn-primary ml-3">Lưu</button>
             </div>
         </form>
     );

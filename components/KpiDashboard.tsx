@@ -8,13 +8,13 @@ interface KpiDashboardProps {
 }
 
 const KpiCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; iconBgColor: string }> = ({ title, value, icon, iconBgColor }) => (
-    <div className="flex items-center p-4 sm:p-5 bg-white rounded-xl shadow border border-gray-200">
+    <div className="flex items-center p-6 bg-white rounded-xl shadow border border-slate-200">
         <div className={`flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-lg ${iconBgColor}`}>
             {icon}
         </div>
-        <div className="ml-4 min-w-0">
-            <p className="text-sm font-medium text-gray-600 truncate">{title}</p>
-            <p className="text-2xl font-semibold text-gray-900">{value}</p>
+        <div className="ml-5 min-w-0">
+            <p className="text-sm font-medium text-slate-500 truncate">{title}</p>
+            <p className="text-3xl font-semibold text-gray-900">{value}</p>
         </div>
     </div>
 );

@@ -14,10 +14,10 @@ interface NavItemProps {
 const NavItem: React.FC<NavItemProps> = ({ icon, label, isCollapsed, isActive, onClick }) => (
     <button
         onClick={onClick}
-        className={`group flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+        className={`group flex items-center w-full py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
             isActive
-                ? 'bg-blue-50 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 pl-3'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 px-4'
         }`}
     >
         <Icon
@@ -159,10 +159,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                              <div>
                                 <button
                                     onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                                    className={`group flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                                    className={`group flex items-center w-full py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
                                         isCategoriesActive
-                                            ? 'bg-blue-50 text-blue-700'
-                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                            ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 pl-3'
+                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 px-4'
                                     }`}
                                 >
                                     <Icon
@@ -238,7 +238,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
 
             {/* Desktop Sidebar */}
-            <div className={`hidden md:flex md:flex-shrink-0 bg-white border-r border-gray-200 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'} no-print`}>
+            <div className={`hidden md:flex md:flex-shrink-0 bg-white border-r border-slate-200 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'} no-print`}>
                 {sidebarContent}
             </div>
         </>

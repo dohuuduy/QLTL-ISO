@@ -76,26 +76,23 @@ const TrainingForm: React.FC<TrainingFormProps> = ({ onSubmit, onCancel, initial
             )
             .sort((a, b) => a.ten.localeCompare(b.ten));
     }, [phongBanList, formData.phong_ban_tham_gia]);
-    
-    const inputStyles = "mt-1 block w-full rounded-md border-gray-300 bg-white py-2.5 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder-gray-400";
-    const labelStyles = "block text-sm font-medium text-gray-900";
 
     return (
         <form onSubmit={handleSubmit}>
             <div className="p-6 space-y-4">
                 <div>
-                    <label htmlFor="noi_dung_dao_tao" className={labelStyles}>Nội dung đào tạo</label>
-                    <textarea name="noi_dung_dao_tao" id="noi_dung_dao_tao" value={formData.noi_dung_dao_tao} onChange={handleChange} rows={3} className={inputStyles} required placeholder="Mô tả nội dung buổi đào tạo, truyền thông..." />
+                    <label htmlFor="noi_dung_dao_tao" className="form-label">Nội dung đào tạo</label>
+                    <textarea name="noi_dung_dao_tao" id="noi_dung_dao_tao" value={formData.noi_dung_dao_tao} onChange={handleChange} rows={3} className="form-textarea" required placeholder="Mô tả nội dung buổi đào tạo, truyền thông..." />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="ngay_dao_tao" className={labelStyles}>Ngày đào tạo</label>
-                        <DatePicker id="ngay_dao_tao" value={formData.ngay_dao_tao} onChange={value => handleDateChange('ngay_dao_tao', value)} required className={inputStyles} />
+                        <label htmlFor="ngay_dao_tao" className="form-label">Ngày đào tạo</label>
+                        <DatePicker id="ngay_dao_tao" value={formData.ngay_dao_tao} onChange={value => handleDateChange('ngay_dao_tao', value)} required />
                     </div>
                     <div>
-                        <label htmlFor="nguoi_dao_tao" className={labelStyles}>Người đào tạo</label>
-                        <select name="nguoi_dao_tao" id="nguoi_dao_tao" value={formData.nguoi_dao_tao} onChange={handleChange} className={inputStyles} required>
+                        <label htmlFor="nguoi_dao_tao" className="form-label">Người đào tạo</label>
+                        <select name="nguoi_dao_tao" id="nguoi_dao_tao" value={formData.nguoi_dao_tao} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn người</option>
                             {nhanSuList.filter(u => u.is_active !== false || u.id === formData.nguoi_dao_tao).map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
                         </select>
@@ -103,12 +100,12 @@ const TrainingForm: React.FC<TrainingFormProps> = ({ onSubmit, onCancel, initial
                 </div>
                 
                 <div ref={deptDropdownRef} className="relative">
-                    <label className={labelStyles}>Phòng ban tham gia</label>
+                    <label className="form-label">Phòng ban tham gia</label>
                     <div className="relative">
                         <button
                             type="button"
                             onClick={() => setIsDeptDropdownOpen(prev => !prev)}
-                            className={`${inputStyles} border-gray-300 flex items-center justify-between text-left`}
+                            className="form-input flex items-center justify-between text-left"
                         >
                             <div className="flex flex-wrap gap-2 items-center min-h-[22px]">
                                 {(formData.phong_ban_tham_gia || []).length > 0 ? (
@@ -148,14 +145,14 @@ const TrainingForm: React.FC<TrainingFormProps> = ({ onSubmit, onCancel, initial
                 </div>
 
                 <div>
-                    <label htmlFor="so_nguoi_tham_gia" className={labelStyles}>Số người tham gia</label>
-                    <input type="number" name="so_nguoi_tham_gia" id="so_nguoi_tham_gia" value={formData.so_nguoi_tham_gia} onChange={handleChange} className={inputStyles} min="0" />
+                    <label htmlFor="so_nguoi_tham_gia" className="form-label">Số người tham gia</label>
+                    <input type="number" name="so_nguoi_tham_gia" id="so_nguoi_tham_gia" value={formData.so_nguoi_tham_gia} onChange={handleChange} className="form-input" min="0" />
                 </div>
             </div>
 
             <div className="bg-slate-50 px-6 py-4 flex justify-end gap-x-3 rounded-b-xl border-t border-gray-200">
-                <button type="button" onClick={onCancel} className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Hủy</button>
-                <button type="submit" className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Lưu</button>
+                <button type="button" onClick={onCancel} className="btn-secondary">Hủy</button>
+                <button type="submit" className="btn-primary ml-3">Lưu</button>
             </div>
         </form>
     );

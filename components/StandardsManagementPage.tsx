@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { TieuChuan, NhanSu } from '../types';
 import Card from './ui/Card';
 import Table from './ui/Table';
@@ -11,6 +11,7 @@ import { formatDateForDisplay } from '../utils/dateUtils';
 import { exportToCsv, exportVisibleReportToWord } from '../utils/exportUtils';
 import ExportDropdown from './ui/ExportDropdown';
 import PrintReportLayout from './PrintReportLayout';
+import Pagination from './ui/Pagination';
 
 interface StandardsManagementPageProps {
     standards: TieuChuan[];
@@ -28,6 +29,12 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
     const [editingStandard, setEditingStandard] = useState<TieuChuan | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ten', direction: 'ascending' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(15);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [itemsPerPage, sortConfig]);
 
     const sortedStandards = useMemo(() => {
         let sortableItems = [...standards];
@@ -50,6 +57,13 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
         }
         return sortableItems;
     }, [standards, sortConfig]);
+
+    const paginatedStandards = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return sortedStandards.slice(startIndex, startIndex + itemsPerPage);
+    }, [sortedStandards, currentPage, itemsPerPage]);
+
+    const totalPages = Math.ceil(sortedStandards.length / itemsPerPage);
 
     const printLayoutProps = useMemo(() => {
         return {
@@ -133,9 +147,8 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
                     const newActiveState = item.is_active === false;
                     const updatedItem = { ...item, is_active: newActiveState };
 
-                    // If reactivating, and the end date is in the past, clear the end date.
                     if (newActiveState && updatedItem.ngay_ket_thuc_ap_dung) {
-                        const endDate = new Date(updatedItem.ngay_ket_thuc_ap_dung); // UTC midnight
+                        const endDate = new Date(updatedItem.ngay_ket_thuc_ap_dung); 
                         const now = new Date();
                         const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
                         if (endDate < todayUTC) {
@@ -248,9 +261,38 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
                             { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc_ap_dung'), accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc_ap_dung) },
                             { header: 'Trạng thái', accessor: (item) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} /> },
                         ]}
-                        data={sortedStandards}
+                        data={paginatedStandards}
                         actions={canManage ? renderActions : undefined}
                     />
+                     {sortedStandards.length > 0 && (
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        >
+                            <div className="flex items-center gap-x-4">
+                                <p className="text-sm text-gray-700">
+                                    Hiển thị <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
+                                    - <span className="font-medium">{Math.min(currentPage * itemsPerPage, sortedStandards.length)}</span>
+                                    {' '}trên <span className="font-medium">{sortedStandards.length}</span> mục
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="items-per-page" className="text-sm text-gray-700">Dòng/trang:</label>
+                                    <select
+                                        id="items-per-page"
+                                        value={itemsPerPage}
+                                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                        className="form-select py-1 w-auto"
+                                    >
+                                        <option value={10}>10</option>
+                                        <option value={15}>15</option>
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </Pagination>
+                    )}
                 </Card>
 
                 <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStandard ? 'Chỉnh sửa Tiêu chuẩn' : 'Thêm mới Tiêu chuẩn'}>
