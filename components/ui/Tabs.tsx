@@ -40,7 +40,7 @@ const Tabs: React.FC<TabsProps> = ({ tabs, activeTabIndex, onTabChange }) => {
             </div>
 
             {/* Print view: All tabs are rendered sequentially */}
-            <div className="hidden print-block">
+            <div className="hidden print-only">
                 {tabs.map((tab, index) => (
                     <div key={index}>
                         {tab.content}

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { DanhMucTaiLieu, PhienBanTaiLieu, PhongBan, TieuChuan, ReportType, LichAudit, DanhGiaVien, ToChucDanhGia } from '../types';
+import type { DanhMucTaiLieu, PhienBanTaiLieu, PhongBan, TieuChuan, ReportType, LichAudit, DanhGiaVien, ToChucDanhGia, NhanSu } from '../types';
 import { reportNavItems } from '../constants';
 import { formatDateForDisplay } from '../utils/dateUtils';
 import { translate } from '../utils/translations';
@@ -10,6 +10,7 @@ import Table from './ui/Table';
 import Badge from './ui/Badge';
 import { Icon } from './ui/Icon';
 import ExportDropdown from './ui/ExportDropdown';
+import PrintReportLayout from './PrintReportLayout';
 
 type AllData = {
     documents: DanhMucTaiLieu[];
@@ -17,7 +18,7 @@ type AllData = {
     phongBan: PhongBan[];
     tieuChuan: TieuChuan[];
     auditSchedules: LichAudit[];
-    nhanSu: any[];
+    nhanSu: NhanSu[];
     danhGiaVien: DanhGiaVien[];
     toChucDanhGia: ToChucDanhGia[];
 };
@@ -26,6 +27,7 @@ interface ReportsPageProps {
   allData: AllData;
   initialReportType: ReportType | null;
   onViewDetails: (doc: DanhMucTaiLieu) => void;
+  currentUser: NhanSu;
 }
 
 const ReportContentWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -48,8 +50,7 @@ const DetailItem: React.FC<{ label: string; value?: React.ReactNode; fullWidth?:
     );
 };
 
-
-const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, onViewDetails }) => {
+const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, onViewDetails, currentUser }) => {
     const [activeReport, setActiveReport] = useState<ReportType>(initialReportType || 'by-department');
 
     // Filter states
@@ -66,12 +67,13 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
         }
     }, [initialReportType]);
 
-    const { phongBanMap, tieuChuanMap, latestVersionMap, danhGiaVienMap, toChucDanhGiaMap } = useMemo(() => ({
+    const { phongBanMap, tieuChuanMap, latestVersionMap, danhGiaVienMap, toChucDanhGiaMap, nhanSuMap } = useMemo(() => ({
         phongBanMap: new Map(allData.phongBan.filter(Boolean).map(pb => [pb.id, pb.ten])),
         tieuChuanMap: new Map(allData.tieuChuan.filter(Boolean).map(tc => [tc.id, tc.ten])),
         latestVersionMap: new Map(allData.versions.filter(v => v && v.is_moi_nhat).map(v => [v.ma_tl, v.phien_ban])),
         danhGiaVienMap: new Map(allData.danhGiaVien.filter(Boolean).map(dgv => [dgv.id, dgv.ten])),
         toChucDanhGiaMap: new Map(allData.toChucDanhGia.filter(Boolean).map(org => [org.id, org.ten])),
+        nhanSuMap: new Map(allData.nhanSu.filter(Boolean).map(ns => [ns.id, ns])),
     }), [allData]);
 
     // Data processing for each report
@@ -167,6 +169,94 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
         return { audit: selectedAudit, documents };
     }, [allData.documents, allData.auditSchedules, selectedAuditId]);
 
+    const printLayoutProps = useMemo(() => {
+        switch (activeReport) {
+            case 'by-department': {
+                if (!selectedDepartment) return null;
+                return {
+                    title: 'BÁO CÁO DANH SÁCH TÀI LIỆU',
+                    filters: { 'Phòng ban': phongBanMap.get(selectedDepartment) || 'N/A' },
+                    columns: [
+                        { header: 'Mã TL', accessor: (item: DanhMucTaiLieu) => item.ma_tl },
+                        { header: 'Tên tài liệu', accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu },
+                        { header: 'Phiên bản', accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A' },
+                        { header: 'Trạng thái', accessor: (item: DanhMucTaiLieu) => translate(item.trang_thai) },
+                        { header: 'Ngày hiệu lực', accessor: (item: DanhMucTaiLieu) => formatDateForDisplay(item.ngay_hieu_luc) },
+                    ],
+                    data: departmentReportData,
+                };
+            }
+            case 'by-standard': {
+                if (!selectedStandard) return null;
+                return {
+                    title: 'BÁO CÁO DANH SÁCH TÀI LIỆU',
+                    filters: { 'Tiêu chuẩn': tieuChuanMap.get(selectedStandard) || 'N/A' },
+                    columns: [
+                        { header: 'Mã TL', accessor: (item: DanhMucTaiLieu) => item.ma_tl },
+                        { header: 'Tên tài liệu', accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu },
+                        { header: 'Phiên bản', accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A' },
+                         { header: 'Phòng ban', accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly) },
+                        { header: 'Trạng thái', accessor: (item: DanhMucTaiLieu) => translate(item.trang_thai) },
+                    ],
+                    data: standardReportData,
+                };
+            }
+            case 'relationships': {
+                if (!selectedDocumentId) return null;
+                const docName = allData.documents.find(d => d.ma_tl === selectedDocumentId)?.ten_tai_lieu || 'N/A';
+                return {
+                    title: 'BÁO CÁO QUAN HỆ TÀI LIỆU',
+                    filters: { 'Tài liệu gốc': `${docName} (${selectedDocumentId})` },
+                    columns: [
+                        { header: 'Quan hệ', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => translate(item.relation) },
+                        { header: 'Tên tài liệu', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => item.doc.ten_tai_lieu },
+                        { header: 'Mã TL', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => item.doc.ma_tl },
+                        { header: 'Phiên bản', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },
+                        { header: 'Trạng thái', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => translate(item.doc.trang_thai) },
+                    ],
+                    data: relationshipReportData,
+                };
+            }
+            case 'expiring': {
+                return {
+                    title: 'BÁO CÁO TÀI LIỆU HẾT VÀ SẮP HẾT HIỆU LỰC',
+                    filters: {
+                        'Khung thời gian': `Trong vòng ${expiryDays} ngày tới`,
+                        'Bao gồm đã hết hiệu lực': includeExpired ? 'Có' : 'Không',
+                    },
+                    columns: [
+                        { header: 'Tên tài liệu', accessor: (item: any) => item.ten_tai_lieu },
+                        { header: 'Ngày hết hiệu lực', accessor: (item: any) => formatDateForDisplay(item.ngay_het_hieu_luc) },
+                        { header: 'Người rà soát', accessor: (item: any) => nhanSuMap.get(item.nguoi_ra_soat)?.ten || 'N/A' },
+                        { header: 'Tình trạng', accessor: (item: any) => item.daysRemaining <= 0 ? `Đã hết hiệu lực` : `Còn ${item.daysRemaining} ngày` },
+                    ],
+                    data: expiringReportData,
+                };
+            }
+            case 'by-audit': {
+                if (!selectedAuditId) return null;
+                const { audit } = auditReportData;
+                return {
+                    title: 'BÁO CÁO TÀI LIỆU THEO LỊCH AUDIT',
+                    filters: { 'Cuộc Audit': audit?.ten_cuoc_audit || 'N/A' },
+                    columns: [
+                        { header: 'Mã TL', accessor: (item: any) => item.doc.ma_tl },
+                        { header: 'Tên tài liệu', accessor: (item: any) => item.doc.ten_tai_lieu },
+                        { header: 'Phiên bản', accessor: (item: any) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },
+                        { header: 'Lý do liên quan', accessor: (item: any) => Array.from(item.reason).map((r: any) => r === 'standard' ? 'Theo tiêu chuẩn' : 'Liên kết trực tiếp').join('; ') },
+                        { header: 'Trạng thái', accessor: (item: any) => translate(item.doc.trang_thai) },
+                    ],
+                    data: auditReportData.documents,
+                };
+            }
+            default: return null;
+        }
+    }, [
+        activeReport, selectedDepartment, selectedStandard, selectedDocumentId, expiryDays, includeExpired, selectedAuditId, 
+        departmentReportData, standardReportData, relationshipReportData, expiringReportData, auditReportData, 
+        phongBanMap, tieuChuanMap, latestVersionMap, nhanSuMap, allData.documents
+    ]);
+
     const handleExport = (reportType: ReportType) => {
         const commonHeaders = {
             ma_tl: 'Mã TL',
@@ -254,6 +344,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         ten_tai_lieu: doc.ten_tai_lieu,
                         phien_ban: latestVersionMap.get(doc.ma_tl) || 'N/A',
                         ngay_het_hieu_luc: formatDateForDisplay(doc.ngay_het_hieu_luc),
+                        nguoi_ra_soat: nhanSuMap.get(doc.nguoi_ra_soat)?.ten || 'N/A',
                         tinh_trang: doc.daysRemaining <= 0 ? 'Đã hết hiệu lực' : `Còn ${doc.daysRemaining} ngày`,
                     })),
                     detailHeaders: { 
@@ -262,6 +353,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         ten_tai_lieu: 'Tên tài liệu',
                         phien_ban: 'Phiên bản',
                         ngay_het_hieu_luc: 'Ngày hết hiệu lực',
+                        nguoi_ra_soat: 'Người rà soát',
                         tinh_trang: 'Tình trạng',
                     },
                 };
@@ -279,7 +371,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         ten_tai_lieu: doc.ten_tai_lieu,
                         phien_ban: latestVersionMap.get(doc.ma_tl) || 'N/A',
                         trang_thai: translate(doc.trang_thai),
-                        ly_do_lien_quan: Array.from(reason).map(r => r === 'standard' ? 'Theo tiêu chuẩn' : 'Liên kết trực tiếp').join('; '),
+                        ly_do_lien_quan: Array.from(reason).map((r: any) => r === 'standard' ? 'Theo tiêu chuẩn' : 'Liên kết trực tiếp').join('; '),
                     })),
                     detailHeaders: { ...commonHeaders, ly_do_lien_quan: 'Lý do liên quan' },
                 };
@@ -293,10 +385,10 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
 
     const renderReportContent = () => {
         switch (activeReport) {
-            case 'by-department':
+            case 'by-department': {
                 return (
                     <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4">
+                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
                             <div className="flex items-center gap-2">
                                 <label htmlFor="department-select" className="text-sm font-medium text-gray-900">Chọn phòng ban:</label>
                                 <select id="department-select" value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
@@ -307,7 +399,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                             {selectedDepartment && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-department')} />}
                         </div>
                         {selectedDepartment ? 
-                             departmentReportData.length > 0 ? (
+                                departmentReportData.length > 0 ? (
                                 <Table<DanhMucTaiLieu> data={departmentReportData} onRowClick={onViewDetails} columns={[
                                     { header: 'Mã TL', accessor: 'ma_tl' },
                                     { header: 'Số hiệu', accessor: 'so_hieu' },
@@ -339,10 +431,11 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         }
                     </ReportContentWrapper>
                 );
-            case 'by-standard':
+            }
+            case 'by-standard': {
                  return (
                     <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4">
+                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
                             <div className="flex items-center gap-2">
                                 <label htmlFor="standard-select" className="text-sm font-medium text-gray-900">Chọn tiêu chuẩn:</label>
                                 <select id="standard-select" value={selectedStandard} onChange={e => setSelectedStandard(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
@@ -353,7 +446,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                             {selectedStandard && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-standard')} />}
                         </div>
                         {selectedStandard ? 
-                             standardReportData.length > 0 ? (
+                                standardReportData.length > 0 ? (
                                 <Table<DanhMucTaiLieu> data={standardReportData} onRowClick={onViewDetails} columns={[
                                     { header: 'Mã TL', accessor: 'ma_tl' },
                                     { header: 'Số hiệu', accessor: 'so_hieu' },
@@ -385,10 +478,11 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         }
                     </ReportContentWrapper>
                 );
-            case 'relationships':
+            }
+            case 'relationships': {
                 return (
                     <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4">
+                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
                             <div className="flex items-center gap-2">
                                 <label htmlFor="document-select" className="text-sm font-medium text-gray-900">Chọn tài liệu:</label>
                                 <select id="document-select" value={selectedDocumentId} onChange={e => setSelectedDocumentId(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
@@ -398,8 +492,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                             </div>
                             {selectedDocumentId && <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('relationships')} />}
                         </div>
-                         {selectedDocumentId ? 
-                             relationshipReportData.length > 1 ? (
+                            {selectedDocumentId ? 
+                                relationshipReportData.length > 1 ? (
                                 <Table data={relationshipReportData} onRowClick={item => onViewDetails(item.doc)} columns={[
                                     { header: 'Quan hệ', accessor: (item) => {
                                         const text = translate(item.relation);
@@ -437,10 +531,11 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         }
                     </ReportContentWrapper>
                 );
-            case 'expiring':
+            }
+            case 'expiring': {
                 return (
                     <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4">
+                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
                             <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="expiry-days" className="text-sm font-medium text-gray-900">Khung thời gian:</label>
@@ -450,7 +545,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                         <option value={90}>90 ngày tới</option>
                                     </select>
                                 </div>
-                                 <div className="relative flex items-start">
+                                    <div className="relative flex items-start">
                                     <div className="flex h-5 items-center">
                                         <input
                                             id="include-expired"
@@ -471,15 +566,16 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                             <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('expiring')} />
                         </div>
                         {expiringReportData.length > 0 ? (
-                           <Table<DanhMucTaiLieu & { daysRemaining: number }> data={expiringReportData} onRowClick={onViewDetails} columns={[
-                               { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
-                               { header: 'Số hiệu', accessor: 'so_hieu' },
-                               { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
-                               { header: 'Phòng ban', accessor: (item) => phongBanMap.get(item.phong_ban_quan_ly) },
-                               { header: 'Ngày hết hiệu lực', accessor: (item) => formatDateForDisplay(item.ngay_het_hieu_luc) },
-                               { 
-                                   header: 'Tình trạng', 
-                                   accessor: (item) => {
+                            <Table<DanhMucTaiLieu & { daysRemaining: number }> data={expiringReportData} onRowClick={onViewDetails} columns={[
+                                { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
+                                { header: 'Số hiệu', accessor: 'so_hieu' },
+                                { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
+                                { header: 'Phòng ban', accessor: (item) => phongBanMap.get(item.phong_ban_quan_ly) },
+                                { header: 'Ngày hết hiệu lực', accessor: (item) => formatDateForDisplay(item.ngay_het_hieu_luc) },
+                                { header: 'Người rà soát', accessor: (item) => nhanSuMap.get(item.nguoi_ra_soat)?.ten || 'N/A' },
+                                { 
+                                    header: 'Tình trạng', 
+                                    accessor: (item) => {
                                         if (item.daysRemaining <= 0) {
                                             return (
                                                 <span className="inline-flex items-center font-medium rounded-full text-xs px-2 py-0.5 bg-red-100 text-red-800">
@@ -493,16 +589,17 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                             </span>
                                         );
                                     } 
-                               },
-                           ]} />
+                                },
+                            ]} />
                         ) : <NoData message={`Không có tài liệu nào khớp với điều kiện.`} />}
                     </ReportContentWrapper>
                 );
-            case 'by-audit':
+            }
+            case 'by-audit': {
                 const { audit, documents: auditDocuments } = auditReportData;
                 return (
                     <ReportContentWrapper>
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4">
+                        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4 no-print">
                             <div className="flex items-center gap-2">
                                 <label htmlFor="audit-select" className="text-sm font-medium text-gray-900">Chọn cuộc audit:</label>
                                 <select id="audit-select" value={selectedAuditId} onChange={e => setSelectedAuditId(e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
@@ -517,9 +614,9 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         ) : (
                             <div>
                                 {audit && (
-                                     <div className="p-4 bg-slate-50 border-b border-gray-200">
-                                         <h3 className="text-base font-semibold text-gray-900">Thông tin cuộc Audit</h3>
-                                         <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
+                                        <div className="p-4 bg-slate-50 border-b border-gray-200">
+                                            <h3 className="text-base font-semibold text-gray-900">Thông tin cuộc Audit</h3>
+                                            <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
                                             <DetailItem label="Tên" value={audit.ten_cuoc_audit} fullWidth/>
                                             <DetailItem label="Thời gian" value={`${formatDateForDisplay(audit.ngay_bat_dau)} - ${formatDateForDisplay(audit.ngay_ket_thuc)}`} />
                                             <DetailItem label="Trạng thái" value={<Badge status={audit.trang_thai}/>} />
@@ -529,7 +626,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                             {audit.loai_audit === 'external' && (
                                                 <DetailItem label="Tổ chức đánh giá" value={toChucDanhGiaMap.get(audit.to_chuc_danh_gia_id || '')} />
                                             )}
-                                         </dl>
+                                            </dl>
                                     </div>
                                 )}
                                 {auditDocuments.length > 0 ? (
@@ -582,6 +679,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         )}
                     </ReportContentWrapper>
                 );
+            }
             default:
                 return null;
         }
@@ -589,31 +687,34 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
     
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-900">Báo cáo & Thống kê</h1>
+        <>
+            {printLayoutProps && <PrintReportLayout {...printLayoutProps} currentUser={currentUser} />}
+            <div className="no-print space-y-6">
+                <h1 className="text-3xl font-bold text-gray-900">Báo cáo & Thống kê</h1>
 
-            <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                    {tabs.map(tab => (
-                        <button
-                            key={tab.key}
-                            onClick={() => setActiveReport(tab.key as ReportType)}
-                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                                activeReport === tab.key
-                                    ? 'border-blue-500 text-blue-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
-                        >
-                            {tab.title}
-                        </button>
-                    ))}
-                </nav>
+                <div className="border-b border-gray-200">
+                    <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                        {tabs.map(tab => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setActiveReport(tab.key as ReportType)}
+                                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                                    activeReport === tab.key
+                                        ? 'border-blue-500 text-blue-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                            >
+                                {tab.title}
+                            </button>
+                        ))}
+                    </nav>
+                </div>
+                
+                <div>
+                    {renderReportContent()}
+                </div>
             </div>
-            
-            <div>
-                {renderReportContent()}
-            </div>
-        </div>
+        </>
     );
 };
 

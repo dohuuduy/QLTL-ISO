@@ -689,7 +689,7 @@ const App: React.FC = () => {
                 return <div>Tài liệu không tồn tại.</div>;
             case 'settings': return <SettingsPage />;
             case 'standards': return <StandardsManagementPage standards={data.tieuChuan} onUpdateData={handleSetData} currentUser={currentUser} />;
-            case 'reports': return <ReportsPage allData={data} initialReportType={initialReportType} onViewDetails={handleViewDetails} />;
+            case 'reports': return <ReportsPage allData={data} initialReportType={initialReportType} onViewDetails={handleViewDetails} currentUser={currentUser} />;
             case 'audits': return <AuditManagementPage allData={data} onUpdateData={handleSetData} currentUser={currentUser} />;
             case 'audit-log': return <AuditLogPage auditLogs={data.auditTrail} users={data.nhanSu} />;
             

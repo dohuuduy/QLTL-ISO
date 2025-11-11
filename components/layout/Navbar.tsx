@@ -66,7 +66,7 @@ const Navbar: React.FC<NavbarProps> = ({
     }, [menuRef, notificationsRef]);
 
     return (
-        <div className="relative z-10 flex h-16 flex-shrink-0 bg-white shadow-sm border-b border-gray-200">
+        <div className="relative z-10 flex h-16 flex-shrink-0 bg-white shadow-sm border-b border-gray-200 no-print">
             <button
                 type="button"
                 className="border-r border-gray-200 px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden"

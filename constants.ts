@@ -60,6 +60,6 @@ export const reportNavItems: { key: ReportType; title: string; icon: string; }[]
     { key: 'by-department', title: 'Theo Phòng ban', icon: 'building-library' },
     { key: 'by-standard', title: 'Theo Tiêu chuẩn', icon: 'bookmark' },
     { key: 'relationships', title: 'Quan hệ Tài liệu', icon: 'arrows-right-left' },
-    { key: 'expiring', title: 'Sắp hết hiệu lực', icon: 'clock' },
+    { key: 'expiring', title: 'Tài liệu sắp hết hiệu lực', icon: 'clock' },
     { key: 'by-audit', title: 'Theo Audit', icon: 'calendar' },
 ];

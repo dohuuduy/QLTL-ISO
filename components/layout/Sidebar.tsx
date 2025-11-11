@@ -218,7 +218,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <>
             {/* Mobile Sidebar */}
             {isMobileOpen && (
-                <div className="fixed inset-0 z-30 flex md:hidden" role="dialog" aria-modal="true">
+                <div className="fixed inset-0 z-30 flex md:hidden no-print" role="dialog" aria-modal="true">
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-75" aria-hidden="true" onClick={onCloseMobileMenu}></div>
                     <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
                          <div className="absolute top-0 right-0 -mr-12 pt-2">
@@ -238,7 +238,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
 
             {/* Desktop Sidebar */}
-            <div className={`hidden md:flex md:flex-shrink-0 bg-white border-r border-gray-200 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
+            <div className={`hidden md:flex md:flex-shrink-0 bg-white border-r border-gray-200 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'} no-print`}>
                 {sidebarContent}
             </div>
         </>
