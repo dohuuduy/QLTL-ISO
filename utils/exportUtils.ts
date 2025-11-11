@@ -1,13 +1,13 @@
 /**
  * Escapes a value for use in a CSV file.
- * If the value contains a comma, newline, or double quote, it will be wrapped in double quotes.
+ * If the value contains a semicolon, newline, or double quote, it will be wrapped in double quotes.
  * Existing double quotes will be escaped by doubling them.
  * @param value The value to escape.
  * @returns The escaped value as a string.
  */
 const escapeCsvValue = (value: any): string => {
     const stringValue = String(value ?? ''); // Handle null/undefined
-    if (/[",\n]/.test(stringValue)) {
+    if (/[";\n]/.test(stringValue)) {
         return `"${stringValue.replace(/"/g, '""')}"`;
     }
     return stringValue;
@@ -25,12 +25,12 @@ export const exportToCsv = (data: any[], headers: { [key: string]: string }, fil
     const headerValues = Object.values(headers);
 
     const csvRows = [
-        headerValues.map(escapeCsvValue).join(','), // Header row
+        headerValues.map(escapeCsvValue).join(';'), // Header row
     ];
 
     data.forEach(item => {
         const row = headerKeys.map(key => escapeCsvValue(item[key]));
-        csvRows.push(row.join(','));
+        csvRows.push(row.join(';'));
     });
 
     const csvString = csvRows.join('\n');
@@ -84,7 +84,7 @@ export const exportReportToCsv = (options: ReportExportOptions) => {
     if (filtersApplied.length > 0) {
         csvRows.push(escapeCsvValue('Điều kiện lọc đã áp dụng'));
         filtersApplied.forEach(filter => {
-            csvRows.push(`${escapeCsvValue(filter.label)},${escapeCsvValue(filter.value)}`);
+            csvRows.push(`${escapeCsvValue(filter.label)};${escapeCsvValue(filter.value)}`);
         });
         csvRows.push('');
     }
@@ -94,10 +94,10 @@ export const exportReportToCsv = (options: ReportExportOptions) => {
         csvRows.push(escapeCsvValue('Bảng Tóm tắt'));
         const summaryHeaderKeys = Object.keys(summaryHeaders);
         const summaryHeaderValues = Object.values(summaryHeaders);
-        csvRows.push(summaryHeaderValues.map(escapeCsvValue).join(','));
+        csvRows.push(summaryHeaderValues.map(escapeCsvValue).join(';'));
         summaryData.forEach(item => {
             const row = summaryHeaderKeys.map(key => escapeCsvValue(item[key]));
-            csvRows.push(row.join(','));
+            csvRows.push(row.join(';'));
         });
         csvRows.push('');
         csvRows.push('');
@@ -107,10 +107,10 @@ export const exportReportToCsv = (options: ReportExportOptions) => {
     csvRows.push(escapeCsvValue('Dữ liệu Chi tiết'));
     const detailHeaderKeys = Object.keys(detailHeaders);
     const detailHeaderValues = Object.values(detailHeaders);
-    csvRows.push(detailHeaderValues.map(escapeCsvValue).join(','));
+    csvRows.push(detailHeaderValues.map(escapeCsvValue).join(';'));
     detailData.forEach(item => {
         const row = detailHeaderKeys.map(key => escapeCsvValue(item[key]));
-        csvRows.push(row.join(','));
+        csvRows.push(row.join(';'));
     });
 
     const csvString = csvRows.join('\n');

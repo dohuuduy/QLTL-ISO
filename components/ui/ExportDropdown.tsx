@@ -60,7 +60,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({ onPrint, onExportCsv, o
                         </a>
                         <a href="#" onClick={(e) => { e.preventDefault(); handleAction(onExportCsv); }} className="text-gray-700 group flex items-center px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">
                            <Icon type="document-arrow-down" className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-                           Xuất ra Excel (.csv)
+                           Xuất ra Excel
                         </a>
                     </div>
                 </div>
