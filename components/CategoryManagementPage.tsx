@@ -355,6 +355,7 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
                         columns={finalColumns}
                         data={paginatedItems}
                         actions={renderActions}
+                        onRowClick={(item) => openModal(item)}
                         rowClassName={(item: any) => item.role === 'admin' ? 'bg-sky-50' : ''}
                     />
                     {sortedItems.length > 0 && (

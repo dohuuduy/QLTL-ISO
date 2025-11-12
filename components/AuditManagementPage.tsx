@@ -316,6 +316,7 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                         ]}
                         data={paginatedAudits}
                         actions={canManage ? renderActions : undefined}
+                        onRowClick={(item) => canManage && openModal(item)}
                     />
                      {sortedAudits.length > 0 && (
                         <Pagination

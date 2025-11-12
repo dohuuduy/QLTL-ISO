@@ -263,6 +263,7 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
                         ]}
                         data={paginatedStandards}
                         actions={canManage ? renderActions : undefined}
+                        onRowClick={(item) => canManage && openModal(item)}
                     />
                      {sortedStandards.length > 0 && (
                         <Pagination
