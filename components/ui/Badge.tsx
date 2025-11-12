@@ -1,8 +1,8 @@
 import React from 'react';
-import { DocumentStatus, VersionStatus, DistributionStatus, RiskStatus, ReviewResult } from '../../constants';
+import { DocumentStatus, VersionStatus, DistributionStatus, RiskStatus, ReviewResult, AuditStatus } from '../../constants';
 import { translate } from '../../utils/translations';
 
-type BadgeStatus = DocumentStatus | VersionStatus | DistributionStatus | RiskStatus | ReviewResult | string;
+type BadgeStatus = DocumentStatus | VersionStatus | DistributionStatus | RiskStatus | ReviewResult | AuditStatus | string;
 type BadgeSize = 'sm' | 'md' | 'lg';
 
 const statusColors: Record<BadgeStatus, string> = {
@@ -32,6 +32,11 @@ const statusColors: Record<BadgeStatus, string> = {
     create: 'bg-green-100 text-green-800',
     update: 'bg-blue-100 text-blue-800',
     delete: 'bg-red-100 text-red-800',
+    // AuditStatus
+    [AuditStatus.PLANNED]: 'bg-indigo-100 text-indigo-800',
+    [AuditStatus.IN_PROGRESS]: 'bg-blue-100 text-blue-800',
+    [AuditStatus.COMPLETED]: 'bg-green-100 text-green-800',
+    [AuditStatus.CANCELLED]: 'bg-red-100 text-red-800',
     // User Status
     'active': 'bg-green-100 text-green-800',
     'inactive': 'bg-gray-100 text-gray-800',
@@ -62,6 +67,10 @@ const dotColors: Record<string, string> = {
     create: 'fill-green-500',
     update: 'fill-blue-500',
     delete: 'fill-red-500',
+    [AuditStatus.PLANNED]: 'fill-indigo-500',
+    [AuditStatus.IN_PROGRESS]: 'fill-blue-500',
+    [AuditStatus.COMPLETED]: 'fill-green-500',
+    [AuditStatus.CANCELLED]: 'fill-red-500',
     'active': 'fill-green-500',
     'inactive': 'fill-gray-500',
     'admin': 'fill-sky-500',

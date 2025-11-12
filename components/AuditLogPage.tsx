@@ -66,7 +66,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ auditLogs, users }) => {
     
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-900">Nhật ký Hệ thống</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Nhật ký hệ thống</h1>
             
             <Card>
                  <Card.Body>

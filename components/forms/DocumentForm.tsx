@@ -250,8 +250,9 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
     
     const getStandardDisplay = (standard: TieuChuan | undefined) => {
         if (!standard) return '';
-        const details = [standard.phien_ban, standard.ten_viet_tat].filter(Boolean).join(' / ');
-        return details ? `${standard.ten} (${details})` : standard.ten;
+        const versionPart = standard.phien_ban ? `v${standard.phien_ban}` : '';
+        const detailsPart = [standard.ten_viet_tat, versionPart].filter(Boolean).join(' ');
+        return detailsPart ? `${standard.ten} (${detailsPart})` : standard.ten;
     };
     
     const availableStandards = useMemo(() => {

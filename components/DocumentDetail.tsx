@@ -48,10 +48,10 @@ const getDescendantIds = (docId: string, allDocs: DanhMucTaiLieu[]): Set<string>
 
 
 // A simple component to display details in a list
-const DetailItem: React.FC<{ label: string; value?: React.ReactNode; fullWidth?: boolean }> = ({ label, value, fullWidth = false }) => {
+const DetailItem: React.FC<{ label: string; value?: React.ReactNode; className?: string }> = ({ label, value, className = '' }) => {
     if (!value && typeof value !== 'string' && typeof value !== 'number') return null;
     return (
-        <div className={fullWidth ? 'col-span-2' : ''}>
+        <div className={className}>
             <dt className="text-sm font-medium text-gray-500">{label}</dt>
             <dd className="mt-1 text-sm text-gray-900">{value}</dd>
         </div>
@@ -599,12 +599,14 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                         </div>
                     </div>
                 </Card.Header>
-                <Card.Body>
-                    <div className="divide-y divide-slate-200">
+                <Card.Body className="p-0">
+                    <div>
                         {/* General Info */}
-                        <div className="py-6">
-                            <h3 className="font-semibold text-gray-800 text-base">Thông tin chung</h3>
-                            <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-4">
+                        <div className="border-t border-slate-200">
+                            <div className="px-4 py-3 sm:px-6 bg-slate-50">
+                                <h3 className="text-base font-semibold text-gray-800">Thông tin chung</h3>
+                            </div>
+                            <dl className="p-4 sm:p-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-4">
                                 <DetailItem label="Loại tài liệu" value={loaiTaiLieuMap.get(document.loai_tai_lieu)} />
                                 <DetailItem label="Phòng ban quản lý" value={phongBanMap.get(document.phong_ban_quan_ly)} />
                                 <DetailItem label="Cấp độ" value={capDoMap.get(document.cap_do)} />
@@ -613,9 +615,11 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                         </div>
 
                         {/* Timeline & Version */}
-                        <div className="py-6">
-                            <h3 className="font-semibold text-gray-800 text-base">Mốc thời gian & Phiên bản</h3>
-                            <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-4">
+                        <div className="border-t border-slate-200">
+                             <div className="px-4 py-3 sm:px-6 bg-slate-50">
+                                <h3 className="text-base font-semibold text-gray-800">Mốc thời gian & Phiên bản</h3>
+                            </div>
+                            <dl className="p-4 sm:p-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-4">
                                 <DetailItem label="Ngày ban hành" value={formatDateForDisplay(document.ngay_ban_hanh)} />
                                 <DetailItem label="Ngày hiệu lực" value={formatDateForDisplay(document.ngay_hieu_luc)} />
                                 <DetailItem label="Ngày hết hiệu lực" value={formatDateForDisplay(document.ngay_het_hieu_luc)} />
@@ -624,9 +628,11 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                         </div>
                         
                         {/* Stakeholders */}
-                        <div className="py-6">
-                            <h3 className="font-semibold text-gray-800 text-base">Các bên liên quan</h3>
-                            <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
+                        <div className="border-t border-slate-200">
+                             <div className="px-4 py-3 sm:px-6 bg-slate-50">
+                                <h3 className="text-base font-semibold text-gray-800">Các bên liên quan</h3>
+                            </div>
+                            <dl className="p-4 sm:p-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
                                 <DetailItem label="Người soạn thảo" value={nhanSuMap.get(document.nguoi_soan_thao)} />
                                 <DetailItem label="Người rà soát" value={nhanSuMap.get(document.nguoi_ra_soat)} />
                                 <DetailItem label="Người phê duyệt" value={nhanSuMap.get(document.nguoi_phe_duyet)} />
@@ -634,14 +640,14 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                         </div>
 
                         {/* References and Relationships */}
-                        <div className="py-6">
-                            <h3 className="font-semibold text-gray-800 text-base">Tham chiếu & Liên kết</h3>
-                            <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-                                 <div className="sm:col-span-2">
-                                     <DetailItem label="Tiêu chuẩn áp dụng" value={(document.tieu_chuan_ids || []).map(id => (
-                                        <span key={id} className="mr-2 mb-2 inline-block"><Badge status={tieuChuanMap.get(id) || id} size="sm" /></span>
-                                    ))} />
-                                </div>
+                        <div className="border-t border-slate-200">
+                             <div className="px-4 py-3 sm:px-6 bg-slate-50">
+                                <h3 className="text-base font-semibold text-gray-800">Tham chiếu & Liên kết</h3>
+                            </div>
+                            <dl className="p-4 sm:p-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                                 <DetailItem className="sm:col-span-2" label="Tiêu chuẩn áp dụng" value={(document.tieu_chuan_ids || []).map(id => (
+                                    <span key={id} className="mr-2 mb-2 inline-block"><Badge status={tieuChuanMap.get(id) || id} size="sm" /></span>
+                                ))} />
                                 <div>
                                     <RelationshipItem
                                         label="Tài liệu cha"
@@ -664,9 +670,11 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                         </div>
                         
                         {/* Attachments */}
-                        <div className="pt-6">
-                             <h3 className="font-semibold text-gray-800 text-base">Tệp đính kèm</h3>
-                             <div className="mt-4 flex items-center space-x-4">
+                        <div className="border-t border-slate-200">
+                             <div className="px-4 py-3 sm:px-6 bg-slate-50">
+                                <h3 className="text-base font-semibold text-gray-800">Tệp đính kèm</h3>
+                            </div>
+                             <div className="p-4 sm:p-6 flex items-center space-x-4">
                                 {document.link_drive && <a href={document.link_drive} target="_blank" rel="noopener noreferrer" className="link">Google Drive</a>}
                                 {document.file_pdf && <a href={document.file_pdf} target="_blank" rel="noopener noreferrer" className="link">PDF</a>}
                                 {document.file_docx && <a href={document.file_docx} target="_blank" rel="noopener noreferrer" className="link">DOCX</a>}

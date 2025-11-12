@@ -207,7 +207,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         }
 
         return {
-            title: 'DANH SÁCH TÀI LIỆU',
+            title: 'Danh sách tài liệu',
             filters: activeFilters,
             columns: [
                 { header: 'Mã TL', accessor: (item: DanhMucTaiLieu) => item.ma_tl },
@@ -507,7 +507,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             <div className="space-y-6 no-print">
                 <div className="sm:flex sm:items-center sm:justify-between">
                     <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-gray-900">Quản lý Tài liệu</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">Quản lý tài liệu</h1>
                         <p className="mt-1 text-sm text-gray-500">
                             Tìm kiếm, lọc và quản lý tất cả các tài liệu trong hệ thống.
                         </p>
@@ -582,7 +582,12 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                     className="form-select"
                                 >
                                     <option value="">Tất cả</option>
-                                    {allData.tieuChuan.filter(s => s.is_active).map(s => <option key={s.id} value={s.id}>{s.ten_viet_tat || s.ten}</option>)}
+                                    {allData.tieuChuan.filter(s => s.is_active).map(s => {
+                                        const versionPart = s.phien_ban ? `v${s.phien_ban}` : '';
+                                        const detailsPart = [s.ten_viet_tat, versionPart].filter(Boolean).join(' ');
+                                        const displayText = detailsPart ? `${s.ten} (${detailsPart})` : s.ten;
+                                        return <option key={s.id} value={s.id}>{displayText}</option>;
+                                    })}
                                 </select>
                             </div>
                             <div>

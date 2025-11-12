@@ -41,10 +41,10 @@ const NoData: React.FC<{ message: string }> = ({ message }) => (
     </div>
 );
 
-const DetailItem: React.FC<{ label: string; value?: React.ReactNode; fullWidth?: boolean }> = ({ label, value, fullWidth = false }) => {
+const DetailItem: React.FC<{ label: string; value?: React.ReactNode; className?: string }> = ({ label, value, className = '' }) => {
     if (!value && typeof value !== 'string' && typeof value !== 'number') return null;
     return (
-        <div className={fullWidth ? 'sm:col-span-2' : ''}>
+        <div className={className}>
             <dt className="text-sm font-medium text-gray-500">{label}</dt>
             <dd className="mt-1 text-sm text-gray-900">{value}</dd>
         </div>
@@ -194,7 +194,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
             case 'by-department': {
                 if (!selectedDepartment) return null;
                 return {
-                    title: 'BÁO CÁO DANH SÁCH TÀI LIỆU',
+                    title: 'Báo cáo danh sách tài liệu',
                     filters: { 'Phòng ban': phongBanMap.get(selectedDepartment) || 'N/A' },
                     columns: [
                         { header: 'Mã TL', accessor: (item: DanhMucTaiLieu) => item.ma_tl },
@@ -209,7 +209,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
             case 'by-standard': {
                 if (!selectedStandard) return null;
                 return {
-                    title: 'BÁO CÁO DANH SÁCH TÀI LIỆU',
+                    title: 'Báo cáo danh sách tài liệu',
                     filters: { 'Tiêu chuẩn': tieuChuanMap.get(selectedStandard) || 'N/A' },
                     columns: [
                         { header: 'Mã TL', accessor: (item: DanhMucTaiLieu) => item.ma_tl },
@@ -225,7 +225,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                 if (!selectedDocumentId) return null;
                 const docName = allData.documents.find(d => d.ma_tl === selectedDocumentId)?.ten_tai_lieu || 'N/A';
                 return {
-                    title: 'BÁO CÁO QUAN HỆ TÀI LIỆU',
+                    title: 'Báo cáo quan hệ tài liệu',
                     filters: { 'Tài liệu gốc': `${docName} (${selectedDocumentId})` },
                     columns: [
                         { header: 'Quan hệ', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => translate(item.relation) },
@@ -239,7 +239,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
             }
             case 'expiring': {
                 return {
-                    title: 'BÁO CÁO TÀI LIỆU HẾT VÀ SẮP HẾT HIỆU LỰC',
+                    title: 'Báo cáo tài liệu hết và sắp hết hiệu lực',
                     filters: {
                         'Khung thời gian': `Trong vòng ${expiryDays} ngày tới`,
                         'Bao gồm đã hết hiệu lực': includeExpired ? 'Có' : 'Không',
@@ -257,7 +257,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                 if (!selectedAuditId) return null;
                 const { audit } = auditReportData;
                 return {
-                    title: 'BÁO CÁO TÀI LIỆU THEO LỊCH AUDIT',
+                    title: 'Báo cáo tài liệu theo lịch audit',
                     filters: { 'Cuộc Audit': audit?.ten_cuoc_audit || 'N/A' },
                     columns: [
                         { header: 'Mã TL', accessor: (item: any) => item.doc.ma_tl },
@@ -512,7 +512,12 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                 <label htmlFor="standard-select" className="form-label">Chọn tiêu chuẩn:</label>
                                 <select id="standard-select" value={selectedStandard} onChange={e => setSelectedStandard(e.target.value)} className="form-select">
                                     <option value="">-- Vui lòng chọn --</option>
-                                    {allData.tieuChuan.filter(tc => tc.is_active).map(tc => <option key={tc.id} value={tc.id}>{tc.ten}</option>)}
+                                    {allData.tieuChuan.filter(tc => tc.is_active).map(tc => {
+                                        const versionPart = tc.phien_ban ? `v${tc.phien_ban}` : '';
+                                        const detailsPart = [tc.ten_viet_tat, versionPart].filter(Boolean).join(' ');
+                                        const displayText = detailsPart ? `${tc.ten} (${detailsPart})` : tc.ten;
+                                        return <option key={tc.id} value={tc.id}>{displayText}</option>;
+                                    })}
                                 </select>
                             </div>
                             {selectedStandard && <div className="flex items-center justify-end gap-4"><ItemsPerPageSelector /> <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('by-standard')} onExportWord={() => handleExportWord('by-standard')} /></div>}
@@ -627,19 +632,21 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         ) : (
                             <div>
                                 {audit && (
-                                        <div className="p-4 bg-slate-50 border-b border-gray-200">
-                                            <h3 className="text-base font-semibold text-gray-900">Thông tin cuộc Audit</h3>
-                                            <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-                                            <DetailItem label="Tên" value={audit.ten_cuoc_audit} fullWidth/>
-                                            <DetailItem label="Thời gian" value={`${formatDateForDisplay(audit.ngay_bat_dau)} - ${formatDateForDisplay(audit.ngay_ket_thuc)}`} />
-                                            <DetailItem label="Trạng thái" value={<Badge status={audit.trang_thai}/>} />
-                                            <DetailItem label="Tiêu chuẩn" value={audit.tieu_chuan_ids.map(id => tieuChuanMap.get(id)).join(', ')} fullWidth/>
-                                            <DetailItem label="Trưởng đoàn" value={danhGiaVienMap.get(audit.chuyen_gia_danh_gia_truong_id)} />
-                                            <DetailItem label="Thành viên" value={audit.doan_danh_gia_ids.map(id => danhGiaVienMap.get(id)).join(', ')} />
+                                    <div className="border-b border-gray-200">
+                                        <div className="px-4 py-3 sm:px-6 bg-slate-50">
+                                            <h3 className="text-base font-semibold text-gray-800">Thông tin cuộc Audit</h3>
+                                        </div>
+                                        <dl className="p-4 sm:p-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-4">
+                                            <DetailItem className="sm:col-span-4" label="Tên" value={audit.ten_cuoc_audit} />
+                                            <DetailItem className="sm:col-span-2" label="Thời gian" value={`${formatDateForDisplay(audit.ngay_bat_dau)} - ${formatDateForDisplay(audit.ngay_ket_thuc)}`} />
+                                            <DetailItem className="sm:col-span-2" label="Trạng thái" value={<Badge status={audit.trang_thai}/>} />
+                                            <DetailItem className="sm:col-span-4" label="Tiêu chuẩn" value={(audit.tieu_chuan_ids || []).map(id => (<span key={id} className="mr-2 mb-2 inline-block"><Badge status={tieuChuanMap.get(id) || id} size="sm" /></span>))}/>
+                                            <DetailItem className="sm:col-span-2" label="Trưởng đoàn" value={danhGiaVienMap.get(audit.chuyen_gia_danh_gia_truong_id)} />
+                                            <DetailItem className="sm:col-span-2" label="Thành viên" value={audit.doan_danh_gia_ids.map(id => danhGiaVienMap.get(id)).join(', ')} />
                                             {audit.loai_audit === 'external' && (
-                                                <DetailItem label="Tổ chức đánh giá" value={toChucDanhGiaMap.get(audit.to_chuc_danh_gia_id || '')} />
+                                                <DetailItem className="sm:col-span-2" label="Tổ chức đánh giá" value={toChucDanhGiaMap.get(audit.to_chuc_danh_gia_id || '')} />
                                             )}
-                                            </dl>
+                                        </dl>
                                     </div>
                                 )}
                                 {auditDocuments.length > 0 ? (
@@ -674,7 +681,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
         <>
             {printLayoutProps && <PrintReportLayout {...printLayoutProps} currentUser={currentUser} />}
             <div className="no-print space-y-6">
-                <h1 className="text-3xl font-bold text-gray-900">Báo cáo & Thống kê</h1>
+                <h1 className="text-3xl font-bold text-gray-900">Báo cáo & thống kê</h1>
 
                 <div className="border-b border-gray-200">
                     <nav className="-mb-px flex space-x-8" aria-label="Tabs">

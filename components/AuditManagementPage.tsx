@@ -111,7 +111,7 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
         if (dateFilter.end) filters['Đến ngày'] = formatDateForDisplay(dateFilter.end);
         
         return {
-            title: 'LỊCH SỬ AUDIT',
+            title: 'Lịch sử audit',
             filters,
             columns: [
                  { header: 'Tên cuộc audit', accessor: (item: LichAudit) => item.ten_cuoc_audit },
@@ -245,7 +245,7 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
             <div className="space-y-6 no-print">
                 <div className="sm:flex sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Lịch Audit</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">Lịch audit</h1>
                         <p className="mt-1 text-sm text-gray-500">
                             Lên kế hoạch và theo dõi các cuộc đánh giá nội bộ và bên ngoài.
                         </p>

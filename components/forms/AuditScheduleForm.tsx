@@ -61,8 +61,9 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
     
     const getStandardDisplay = (item: TieuChuan | undefined) => {
         if (!item) return '';
-        const details = [item.phien_ban, item.ten_viet_tat].filter(Boolean).join(' / ');
-        return details ? `${item.ten} (${details})` : item.ten;
+        const versionPart = item.phien_ban ? `v${item.phien_ban}` : '';
+        const detailsPart = [item.ten_viet_tat, versionPart].filter(Boolean).join(' ');
+        return detailsPart ? `${item.ten} (${detailsPart})` : item.ten;
     };
     
     const getDocumentDisplay = (item: DanhMucTaiLieu | undefined) => {

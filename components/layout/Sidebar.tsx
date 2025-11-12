@@ -17,8 +17,8 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, isCollapsed, isActive, o
         onClick={onClick}
         className={`group flex items-center w-full py-3 text-sm ${fontWeight} rounded-lg transition-colors duration-200 ${
             isActive
-                ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 pl-3'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 px-4'
+                ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 pl-3 pr-2'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 pl-4 pr-2'
         }`}
     >
         <Icon
@@ -52,14 +52,14 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     const mainNavItems = [
         { view: 'dashboard', icon: 'home', label: 'Dashboard' },
-        { view: 'documents', icon: 'document-text', label: 'Quản lý Tài liệu' },
-        { view: 'standards', icon: 'bookmark', label: 'Quản lý Tiêu chuẩn' },
-        { view: 'audits', icon: 'calendar', label: 'Lịch Audit' },
-        { view: 'reports', icon: 'chart-bar', label: 'Báo cáo' },
+        { view: 'documents', icon: 'document-text', label: 'Quản lý tài liệu' },
+        { view: 'standards', icon: 'bookmark', label: 'Quản lý tiêu chuẩn' },
+        { view: 'audits', icon: 'calendar', label: 'Lịch audit' },
+        { view: 'reports', icon: 'chart-bar', label: 'Báo cáo & thống kê' },
     ];
     
      const adminNavItems = [
-        { view: 'audit-log', icon: 'clock', label: 'Nhật ký Hệ thống' },
+        { view: 'audit-log', icon: 'clock', label: 'Nhật ký hệ thống' },
     ];
     
     const categoryNavItems = [
@@ -98,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </button>
             </div>
             <div className="flex-1 flex flex-col overflow-y-auto">
-                <nav className="flex-1 py-4 space-y-1">
+                <nav className="flex-1 pt-4 space-y-1">
                     {mainNavItems.map(item => {
                         if (item.view === 'reports') {
                             return (
@@ -117,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                 <button 
                                                     key={subItem.key}
                                                     onClick={() => handleReportNavigation(subItem.key)}
-                                                    className="flex items-center w-full px-4 py-2 text-sm font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900"
+                                                    className="flex items-center w-full pl-4 pr-2 py-2 text-sm font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900"
                                                 >
                                                     {subItem.title}
                                                 </button>
@@ -143,7 +143,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     
                      {currentUser.role === 'admin' && (
                          <>
-                            <div className="px-4 pt-4 pb-2">
+                            <div className="pl-4 pr-2 pt-4 pb-2">
                                 <span className={`text-sm font-semibold text-gray-500 uppercase ${isCollapsed ? 'hidden' : 'block'}`}>
                                     Quản trị
                                 </span>
@@ -165,8 +165,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
                                     className={`group flex items-center w-full py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
                                         isCategoriesActive
-                                            ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 pl-3'
-                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 px-4'
+                                            ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 pl-3 pr-2'
+                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 pl-4 pr-2'
                                     }`}
                                 >
                                     <Icon
@@ -191,7 +191,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             <button 
                                                 key={item.key}
                                                 onClick={() => handleNavigation(item.key)}
-                                                className={`flex items-center w-full px-4 py-2 text-sm font-medium rounded-md hover:bg-gray-100 hover:text-gray-900 ${
+                                                className={`flex items-center w-full pl-4 pr-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100 hover:text-gray-900 ${
                                                     currentView === item.key ? 'text-blue-600' : 'text-gray-500'
                                                 }`}
                                             >
@@ -205,7 +205,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     )}
                 </nav>
                 {/* Settings link at the bottom */}
-                <div className="mt-auto px-2 py-4">
+                <div className="mt-auto pb-4">
                     <NavItem
                         icon="cog"
                         label="Cài đặt"

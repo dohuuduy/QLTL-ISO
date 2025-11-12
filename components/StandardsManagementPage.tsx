@@ -67,10 +67,10 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
 
     const printLayoutProps = useMemo(() => {
         return {
-            title: 'DANH SÁCH TIÊU CHUẨN',
+            title: 'Danh sách tiêu chuẩn',
             filters: {}, // No filters on this page
             columns: [
-                { header: 'Tên Tiêu chuẩn', accessor: (item: TieuChuan) => item.ten },
+                { header: 'Tên tiêu chuẩn', accessor: (item: TieuChuan) => item.ten },
                 { header: 'Viết tắt', accessor: (item: TieuChuan) => item.ten_viet_tat || '' },
                 { header: 'Phiên bản', accessor: (item: TieuChuan) => item.phien_ban || '' },
                 { header: 'Ngày áp dụng', accessor: (item: TieuChuan) => formatDateForDisplay(item.ngay_ap_dung) },
@@ -227,7 +227,7 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
             <div className="space-y-6 no-print">
                 <div className="sm:flex sm:items-center sm:justify-between">
                      <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-gray-900">Quản lý Tiêu chuẩn</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">Quản lý tiêu chuẩn</h1>
                         <p className="mt-1 text-sm text-gray-500">
                             Quản lý các tiêu chuẩn chất lượng, môi trường, an toàn và các tiêu chuẩn khác.
                         </p>
@@ -254,7 +254,7 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
                 <Card>
                     <Table<TieuChuan>
                         columns={[
-                            { header: getSortableHeader('Tên Tiêu chuẩn', 'ten'), accessor: 'ten', className: 'font-medium text-gray-900' },
+                            { header: getSortableHeader('Tên tiêu chuẩn', 'ten'), accessor: 'ten', className: 'font-medium text-gray-900' },
                             { header: getSortableHeader('Viết tắt', 'ten_viet_tat'), accessor: 'ten_viet_tat' },
                             { header: getSortableHeader('Phiên bản', 'phien_ban'), accessor: 'phien_ban' },
                             { header: getSortableHeader('Ngày áp dụng', 'ngay_ap_dung'), accessor: (item) => formatDateForDisplay(item.ngay_ap_dung) },
