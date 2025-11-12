@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { NhanSu, DanhMucChung } from '../types';
+import type { NhanSu } from '../types';
 import Card from './ui/Card';
 import Table from './ui/Table';
 import Modal from './ui/Modal';
@@ -8,6 +8,13 @@ import ConfirmationDialog from './ui/ConfirmationDialog';
 import Badge from './ui/Badge';
 import { mockData } from '../data/mockData';
 import Pagination from './ui/Pagination';
+
+// NEW IMPORTS
+import ExportDropdown from './ui/ExportDropdown';
+import PrintReportLayout from './PrintReportLayout';
+import { exportToCsv, exportVisibleReportToWord } from '../utils/exportUtils';
+import { translate } from '../utils/translations';
+
 
 type CategoryKey = keyof typeof mockData;
 
@@ -174,6 +181,90 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
             setDeletingItem(null);
         }
     };
+    
+    const defaultColumns = [
+        { header: `Tên ${title.replace('Quản lý ', '').toLowerCase()}`, accessor: (item: T) => item.ten, sortKey: 'ten' },
+    ];
+
+    const finalColumns = (columns || defaultColumns).map(col => ({
+        ...col,
+        header: typeof col.header === 'string' && col.sortKey
+            ? getSortableHeader(col.header, col.sortKey)
+            : col.header,
+    })).concat([
+        { header: getSortableHeader('Trạng thái', 'is_active'), accessor: (item: T) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} />, sortKey: 'is_active' }
+    ]);
+    
+    const printLayoutProps = useMemo(() => {
+        const baseColumns = columns || defaultColumns;
+        const printColumns = baseColumns.map(col => ({
+          header: typeof col.header === 'string' ? col.header.replace(/<[^>]*>?/gm, '') : 'Header',
+          accessor: (item: T): string => {
+            if (typeof col.accessor === 'function') {
+              const value = col.accessor(item);
+              if (React.isValidElement(value)) {
+                 if (value.type === Badge) {
+                    return translate(value.props.status);
+                 }
+                 return ''; // Don't print complex components
+              }
+              return String(value ?? '');
+            }
+            return String(item[col.accessor as keyof T] ?? '');
+          }
+        }));
+        
+        printColumns.push({
+            header: 'Trạng thái',
+            accessor: (item: T) => item.is_active !== false ? 'Đang hoạt động' : 'Vô hiệu hóa'
+        });
+
+        const activeFilters: Record<string, string> = {};
+        if (filters.searchTerm) {
+            activeFilters['Từ khóa'] = filters.searchTerm;
+        }
+        if (filters.status !== 'all') {
+            activeFilters['Trạng thái'] = filters.status === 'active' ? 'Đang hoạt động' : 'Vô hiệu hóa';
+        }
+
+        return {
+            title: title,
+            filters: activeFilters,
+            columns: printColumns,
+            data: sortedItems,
+        };
+    }, [sortedItems, filters, title, columns, defaultColumns]);
+
+    const handlePrint = () => window.print();
+
+    const handleExportWord = () => {
+        const filename = normalizeString(title).replace(/\s+/g, '_');
+        exportVisibleReportToWord(filename);
+    };
+
+    const handleExportCsv = () => {
+        if (!printLayoutProps) return;
+
+        const headers: { [key: string]: string } = {};
+        const keys: string[] = [];
+        printLayoutProps.columns.forEach((col, i) => {
+            const key = `col_${i}`;
+            keys.push(key);
+            headers[key] = col.header;
+        });
+
+        const dataToExport = printLayoutProps.data.map(item => {
+            const row: { [key: string]: any } = {};
+            printLayoutProps.columns.forEach((col, i) => {
+                row[keys[i]] = col.accessor(item);
+            });
+            return row;
+        });
+
+        const filename = normalizeString(title).replace(/\s+/g, '_') + '.csv';
+        exportToCsv(dataToExport, headers, filename);
+    };
+
 
     const renderActions = (item: T) => {
         const isSelf = 'ten_dang_nhap' in item && (item as any).id === currentUser.id;
@@ -202,124 +293,121 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
         );
     };
 
-    const defaultColumns = [
-        { header: `Tên ${title.replace('Quản lý ', '').toLowerCase()}`, accessor: (item: T) => item.ten, sortKey: 'ten' },
-    ];
-
-    const finalColumns = (columns || defaultColumns).map(col => ({
-        ...col,
-        header: typeof col.header === 'string' && col.sortKey
-            ? getSortableHeader(col.header, col.sortKey)
-            : col.header,
-    })).concat([
-        { header: getSortableHeader('Trạng thái', 'is_active'), accessor: (item: T) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} />, sortKey: 'is_active' }
-    ]);
-
-
     const modalTitle = `${modalData ? 'Chỉnh sửa' : 'Thêm mới'} ${title.replace('Quản lý ', '')}`;
     const deletionMessage = `Bạn có chắc chắn muốn xóa '${deletingItem?.ten || ''}' không? Hành động này không thể hoàn tác.`;
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-            <Card>
-                <Card.Header className="flex items-center justify-between">
-                    <h3 className="text-base font-semibold text-gray-900">Danh sách</h3>
-                    <button
-                        type="button"
-                        onClick={() => openModal()}
-                        className="btn-primary"
-                    >
-                        <Icon type="plus" className="-ml-1 mr-2 h-4 w-4" />
-                        Thêm mới
-                    </button>
-                </Card.Header>
-                 <Card.Body>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                        <div className="md:col-span-2">
-                            <label htmlFor="search-input" className="form-label">Tìm kiếm theo tên</label>
-                            <div className="search-input-container">
-                                <Icon type="search" className="search-input-icon h-5 w-5" />
-                                <input
-                                    id="search-input"
-                                    type="text"
-                                    placeholder="Nhập tên để tìm kiếm..."
-                                    value={filters.searchTerm}
-                                    onChange={(e) => setFilters(f => ({ ...f, searchTerm: e.target.value }))}
-                                    className="form-input search-input"
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <label htmlFor="status-filter" className="form-label">Trạng thái</label>
-                            <select
-                                id="status-filter"
-                                value={filters.status}
-                                onChange={(e) => setFilters(f => ({ ...f, status: e.target.value }))}
-                                className="form-select"
-                            >
-                                <option value="all">Tất cả</option>
-                                <option value="active">Đang hoạt động</option>
-                                <option value="inactive">Vô hiệu hóa</option>
-                            </select>
-                        </div>
+        <>
+            {printLayoutProps && <PrintReportLayout {...printLayoutProps} currentUser={currentUser} />}
+            <div className="space-y-6 no-print">
+                <div className="sm:flex sm:items-center sm:justify-between">
+                    <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+                    <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex items-center gap-x-2">
+                         <ExportDropdown 
+                            onPrint={handlePrint}
+                            onExportCsv={handleExportCsv}
+                            onExportWord={handleExportWord}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => openModal()}
+                            className="btn-primary"
+                        >
+                            <Icon type="plus" className="-ml-1 mr-2 h-4 w-4" />
+                            Thêm mới
+                        </button>
                     </div>
-                </Card.Body>
-                <Table
-                    columns={finalColumns}
-                    data={paginatedItems}
-                    actions={renderActions}
-                    rowClassName={(item: any) => item.role === 'admin' ? 'bg-sky-50' : ''}
-                />
-                 {sortedItems.length > 0 && (
-                    <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={setCurrentPage}
-                    >
-                        <div className="flex items-center gap-x-4">
-                            <p className="text-sm text-gray-700">
-                                Hiển thị <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
-                                - <span className="font-medium">{Math.min(currentPage * itemsPerPage, sortedItems.length)}</span>
-                                {' '}trên <span className="font-medium">{sortedItems.length}</span> mục
-                            </p>
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="items-per-page" className="text-sm text-gray-700">Hiển thị:</label>
+                </div>
+
+                <Card>
+                    <Card.Body>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                            <div className="md:col-span-2">
+                                <label htmlFor="search-input" className="form-label">Tìm kiếm theo tên</label>
+                                <div className="search-input-container">
+                                    <Icon type="search" className="search-input-icon h-5 w-5" />
+                                    <input
+                                        id="search-input"
+                                        type="text"
+                                        placeholder="Nhập tên để tìm kiếm..."
+                                        value={filters.searchTerm}
+                                        onChange={(e) => setFilters(f => ({ ...f, searchTerm: e.target.value }))}
+                                        className="form-input search-input"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor="status-filter" className="form-label">Trạng thái</label>
                                 <select
-                                    id="items-per-page"
-                                    value={itemsPerPage}
-                                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                                    className="form-select py-1 w-auto"
+                                    id="status-filter"
+                                    value={filters.status}
+                                    onChange={(e) => setFilters(f => ({ ...f, status: e.target.value }))}
+                                    className="form-select"
                                 >
-                                    <option value={10}>10</option>
-                                    <option value={15}>15</option>
-                                    <option value={20}>20</option>
-                                    <option value={50}>50</option>
+                                    <option value="all">Tất cả</option>
+                                    <option value="active">Đang hoạt động</option>
+                                    <option value="inactive">Vô hiệu hóa</option>
                                 </select>
-                                <span className="text-sm text-gray-700">dòng/trang</span>
                             </div>
                         </div>
-                    </Pagination>
-                )}
-            </Card>
+                    </Card.Body>
+                    <Table
+                        columns={finalColumns}
+                        data={paginatedItems}
+                        actions={renderActions}
+                        rowClassName={(item: any) => item.role === 'admin' ? 'bg-sky-50' : ''}
+                    />
+                    {sortedItems.length > 0 && (
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        >
+                            <div className="flex items-center gap-x-4">
+                                <p className="text-sm text-gray-700">
+                                    Hiển thị <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
+                                    - <span className="font-medium">{Math.min(currentPage * itemsPerPage, sortedItems.length)}</span>
+                                    {' '}trên <span className="font-medium">{sortedItems.length}</span> mục
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="items-per-page" className="text-sm text-gray-700">Hiển thị:</label>
+                                    <select
+                                        id="items-per-page"
+                                        value={itemsPerPage}
+                                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                        className="form-select py-1 w-auto"
+                                    >
+                                        <option value={10}>10</option>
+                                        <option value={15}>15</option>
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                    </select>
+                                    <span className="text-sm text-gray-700">dòng/trang</span>
+                                </div>
+                            </div>
+                        </Pagination>
+                    )}
+                </Card>
 
-            <Modal isOpen={isModalOpen} onClose={closeModal} title={modalTitle}>
-                <FormComponent
-                    onSubmit={handleSave}
-                    onCancel={closeModal}
-                    initialData={modalData}
-                    {...formProps}
+                <Modal isOpen={isModalOpen} onClose={closeModal} title={modalTitle}>
+                    <FormComponent
+                        onSubmit={handleSave}
+                        onCancel={closeModal}
+                        initialData={modalData}
+                        currentUser={currentUser}
+                        {...formProps}
+                    />
+                </Modal>
+
+                <ConfirmationDialog
+                    isOpen={!!deletingItem}
+                    onClose={() => setDeletingItem(null)}
+                    onConfirm={handleDeleteConfirm}
+                    title={`Xác nhận Xóa`}
+                    message={deletionMessage}
                 />
-            </Modal>
-
-            <ConfirmationDialog
-                isOpen={!!deletingItem}
-                onClose={() => setDeletingItem(null)}
-                onConfirm={handleDeleteConfirm}
-                title={`Xác nhận Xóa`}
-                message={deletionMessage}
-            />
-        </div>
+            </div>
+        </>
     );
 };
 

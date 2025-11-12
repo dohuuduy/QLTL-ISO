@@ -505,14 +505,14 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         <>
             {printLayoutProps && <PrintReportLayout {...printLayoutProps} currentUser={currentUser} />}
             <div className="space-y-6 no-print">
-                <div className="sm:flex sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex-1">
                         <h1 className="text-3xl font-bold text-gray-900">Quản lý tài liệu</h1>
                         <p className="mt-1 text-sm text-gray-500">
                             Tìm kiếm, lọc và quản lý tất cả các tài liệu trong hệ thống.
                         </p>
                     </div>
-                    <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex items-center gap-x-2">
+                    <div className="flex items-center gap-x-2 self-start sm:self-center">
                         <ExportDropdown 
                             onPrint={handlePrint}
                             onExportCsv={handleExportCsv}
@@ -611,13 +611,89 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             </div>
                         </div>
                     </Card.Body>
-                    <Table<DanhMucTaiLieu>
-                        columns={tableColumns}
-                        data={paginatedDocuments}
-                        onRowClick={onViewDetails}
-                        rowClassName={getRowClassName}
-                        actions={renderActions}
-                    />
+
+                    {/* Mobile View: Card List */}
+                    <div className="md:hidden">
+                        {paginatedDocuments.length > 0 ? (
+                            <ul className="divide-y divide-gray-200">
+                                {paginatedDocuments.map(doc => (
+                                    <li key={doc.ma_tl} className="p-4 hover:bg-slate-50 cursor-pointer" onClick={() => onViewDetails(doc)}>
+                                        {/* Top section: Title and Bookmark */}
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex-1">
+                                                <p className="font-semibold text-gray-900">{doc.ten_tai_lieu}</p>
+                                                <p className="text-xs text-gray-500 mt-1">{doc.ma_tl} / {doc.so_hieu}</p>
+                                            </div>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); onToggleBookmark(doc.ma_tl); }}
+                                                className="p-2 -mr-2 -mt-1 rounded-full hover:bg-yellow-100 flex-shrink-0"
+                                                title={doc.is_bookmarked ? 'Bỏ đánh dấu' : 'Đánh dấu'}
+                                            >
+                                                <Icon type={doc.is_bookmarked ? 'star-solid' : 'star'} className={`h-5 w-5 ${doc.is_bookmarked ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}`} />
+                                            </button>
+                                        </div>
+
+                                        {/* Middle section: Info */}
+                                        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
+                                            <div className="flex items-center gap-1.5">
+                                                <Icon type="building-library" className="h-3 w-3 text-gray-400" />
+                                                <span>{phongBanMap.get(doc.phong_ban_quan_ly) || 'N/A'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <Icon type="calendar" className="h-3 w-3 text-gray-400" />
+                                                <span>{formatDateForDisplay(doc.ngay_hieu_luc)}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <Icon type="document-text" className="h-3 w-3 text-gray-400" />
+                                                <span>Phiên bản: {latestVersionMap.get(doc.ma_tl) || 'N/A'}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Bottom section: Status and Actions */}
+                                        <div className="mt-3 flex items-center justify-between">
+                                            <Badge status={doc.trang_thai} />
+                                            <div className="flex items-center space-x-0">
+                                                {doc.file_pdf && (
+                                                    <a href={doc.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full" title="In/Mở PDF">
+                                                        <Icon type="printer" className="h-5 w-5" />
+                                                    </a>
+                                                )}
+                                                <button onClick={(e) => { e.stopPropagation(); handleOpenRelatedModal(doc); }} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full" title="Xem tài liệu liên quan">
+                                                    <Icon type="link" className="h-5 w-5" />
+                                                </button>
+                                                {canUpdate && (
+                                                    <button onClick={(e) => { e.stopPropagation(); openModal(doc); }} className="p-2 text-blue-600 hover:bg-blue-100 rounded-full" title="Chỉnh sửa">
+                                                        <Icon type="pencil" className="h-5 w-5" />
+                                                    </button>
+                                                )}
+                                                {canDelete && (
+                                                    <button onClick={(e) => { e.stopPropagation(); setDeletingId(doc.ma_tl); }} className="p-2 text-red-600 hover:bg-red-100 rounded-full" title="Xóa">
+                                                        <Icon type="trash" className="h-5 w-5" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <div className="text-center py-10 px-4">
+                                <p className="text-gray-500">Không có tài liệu nào khớp với bộ lọc của bạn.</p>
+                            </div>
+                        )}
+                    </div>
+                    
+                    {/* Desktop View: Table */}
+                    <div className="hidden md:block">
+                        <Table<DanhMucTaiLieu>
+                            columns={tableColumns}
+                            data={paginatedDocuments}
+                            onRowClick={onViewDetails}
+                            rowClassName={getRowClassName}
+                            actions={renderActions}
+                        />
+                    </div>
+
                     {sortedDocuments.length > 0 && (
                         <Pagination
                             currentPage={currentPage}

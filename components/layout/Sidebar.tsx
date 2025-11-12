@@ -10,7 +10,6 @@ interface SidebarProps {
   onNavigate: (view: string) => void;
   currentView: string;
   currentUser: NhanSu;
-  onNavigateToReport: (reportType: ReportType) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ 

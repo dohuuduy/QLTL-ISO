@@ -45,7 +45,7 @@ const Layout: React.FC<LayoutProps> = ({
 
 
     return (
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen bg-slate-100">
             <Sidebar
                 isCollapsed={isCollapsed}
                 isMobileOpen={isMobileOpen}
@@ -53,9 +53,8 @@ const Layout: React.FC<LayoutProps> = ({
                 onNavigate={onNavigate}
                 currentUser={currentUser}
                 currentView={currentView}
-                onNavigateToReport={onNavigateToReport}
             />
-            <div className="flex-1 flex flex-col overflow-y-auto">
+            <div className="flex-1 flex flex-col overflow-hidden">
                 <Navbar
                     onLogoClick={() => onNavigate('dashboard')}
                     onToggleSidebar={toggleSidebar}
@@ -68,7 +67,7 @@ const Layout: React.FC<LayoutProps> = ({
                     onNavigateToDocument={onNavigateToDocument}
                     chucVuList={chucVuList}
                 />
-                <main className="flex-1 bg-gray-50">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto">
                     <div className="container mx-auto px-6 py-8">
                         {children}
                     </div>
