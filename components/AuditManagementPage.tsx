@@ -405,8 +405,8 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                         }}
                     />
                      <Modal.Footer>
-                        <button type="button" onClick={closeModal} className="btn-secondary">Hủy</button>
-                        <button type="submit" form="audit-form" className="btn-primary ml-3">
+                        <button type="button" onClick={closeModal} className="btn-secondary w-full sm:w-auto">Hủy</button>
+                        <button type="submit" form="audit-form" className="btn-primary w-full sm:w-auto">
                             Lưu
                         </button>
                     </Modal.Footer>

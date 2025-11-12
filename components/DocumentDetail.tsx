@@ -772,8 +772,8 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                     categories={allData}
                 />
                  <Modal.Footer>
-                    <button type="button" onClick={() => setIsEditingDocument(false)} className="btn-secondary">Hủy</button>
-                    <button type="submit" form="edit-document-form" className="btn-primary ml-3">Lưu thay đổi</button>
+                    <button type="button" onClick={() => setIsEditingDocument(false)} className="btn-secondary w-full sm:w-auto">Hủy</button>
+                    <button type="submit" form="edit-document-form" className="btn-primary w-full sm:w-auto">Lưu thay đổi</button>
                 </Modal.Footer>
             </Modal>
             

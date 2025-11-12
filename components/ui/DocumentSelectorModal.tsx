@@ -73,7 +73,7 @@ const DocumentSelectorModal: React.FC<DocumentSelectorModalProps> = ({
                 )}
             </div>
             <Modal.Footer>
-                 <button type="button" onClick={onClose} className="btn-secondary">Đóng</button>
+                 <button type="button" onClick={onClose} className="btn-secondary w-full sm:w-auto">Đóng</button>
             </Modal.Footer>
         </Modal>
     );

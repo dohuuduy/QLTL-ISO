@@ -43,7 +43,7 @@ const Modal: React.FC<ModalProps> & ModalSubComponents = ({ isOpen, onClose, tit
 
 const ModalFooter: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => {
     return (
-        <div className={`bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 rounded-b-xl ${className}`}>
+        <div className={`bg-slate-50 px-4 py-3 flex flex-col-reverse sm:flex-row sm:justify-end sm:px-6 rounded-b-xl gap-3 ${className}`}>
             {children}
         </div>
     );
