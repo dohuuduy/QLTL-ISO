@@ -30,6 +30,32 @@ import GroupedCategoryPage from './components/GroupedCategoryPage';
 
 type AppData = typeof mockData;
 
+// Define an initial empty state for the application data
+const initialAppData: AppData = {
+    documents: [],
+    versions: [],
+    reviewSchedules: [],
+    changeLogs: [],
+    distributions: [],
+    trainings: [],
+    risks: [],
+    auditTrail: [],
+    notifications: [],
+    auditSchedules: [],
+    nhanSu: [],
+    phongBan: [],
+    chucVu: [],
+    loaiTaiLieu: [],
+    capDoTaiLieu: [],
+    mucDoBaoMat: [],
+    tanSuatRaSoat: [],
+    hangMucThayDoi: [],
+    tieuChuan: [],
+    danhGiaVien: [],
+    toChucDanhGia: [],
+};
+
+
 // Define View states
 type View =
     | { type: 'dashboard' }
@@ -48,10 +74,10 @@ type View =
 
 const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<NhanSu | null>(null);
-    const [appData, setAppData] = useState<AppData>(mockData);
+    const [appData, setAppData] = useState<AppData>(initialAppData);
     const [isLoading, setIsLoading] = useState(true);
     const [view, setView] = useState<View>({ type: 'dashboard' });
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<React.ReactNode | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
     // Initial data load
@@ -62,10 +88,21 @@ const App: React.FC = () => {
                 const data = await getAllData();
                 setAppData(data);
                 setError(null);
-            } catch (e) {
-                console.error("Failed to load data, using mock data.", e);
-                setError("Không thể tải dữ liệu từ máy chủ. Đang sử dụng dữ liệu mẫu.");
-                setAppData(mockData);
+            } catch (e: any) {
+                console.error("Failed to load data from server.", e);
+                let errorMessage: React.ReactNode = e.message || "Không thể tải dữ liệu từ máy chủ. Vui lòng kiểm tra kết nối và thử lại.";
+                 if (e instanceof TypeError && (e.message.includes('Failed to fetch') || e.message.includes('Network request failed'))) {
+                    errorMessage = (
+                        <>
+                            <strong>Lỗi kết nối mạng (CORS):</strong> Không thể tải dữ liệu. Vui lòng kiểm tra lại cấu hình triển khai Google Apps Script.
+                            <br />
+                            Bạn phải <strong>TRIỂN KHAI LẠI (RE-DEPLOY)</strong> kịch bản với một <strong>PHIÊN BẢN MỚI (NEW VERSION)</strong> và đặt quyền truy cập là <strong>"Anyone"</strong>.
+                            <br />
+                            <em className="text-xs">Lưu ý: Chỉ lưu lại file trên Apps Script là không đủ.</em>
+                        </>
+                    );
+                }
+                setError(errorMessage);
             } finally {
                 setIsLoading(false);
             }
@@ -155,7 +192,7 @@ const App: React.FC = () => {
         };
 
         checkForOverdueTasks();
-    }, [isLoading, currentUser]);
+    }, [isLoading, currentUser, appData.notifications, appData.documents, appData.reviewSchedules]);
 
 
     // Persist data changes (debounced)
@@ -171,7 +208,19 @@ const App: React.FC = () => {
                 })
                 .catch(e => {
                     console.error("Failed to save data.", e);
-                    setError("Lỗi: Không thể lưu thay đổi vào máy chủ.");
+                    let errorMessage: React.ReactNode = "Lỗi: Không thể lưu thay đổi vào máy chủ.";
+                     if (e instanceof TypeError && (e.message.includes('Failed to fetch') || e.message.includes('Network request failed'))) {
+                        errorMessage = (
+                            <>
+                                <strong>Lỗi kết nối mạng (CORS):</strong> Không thể lưu dữ liệu. Vui lòng kiểm tra lại cấu hình triển khai Google Apps Script.
+                                <br />
+                                Bạn phải <strong>TRIỂN KHAI LẠI (RE-DEPLOY)</strong> kịch bản với một <strong>PHIÊN BẢN MỚI (NEW VERSION)</strong> và đặt quyền truy cập là <strong>"Anyone"</strong>.
+                                <br />
+                                <em className="text-xs">Lưu ý: Chỉ lưu lại file trên Apps Script là không đủ.</em>
+                            </>
+                        );
+                    }
+                    setError(errorMessage);
                 })
                 .finally(() => setIsSaving(false));
         }, 1500); // Debounce saves by 1.5 seconds
@@ -329,7 +378,25 @@ const App: React.FC = () => {
 
     const renderView = () => {
         if (isLoading) {
-            return <div className="flex items-center justify-center h-screen">Đang tải dữ liệu...</div>;
+            return (
+                <div className="flex items-center justify-center h-screen">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="spinner"></div>
+                        <span className="text-gray-600">Đang tải dữ liệu...</span>
+                    </div>
+                </div>
+            );
+        }
+
+        if (error && appData.documents.length === 0) {
+            return (
+                <div className="flex items-center justify-center h-full p-4">
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md max-w-lg text-center" role="alert">
+                        <strong className="font-bold">Đã xảy ra lỗi!</strong>
+                        <p className="block sm:inline mt-2">{error}</p>
+                    </div>
+                </div>
+            );
         }
 
         const currentViewType = view.type;

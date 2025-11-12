@@ -41,10 +41,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             if (err instanceof TypeError && (err.message.includes('Failed to fetch') || err.message.includes('Network request failed'))) {
                  detailedError = (
                     <>
-                        Lỗi kết nối mạng (CORS). Vui lòng kiểm tra lại cấu hình triển khai Google Apps Script. 
+                        <strong>Lỗi kết nối mạng (CORS):</strong> Đăng nhập thất bại. Vui lòng kiểm tra lại cấu hình triển khai Google Apps Script. 
+                        <br />
                         Bạn phải <strong>TRIỂN KHAI LẠI (RE-DEPLOY)</strong> kịch bản với một <strong>PHIÊN BẢN MỚI (NEW VERSION)</strong> và đặt quyền truy cập là <strong>"Anyone"</strong>. 
                         <br />
-                        Chỉ lưu lại file là không đủ.
+                        <em className="text-xs">Lưu ý: Chỉ lưu lại file trên Apps Script là không đủ.</em>
                     </>
                 );
             }

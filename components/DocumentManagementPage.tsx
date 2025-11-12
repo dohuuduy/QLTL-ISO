@@ -83,12 +83,11 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         setCurrentPage(1);
     }, [searchTerm, filters, showBookmarkedOnly, sortConfig, itemsPerPage]);
 
-    const { phongBanMap, loaiTaiLieuMap, latestVersionMap, tieuChuanMap } = useMemo(() => ({
+    const { phongBanMap, loaiTaiLieuMap, latestVersionMap } = useMemo(() => ({
         phongBanMap: new Map(allData.phongBan.filter(Boolean).map(pb => [pb.id, pb.ten])),
         loaiTaiLieuMap: new Map(allData.loaiTaiLieu.filter(Boolean).map(ltl => [ltl.id, ltl.ten])),
-        latestVersionMap: new Map(allData.versions.filter(v => v && v.is_moi_nhat).map(v => [v.ma_tl, v.phien_ban])),
-        tieuChuanMap: new Map(allData.tieuChuan.filter(Boolean).map(tc => [tc.id, tc.ten])),
-    }), [allData]);
+        latestVersionMap: new Map(allData.versions.filter(v => v && v.is_moi_nhat).map(v => [v.ma_tl, v.phien_ban]))
+    }), [allData.phongBan, allData.loaiTaiLieu, allData.versions]);
     
     const canCreate = currentUser.role === 'admin' || !!currentUser.permissions?.canCreate;
     const canUpdate = currentUser.role === 'admin' || !!currentUser.permissions?.canUpdate;
@@ -464,16 +463,16 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             ),
             className: 'w-12 text-center'
         },
-        { header: getSortableHeader('Mã', 'ma_tl'), accessor: (item: DanhMucTaiLieu) => item.ma_tl, className: 'w-28' },
-        { header: getSortableHeader('Tên tài liệu', 'ten_tai_lieu'), accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu, className: 'font-medium text-gray-900 min-w-[20rem]' },
-        { header: getSortableHeader('Số hiệu', 'so_hieu'), accessor: (item: DanhMucTaiLieu) => item.so_hieu, className: 'w-32' },
-        { header: getSortableHeader('Phiên bản', 'phien_ban'), accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A', className: 'w-24 text-center' },
-        { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item: DanhMucTaiLieu) => <Badge status={item.trang_thai} />, className: 'w-40' },
-        { header: getSortableHeader('Phòng ban', 'phong_ban_quan_ly'), accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly), className: 'w-48' },
+        { header: getSortableHeader('Mã', 'ma_tl'), accessor: (item: DanhMucTaiLieu) => item.ma_tl, className: 'w-24' },
+        { header: getSortableHeader('Tên tài liệu', 'ten_tai_lieu'), accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu, className: 'font-medium text-gray-900' },
+        { header: getSortableHeader('Số hiệu', 'so_hieu'), accessor: (item: DanhMucTaiLieu) => item.so_hieu, className: 'w-28' },
+        { header: getSortableHeader('Phiên bản', 'phien_ban'), accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A', className: 'w-20 text-center' },
+        { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item: DanhMucTaiLieu) => <Badge status={item.trang_thai} />, className: 'w-36' },
+        { header: getSortableHeader('Phòng ban', 'phong_ban_quan_ly'), accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly), className: 'w-40' },
         { 
             header: getSortableHeader('Ngày hiệu lực', 'ngay_hieu_luc'), 
             accessor: (item: DanhMucTaiLieu) => formatDateForDisplay(item.ngay_hieu_luc),
-            className: 'w-36 text-center'
+            className: 'w-32 text-center'
         },
          { 
             header: 'In',
@@ -498,7 +497,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                     </span>
                 );
             },
-            className: 'w-16 text-center'
+            className: 'w-12 text-center'
         },
     ];
 

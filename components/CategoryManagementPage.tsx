@@ -204,7 +204,7 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
               const value = col.accessor(item);
               if (React.isValidElement(value)) {
                  if (value.type === Badge) {
-                    return translate(value.props.status);
+                    return translate((value.props as { status: string }).status);
                  }
                  return ''; // Don't print complex components
               }

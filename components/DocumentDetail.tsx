@@ -645,9 +645,27 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                                 <h3 className="text-base font-semibold text-gray-800">Tham chiếu & Liên kết</h3>
                             </div>
                             <dl className="p-4 sm:p-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-                                 <DetailItem className="sm:col-span-2" label="Tiêu chuẩn áp dụng" value={(document.tieu_chuan_ids || []).map(id => (
-                                    <span key={id} className="mr-2 mb-2 inline-block"><Badge status={tieuChuanMap.get(id) || id} size="sm" /></span>
-                                ))} />
+                                 <DetailItem 
+                                    className="sm:col-span-2" 
+                                    label="Tiêu chuẩn áp dụng" 
+                                    value={
+                                        <div className="flex flex-wrap gap-2 pt-1">
+                                            {(document.tieu_chuan_ids || []).length > 0 ? (
+                                                (document.tieu_chuan_ids || []).map(id => (
+                                                    <span 
+                                                        key={id} 
+                                                        className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-800 ring-1 ring-inset ring-blue-200/50"
+                                                    >
+                                                         <Icon type="bookmark" className="h-4 w-4 mr-1.5" />
+                                                        {tieuChuanMap.get(id) || id}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-gray-500">Không có</span>
+                                            )}
+                                        </div>
+                                    } 
+                                />
                                 <div>
                                     <RelationshipItem
                                         label="Tài liệu cha"

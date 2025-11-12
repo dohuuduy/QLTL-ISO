@@ -52,8 +52,8 @@ const postToGAS = async (payload: object): Promise<any> => {
  */
 export const getAllData = async (): Promise<typeof mockData> => {
     if (!isUrlConfigured()) {
-        console.warn("Google Apps Script URL not configured, falling back to mock data.");
-        return Promise.resolve(mockData);
+        console.error("Google Apps Script URL is not configured. Please update config.ts");
+        throw new Error("Ứng dụng chưa được cấu hình. Vui lòng liên hệ quản trị viên để cập nhật URL Google Apps Script.");
     }
     
     try {
@@ -74,7 +74,7 @@ export const getAllData = async (): Promise<typeof mockData> => {
 export const updateAllData = async (updatedData: typeof mockData): Promise<void> => {
     if (!isUrlConfigured()) {
         console.warn("Skipping remote update: GOOGLE_SCRIPT_URL not configured.");
-        return;
+        throw new Error("Ứng dụng chưa được cấu hình. Không thể lưu dữ liệu.");
     }
     
     try {
@@ -103,11 +103,8 @@ export const updateAllData = async (updatedData: typeof mockData): Promise<void>
  */
 export const login = async (username: string, password: string): Promise<NhanSu | null> => {
     if (!isUrlConfigured()) {
-        console.warn("Google Apps Script URL not configured, attempting login with mock data.");
-        const user = mockData.nhanSu.find(u => 
-            u.ten_dang_nhap === username && u.mat_khau === password
-        );
-        return user || null;
+        console.error("Google Apps Script URL is not configured. Please update config.ts");
+        throw new Error("Ứng dụng chưa được cấu hình. Vui lòng liên hệ quản trị viên.");
     }
 
     try {
