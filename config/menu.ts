@@ -44,17 +44,9 @@ export const menuConfig: MenuItem[] = [
     icon: 'clipboard-document-list',
     roles: ['admin'],
     children: [
-       { label: 'Nhân sự', view: 'settings-personnel', icon: 'document-text' },
-       { label: 'Phòng ban', view: 'settings-departments', icon: 'building-library' },
-       { label: 'Chức vụ', view: 'settings-positions', icon: 'document-text' },
-       { label: 'Tiêu chuẩn', view: 'standards', icon: 'bookmark' },
-       { label: 'Loại tài liệu', view: 'settings-docTypes', icon: 'document-text' },
-       { label: 'Cấp độ tài liệu', view: 'settings-docLevels', icon: 'document-text' },
-       { label: 'Mức độ bảo mật', view: 'settings-securityLevels', icon: 'lock-closed' },
-       { label: 'Tần suất rà soát', view: 'settings-reviewFrequencies', icon: 'document-text' },
-       { label: 'Hạng mục thay đổi', view: 'settings-changeItems', icon: 'arrows-right-left' },
-       { label: 'Đánh giá viên', view: 'settings-auditors', icon: 'document-text' },
-       { label: 'Tổ chức đánh giá', view: 'settings-auditOrgs', icon: 'building-library' },
+       { label: 'Tổ chức & Nhân sự', view: 'settings-group-org', icon: 'building-library' },
+       { label: 'Cấu hình Tài liệu', view: 'settings-group-doc', icon: 'document-text' },
+       { label: 'Tiêu chuẩn & Đánh giá', view: 'settings-group-audit', icon: 'bookmark' },
     ]
   },
    {

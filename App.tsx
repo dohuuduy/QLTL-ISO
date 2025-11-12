@@ -22,41 +22,27 @@ import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import DocumentManagementPage from './components/DocumentManagementPage';
 import DocumentDetail from './components/DocumentDetail';
-import StandardsManagementPage from './components/StandardsManagementPage';
 import AuditManagementPage from './components/AuditManagementPage';
 import ReportsPage from './components/ReportsPage';
 import SettingsPage from './components/SettingsPage';
-import CategoryManagementPage from './components/CategoryManagementPage';
 import AuditLogPage from './components/AuditLogPage';
-import PersonnelForm from './components/forms/PersonnelForm';
-import DepartmentForm from './components/forms/DepartmentForm';
-import GenericCategoryForm from './components/forms/GenericCategoryForm';
-import AuditorForm from './components/forms/AuditorForm';
-// FIX: Import the Badge component.
-import Badge from './components/ui/Badge';
+import GroupedCategoryPage from './components/GroupedCategoryPage';
+
+type AppData = typeof mockData;
 
 // Define View states
 type View =
     | { type: 'dashboard' }
     | { type: 'documents'; filter: string | null }
     | { type: 'documentDetail'; docId: string }
-    | { type: 'standards' }
     | { type: 'audits' }
     | { type: 'reports'; reportType: ReportType | null }
     | { type: 'audit-log' }
     | { type: 'settings' }
-    | { type: 'settings-personnel' }
-    | { type: 'settings-departments' }
-    | { type: 'settings-positions' }
-    | { type: 'settings-docTypes' }
-    | { type: 'settings-docLevels' }
-    | { type: 'settings-securityLevels' }
-    | { type: 'settings-reviewFrequencies' }
-    | { type: 'settings-changeItems' }
-    | { type: 'settings-auditors' }
-    | { type: 'settings-auditOrgs' };
+    | { type: 'settings-group-org' }
+    | { type: 'settings-group-doc' }
+    | { type: 'settings-group-audit' };
 
-type AppData = typeof mockData;
 
 const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<NhanSu | null>(null);
@@ -299,9 +285,6 @@ const App: React.FC = () => {
                     onToggleBookmark={handleToggleBookmark}
                     currentUser={currentUser!}
                 /> : <div>Không tìm thấy tài liệu.</div>;
-
-            case 'standards':
-                return <StandardsManagementPage standards={appData.tieuChuan} onUpdateData={setAppData} currentUser={currentUser!} />;
             
             case 'audits':
                  return <AuditManagementPage allData={appData} onUpdateData={setAppData} currentUser={currentUser!} />;
@@ -315,45 +298,40 @@ const App: React.FC = () => {
             case 'settings':
                 return <SettingsPage />;
             
-            case 'settings-personnel':
-                return <CategoryManagementPage
-                    title="Quản lý Nhân sự"
-                    categoryKey="nhanSu"
-                    items={appData.nhanSu}
-                    columns={[
-                        { header: 'Tên nhân sự', accessor: 'ten', sortKey: 'ten' },
-                        { header: 'Tên đăng nhập', accessor: 'ten_dang_nhap', sortKey: 'ten_dang_nhap' },
-                        { header: 'Chức vụ', accessor: (item: NhanSu) => appData.chucVu.find(cv => cv.id === item.chuc_vu)?.ten || '', sortKey: 'chuc_vu' },
-                        { header: 'Phòng ban', accessor: (item: NhanSu) => appData.phongBan.find(pb => pb.id === item.phong_ban_id)?.ten || '', sortKey: 'phong_ban_id' },
-                        { header: 'Vai trò', accessor: (item: NhanSu) => <Badge status={item.role} />, sortKey: 'role' },
-                    ]}
-                    FormComponent={PersonnelForm}
-                    formProps={{ phongBanList: appData.phongBan, chucVuList: appData.chucVu, currentUser: currentUser! }}
-                    onSave={handleSaveCategory}
-                    onDelete={handleDeleteCategory}
-                    onToggleStatus={handleToggleCategoryStatus}
+            case 'settings-group-org':
+                return <GroupedCategoryPage
+                    group="org"
+                    title="Quản lý Tổ chức & Nhân sự"
+                    allData={appData}
+                    onSaveCategory={handleSaveCategory}
+                    onDeleteCategory={handleDeleteCategory}
+                    onToggleCategoryStatus={handleToggleCategoryStatus}
+                    onUpdateData={setAppData}
                     currentUser={currentUser!}
                 />;
-            
-            case 'settings-departments':
-                 return <CategoryManagementPage<DanhMucChung> title="Quản lý Phòng ban" categoryKey="phongBan" items={appData.phongBan} FormComponent={DepartmentForm} onSave={handleSaveCategory} onDelete={handleDeleteCategory} onToggleStatus={handleToggleCategoryStatus} currentUser={currentUser!} />;
-            case 'settings-positions':
-                return <CategoryManagementPage<DanhMucChung> title="Quản lý Chức vụ" categoryKey="chucVu" items={appData.chucVu} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Chức vụ' }} onSave={handleSaveCategory} onDelete={handleDeleteCategory} onToggleStatus={handleToggleCategoryStatus} currentUser={currentUser!} />;
-            case 'settings-docTypes':
-                return <CategoryManagementPage<DanhMucChung> title="Quản lý Loại tài liệu" categoryKey="loaiTaiLieu" items={appData.loaiTaiLieu} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Loại tài liệu' }} onSave={handleSaveCategory} onDelete={handleDeleteCategory} onToggleStatus={handleToggleCategoryStatus} currentUser={currentUser!} />;
-            case 'settings-docLevels':
-                return <CategoryManagementPage<DanhMucChung> title="Quản lý Cấp độ tài liệu" categoryKey="capDoTaiLieu" items={appData.capDoTaiLieu} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Cấp độ tài liệu' }} onSave={handleSaveCategory} onDelete={handleDeleteCategory} onToggleStatus={handleToggleCategoryStatus} currentUser={currentUser!} />;
-            case 'settings-securityLevels':
-                return <CategoryManagementPage<DanhMucChung> title="Quản lý Mức độ bảo mật" categoryKey="mucDoBaoMat" items={appData.mucDoBaoMat} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Mức độ bảo mật' }} onSave={handleSaveCategory} onDelete={handleDeleteCategory} onToggleStatus={handleToggleCategoryStatus} currentUser={currentUser!} />;
-            case 'settings-reviewFrequencies':
-                return <CategoryManagementPage<DanhMucChung> title="Quản lý Tần suất rà soát" categoryKey="tanSuatRaSoat" items={appData.tanSuatRaSoat} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Tần suất rà soát' }} onSave={handleSaveCategory} onDelete={handleDeleteCategory} onToggleStatus={handleToggleCategoryStatus} currentUser={currentUser!} />;
-            case 'settings-changeItems':
-                return <CategoryManagementPage<DanhMucChung> title="Quản lý Hạng mục thay đổi" categoryKey="hangMucThayDoi" items={appData.hangMucThayDoi} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Hạng mục thay đổi' }} onSave={handleSaveCategory} onDelete={handleDeleteCategory} onToggleStatus={handleToggleCategoryStatus} currentUser={currentUser!} />;
-            case 'settings-auditors':
-                return <CategoryManagementPage<DanhMucChung> title="Quản lý Đánh giá viên" categoryKey="danhGiaVien" items={appData.danhGiaVien} FormComponent={AuditorForm} formProps={{ organizations: appData.toChucDanhGia }} onSave={handleSaveCategory} onDelete={handleDeleteCategory} onToggleStatus={handleToggleCategoryStatus} currentUser={currentUser!} />;
-            case 'settings-auditOrgs':
-                return <CategoryManagementPage<DanhMucChung> title="Quản lý Tổ chức đánh giá" categoryKey="toChucDanhGia" items={appData.toChucDanhGia} FormComponent={GenericCategoryForm} formProps={{ categoryName: 'Tổ chức đánh giá' }} onSave={handleSaveCategory} onDelete={handleDeleteCategory} onToggleStatus={handleToggleCategoryStatus} currentUser={currentUser!} />;
-
+            case 'settings-group-doc':
+                return <GroupedCategoryPage
+                    group="doc"
+                    title="Quản lý Cấu hình Tài liệu"
+                    allData={appData}
+                    onSaveCategory={handleSaveCategory}
+                    onDeleteCategory={handleDeleteCategory}
+                    onToggleCategoryStatus={handleToggleCategoryStatus}
+                    onUpdateData={setAppData}
+                    currentUser={currentUser!}
+                />;
+            case 'settings-group-audit':
+                return <GroupedCategoryPage
+                    group="audit"
+                    title="Quản lý Tiêu chuẩn & Đánh giá"
+                    allData={appData}
+                    onSaveCategory={handleSaveCategory}
+                    onDeleteCategory={handleDeleteCategory}
+                    onToggleCategoryStatus={handleToggleCategoryStatus}
+                    onUpdateData={setAppData}
+                    currentUser={currentUser!}
+                />;
+                
             default:
                 return <div>Không tìm thấy trang.</div>;
         }

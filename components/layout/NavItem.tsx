@@ -13,7 +13,7 @@ export const NavItem = React.memo(({ item, isCollapsed, onNavigate, currentView 
   const isActive = useMemo(() => {
     const checkActive = (currentItem: NavItemType): boolean => {
       if (currentItem.view === currentView) return true;
-      if (currentItem.view === 'categories' && currentView.startsWith('settings-')) {
+      if (currentItem.view === 'categories' && currentView.startsWith('settings-group-')) {
           return true;
       }
       if (currentItem.children) {
