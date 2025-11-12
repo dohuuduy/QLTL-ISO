@@ -15,6 +15,7 @@ import ExportDropdown from './ui/ExportDropdown';
 import { exportToCsv, exportVisibleReportToWord } from '../utils/exportUtils';
 import PrintReportLayout from './PrintReportLayout';
 import Pagination from './ui/Pagination';
+import CalendarView from './ui/CalendarView';
 
 type AllData = {
     auditSchedules: LichAudit[];
@@ -37,6 +38,8 @@ type SortConfig = {
 } | null;
 
 const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUpdateData, currentUser }) => {
+    const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+    const [calendarDate, setCalendarDate] = useState(new Date());
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingAudit, setEditingAudit] = useState<LichAudit | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -75,6 +78,16 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
         }
         return items;
     }, [allData.auditSchedules, dateFilter]);
+    
+    const calendarEvents = useMemo(() => {
+        return filteredAudits.map(audit => ({
+            id: audit.id,
+            title: audit.ten_cuoc_audit,
+            startDate: new Date(audit.ngay_bat_dau + 'T00:00:00Z'),
+            endDate: new Date(audit.ngay_ket_thuc + 'T00:00:00Z'),
+            data: audit,
+        }));
+    }, [filteredAudits]);
 
     const sortedAudits = useMemo(() => {
         let sortableItems = [...filteredAudits];
@@ -250,104 +263,132 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                             Lên kế hoạch và theo dõi các cuộc đánh giá nội bộ và bên ngoài.
                         </p>
                     </div>
-                    {canManage && (
-                        <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                            <button
-                                type="button"
-                                onClick={() => openModal()}
-                                className="btn-primary"
-                            >
-                                <Icon type="plus" className="-ml-1 mr-2 h-5 w-5" />
-                                Thêm Lịch Audit
-                            </button>
-                        </div>
-                    )}
                 </div>
                 
                 <Card>
                     <Card.Body>
-                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
-                            <div>
-                                <label htmlFor="start-date" className="form-label">Lọc từ ngày</label>
-                                 <DatePicker
-                                    id="start-date"
-                                    value={dateFilter.start}
-                                    onChange={(value) => handleDateFilterChange('start', value)}
-                                />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+                            <div className="lg:col-span-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                                     <div>
+                                        <label htmlFor="start-date" className="form-label">Lọc từ ngày</label>
+                                        <DatePicker
+                                            id="start-date"
+                                            value={dateFilter.start}
+                                            onChange={(value) => handleDateFilterChange('start', value)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="end-date" className="form-label">Đến ngày</label>
+                                        <DatePicker
+                                            id="end-date"
+                                            value={dateFilter.end}
+                                            onChange={(value) => handleDateFilterChange('end', value)}
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                             <div>
-                                <label htmlFor="end-date" className="form-label">Đến ngày</label>
-                                <DatePicker
-                                    id="end-date"
-                                    value={dateFilter.end}
-                                    onChange={(value) => handleDateFilterChange('end', value)}
-                                />
+                            
+                            <div className="flex items-center gap-x-2 self-end">
+                                 {(dateFilter.start || dateFilter.end) && (
+                                    <button type="button" onClick={clearDateFilter} className="btn-secondary">
+                                        Xóa lọc
+                                    </button>
+                                )}
                             </div>
-                             {(dateFilter.start || dateFilter.end) && (
-                                 <button
-                                    type="button"
-                                    onClick={clearDateFilter}
-                                    className="btn-secondary"
-                                >
-                                    Xóa bộ lọc
-                                </button>
-                            )}
-                            <div className="md:col-start-4 flex justify-end">
-                                 <ExportDropdown onPrint={handlePrint} onExportCsv={handleExportCsv} onExportWord={handleExportWord} />
+
+                             <div className="flex items-center justify-self-end gap-x-2 self-end">
+                                <div className="isolate inline-flex rounded-md shadow-sm">
+                                    <button
+                                        onClick={() => setViewMode('calendar')}
+                                        className={`relative inline-flex items-center gap-x-2 rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-10 transition-colors duration-150 ${viewMode === 'calendar' ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-gray-50'}`}
+                                    >
+                                        <Icon type="calendar" className="-ml-0.5 h-5 w-5" />
+                                        Lịch
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('list')}
+                                        className={`relative -ml-px inline-flex items-center gap-x-2 rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-10 transition-colors duration-150 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-gray-50'}`}
+                                    >
+                                        <Icon type="clipboard-document-list" className="-ml-0.5 h-5 w-5" />
+                                        Danh sách
+                                    </button>
+                                </div>
+                                {canManage && (
+                                    <button type="button" onClick={() => openModal()} className="btn-primary h-full">
+                                        <Icon type="plus" className="h-5 w-5" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </Card.Body>
-                
-                    <Table<LichAudit>
-                        columns={[
-                            { header: getSortableHeader('Tên cuộc audit', 'ten_cuoc_audit'), accessor: 'ten_cuoc_audit', className: 'font-medium text-gray-900' },
-                            { header: getSortableHeader('Loại', 'loai_audit'), accessor: (item) => {
-                                    if (item.loai_audit === 'external') {
-                                        const orgName = toChucDanhGiaMap.get(item.to_chuc_danh_gia_id || '');
-                                        return `Bên ngoài ${orgName ? `(${orgName})` : ''}`;
-                                    }
-                                    return 'Nội bộ';
-                                } 
-                            },
-                            { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item) => <Badge status={item.trang_thai} /> },
-                            { header: getSortableHeader('Ngày bắt đầu', 'ngay_bat_dau'), accessor: (item) => formatDateForDisplay(item.ngay_bat_dau) },
-                            { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc'), accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc) },
-                            { header: getSortableHeader('Trưởng đoàn', 'chuyen_gia_danh_gia_truong_id'), accessor: (item) => danhGiaVienMap.get(item.chuyen_gia_danh_gia_truong_id) },
-                        ]}
-                        data={paginatedAudits}
-                        actions={canManage ? renderActions : undefined}
-                        onRowClick={(item) => canManage && openModal(item)}
-                    />
-                     {sortedAudits.length > 0 && (
-                        <Pagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={setCurrentPage}
-                        >
-                            <div className="flex items-center gap-x-4">
-                                <p className="text-sm text-gray-700">
-                                    Hiển thị <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
-                                    - <span className="font-medium">{Math.min(currentPage * itemsPerPage, sortedAudits.length)}</span>
-                                    {' '}trên <span className="font-medium">{sortedAudits.length}</span> mục
-                                </p>
-                                <div className="flex items-center gap-2">
-                                    <label htmlFor="items-per-page" className="text-sm text-gray-700">Dòng/trang:</label>
-                                    <select
-                                        id="items-per-page"
-                                        value={itemsPerPage}
-                                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                                        className="form-select py-1 w-auto"
-                                    >
-                                        <option value={10}>10</option>
-                                        <option value={15}>15</option>
-                                        <option value={20}>20</option>
-                                        <option value={50}>50</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </Pagination>
-                    )}
                 </Card>
+
+                {viewMode === 'calendar' ? (
+                    <CalendarView 
+                        currentDate={calendarDate}
+                        setCurrentDate={setCalendarDate}
+                        events={calendarEvents}
+                        onEventClick={(audit) => canManage && openModal(audit)}
+                    />
+                ) : (
+                    <Card>
+                        <Card.Header>
+                             <div className="flex items-center justify-end">
+                                <ExportDropdown onPrint={handlePrint} onExportCsv={handleExportCsv} onExportWord={handleExportWord} />
+                            </div>
+                        </Card.Header>
+                        <Table<LichAudit>
+                            columns={[
+                                { header: getSortableHeader('Tên cuộc audit', 'ten_cuoc_audit'), accessor: 'ten_cuoc_audit', className: 'font-medium text-gray-900' },
+                                { header: getSortableHeader('Loại', 'loai_audit'), accessor: (item) => {
+                                        if (item.loai_audit === 'external') {
+                                            const orgName = toChucDanhGiaMap.get(item.to_chuc_danh_gia_id || '');
+                                            return `Bên ngoài ${orgName ? `(${orgName})` : ''}`;
+                                        }
+                                        return 'Nội bộ';
+                                    } 
+                                },
+                                { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item) => <Badge status={item.trang_thai} /> },
+                                { header: getSortableHeader('Ngày bắt đầu', 'ngay_bat_dau'), accessor: (item) => formatDateForDisplay(item.ngay_bat_dau) },
+                                { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc'), accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc) },
+                                { header: getSortableHeader('Trưởng đoàn', 'chuyen_gia_danh_gia_truong_id'), accessor: (item) => danhGiaVienMap.get(item.chuyen_gia_danh_gia_truong_id) },
+                            ]}
+                            data={paginatedAudits}
+                            actions={canManage ? renderActions : undefined}
+                            onRowClick={(item) => canManage && openModal(item)}
+                        />
+                        {sortedAudits.length > 0 && (
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                            >
+                                <div className="flex items-center gap-x-4">
+                                    <p className="text-sm text-gray-700">
+                                        Hiển thị <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
+                                        - <span className="font-medium">{Math.min(currentPage * itemsPerPage, sortedAudits.length)}</span>
+                                        {' '}trên <span className="font-medium">{sortedAudits.length}</span> mục
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <label htmlFor="items-per-page" className="text-sm text-gray-700">Dòng/trang:</label>
+                                        <select
+                                            id="items-per-page"
+                                            value={itemsPerPage}
+                                            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                            className="form-select py-1 w-auto"
+                                        >
+                                            <option value={10}>10</option>
+                                            <option value={15}>15</option>
+                                            <option value={20}>20</option>
+                                            <option value={50}>50</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </Pagination>
+                        )}
+                    </Card>
+                )}
 
                 <Modal isOpen={isModalOpen} onClose={closeModal} title={editingAudit ? 'Chỉnh sửa Lịch Audit' : 'Thêm mới Lịch Audit'}>
                      <AuditScheduleForm
