@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -37,6 +36,8 @@ type View =
     | { type: 'documentDetail'; docId: string }
     | { type: 'audits' }
     | { type: 'reports'; reportType: ReportType | null }
+    | { type: 'reports-detailed' }
+    | { type: 'report-by-employee' }
     | { type: 'audit-log' }
     | { type: 'settings' }
     | { type: 'settings-group-org' }
@@ -291,6 +292,12 @@ const App: React.FC = () => {
             
             case 'reports':
                 return <ReportsPage allData={appData} initialReportType={(view as {type: 'reports', reportType: ReportType | null}).reportType} onViewDetails={(doc) => handleNavigateToDocument(doc.ma_tl)} currentUser={currentUser!} />;
+
+             case 'reports-detailed':
+                return <div>Trang Báo cáo Chi tiết (placeholder)</div>;
+
+            case 'report-by-employee':
+                return <div>Trang Báo cáo theo Nhân viên (placeholder)</div>;
 
             case 'audit-log':
                 return <AuditLogPage auditLogs={appData.auditTrail} users={appData.nhanSu} />;

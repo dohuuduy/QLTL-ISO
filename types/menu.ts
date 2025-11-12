@@ -12,6 +12,5 @@ export interface NavItem {
   view: string;
   icon: string;
   roles?: string[];
-  badge?: string | number;
   children?: NavItem[];
 }

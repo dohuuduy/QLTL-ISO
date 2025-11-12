@@ -7,12 +7,14 @@ interface NavItemProps {
   isCollapsed: boolean;
   onNavigate: (view: string) => void;
   currentView: string;
+  depth?: number;
 }
 
-export const NavItem = React.memo(({ item, isCollapsed, onNavigate, currentView }: NavItemProps) => {
+export const NavItem = React.memo(({ item, isCollapsed, onNavigate, currentView, depth = 0 }: NavItemProps) => {
   const isActive = useMemo(() => {
     const checkActive = (currentItem: NavItemType): boolean => {
       if (currentItem.view === currentView) return true;
+      // Special check for category group pages
       if (currentItem.view === 'categories' && currentView.startsWith('settings-group-')) {
           return true;
       }
@@ -25,76 +27,77 @@ export const NavItem = React.memo(({ item, isCollapsed, onNavigate, currentView 
   }, [currentView, item]);
 
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(isActive);
-  const submenuRef = useRef<HTMLDivElement>(null);
+  const submenuRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
-    if (!isCollapsed) {
+    // Keep submenu open if it's active, otherwise close it when collapsing the main sidebar
+    if (isCollapsed) {
+        setIsSubmenuOpen(false);
+    } else {
         setIsSubmenuOpen(isActive);
     }
   }, [isActive, isCollapsed]);
 
   const NavIcon = item.icon ? Icon : () => null;
 
-  const handleNavigate = (e: React.MouseEvent, view: string) => {
+  const handleItemClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onNavigate(view);
-  };
-  
-  const handleToggleSubmenu = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!isCollapsed) {
-        setIsSubmenuOpen(prev => !prev);
+    if (item.children && !isCollapsed) {
+      setIsSubmenuOpen(prev => !prev);
+    } else {
+      onNavigate(item.view);
     }
   };
 
   const navItemClasses = `group flex items-center p-2 text-sm font-medium rounded-md cursor-pointer transition-colors w-full
     ${isActive ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`;
+  
+  const iconClasses = `h-5 w-5 mr-3 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`;
 
   // Collapsed View
   if (isCollapsed) {
     return (
         <button
           title={item.label}
-          onClick={(e) => handleNavigate(e, item.view)} // Children are ignored when collapsed. Navigate to parent.
+          onClick={handleItemClick}
           className={`${navItemClasses} justify-center w-12 h-12`}
         >
-          <NavIcon type={item.icon} className={`h-6 w-6 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
+          <NavIcon type={item.icon} className="h-6 w-6" />
         </button>
     );
   }
 
-  // Expanded View with Children (Accordion)
-  if (item.children) {
-    return (
-      <div>
-        <button onClick={handleToggleSubmenu} className={navItemClasses}>
-          <NavIcon type={item.icon} className={`h-5 w-5 mr-3 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
-          <span className="flex-1 text-left truncate">{item.label}</span>
+  const paddingLeft = `${0.5 + depth * 1.25}rem`; // 0.5rem base padding for depth 0
+
+  return (
+    <>
+      <button onClick={handleItemClick} className={navItemClasses} style={{ paddingLeft }}>
+        {item.icon && <NavIcon type={item.icon} className={iconClasses} />}
+        <span className="flex-1 text-left truncate">{item.label}</span>
+        {item.children && (
           <Icon type="chevron-down" className={`h-4 w-4 transform transition-transform duration-200 ${isSubmenuOpen ? 'rotate-180' : ''}`} />
-        </button>
+        )}
+      </button>
+      {item.children && (
         <div
-          ref={submenuRef}
           className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
           style={{ maxHeight: isSubmenuOpen ? `${submenuRef.current?.scrollHeight}px` : '0px' }}
         >
-          <div className="mt-1 pl-6 space-y-1 py-1">
+          <ul ref={submenuRef} className="space-y-1 py-1">
             {item.children.map(child => (
-              <NavItem key={child.view} item={child} isCollapsed={isCollapsed} onNavigate={onNavigate} currentView={currentView} />
+              <li key={child.view}>
+                <NavItem
+                  item={child}
+                  isCollapsed={isCollapsed}
+                  onNavigate={onNavigate}
+                  currentView={currentView}
+                  depth={depth + 1}
+                />
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
-      </div>
-    );
-  }
-
-  // Expanded View without Children (Simple Link)
-  return (
-    <button onClick={(e) => handleNavigate(e, item.view)} className={navItemClasses}>
-      <NavIcon type={item.icon} className={`h-5 w-5 mr-3 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
-      <span className="flex-1 text-left truncate">{item.label}</span>
-      {item.badge && (
-        <span className="ml-auto inline-block py-0.5 px-2 text-xs font-medium bg-slate-600 text-slate-200 rounded-full">{item.badge}</span>
       )}
-    </button>
+    </>
   );
 });

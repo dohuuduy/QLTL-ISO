@@ -22,8 +22,30 @@ export const menuConfig: MenuItem[] = [
   {
     type: 'item',
     label: 'Báo cáo & thống kê',
-    view: 'reports',
+    view: 'reports', // Parent view for accordion
     icon: 'chart-bar',
+    children: [
+      {
+        type: 'item',
+        label: 'Báo cáo chung',
+        view: 'reports', // Main reports page
+        icon: 'chart-bar',
+      },
+      {
+        type: 'item',
+        label: 'Báo cáo chi tiết',
+        view: 'reports-detailed', // A dummy parent for level 3
+        icon: 'document-text',
+        children: [
+           {
+            type: 'item',
+            label: 'Theo nhân viên',
+            view: 'report-by-employee', // Level 3 item
+            icon: 'user-circle',
+          },
+        ]
+      }
+    ]
   },
   {
     type: 'divider',
