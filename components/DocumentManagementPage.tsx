@@ -83,11 +83,12 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         setCurrentPage(1);
     }, [searchTerm, filters, showBookmarkedOnly, sortConfig, itemsPerPage]);
 
-    const { phongBanMap, loaiTaiLieuMap, latestVersionMap } = useMemo(() => ({
+    const { phongBanMap, loaiTaiLieuMap, latestVersionMap, tieuChuanMap } = useMemo(() => ({
         phongBanMap: new Map(allData.phongBan.filter(Boolean).map(pb => [pb.id, pb.ten])),
         loaiTaiLieuMap: new Map(allData.loaiTaiLieu.filter(Boolean).map(ltl => [ltl.id, ltl.ten])),
-        latestVersionMap: new Map(allData.versions.filter(v => v && v.is_moi_nhat).map(v => [v.ma_tl, v.phien_ban]))
-    }), [allData.phongBan, allData.loaiTaiLieu, allData.versions]);
+        latestVersionMap: new Map(allData.versions.filter(v => v && v.is_moi_nhat).map(v => [v.ma_tl, v.phien_ban])),
+        tieuChuanMap: new Map(allData.tieuChuan.filter(Boolean).map(tc => [tc.id, tc.ten])),
+    }), [allData]);
     
     const canCreate = currentUser.role === 'admin' || !!currentUser.permissions?.canCreate;
     const canUpdate = currentUser.role === 'admin' || !!currentUser.permissions?.canUpdate;

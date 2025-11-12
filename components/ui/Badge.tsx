@@ -91,6 +91,21 @@ interface BadgeProps {
 }
 
 const Badge: React.FC<BadgeProps> = ({ status, size = 'md', title }) => {
+    // If the status is not a predefined key, treat it as a generic tag (like a standard)
+    if (!Object.prototype.hasOwnProperty.call(statusColors, status)) {
+        const colorClass = 'bg-indigo-100 text-indigo-800'; // Use a prominent color for all standards/tags
+        const sizeClass = sizeClasses[size];
+        
+        // For standards, we display the name directly, not a translation key.
+        // The translate function already handles this by returning the key if no translation is found.
+        return (
+            <span title={title} className={`inline-flex items-center font-medium rounded-full ${sizeClass} ${colorClass} badge-print`}>
+                {translate(status)}
+            </span>
+        );
+    }
+
+    // Existing logic for predefined statuses
     const colorClass = statusColors[status] || 'bg-gray-100 text-gray-800';
     const dotColorClass = dotColors[status] || 'fill-gray-400';
     const sizeClass = sizeClasses[size];

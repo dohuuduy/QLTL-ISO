@@ -7,9 +7,10 @@ import type {
     DanhMucTaiLieu,
     ReportType,
     DanhMucChung,
-    LichRaSoat
+    LichRaSoat,
+    ThongBao
 } from './types';
-import { VersionStatus } from './constants';
+import { VersionStatus, DocumentStatus, NotificationType } from './constants';
 
 // Import Services & Data
 import { login, getAllData, updateAllData } from './services/api';
@@ -71,6 +72,91 @@ const App: React.FC = () => {
         };
         loadData();
     }, []);
+
+    // Automatic status updates and notifications on app load
+    useEffect(() => {
+        if (isLoading || !currentUser) {
+            return;
+        }
+
+        const checkForOverdueTasks = () => {
+            let documentsToUpdate: DanhMucTaiLieu[] = [];
+            let newNotifications: ThongBao[] = [];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const existingNotificationKeys = new Set(
+                appData.notifications.map(n => `${n.ma_tl}_${n.type}`)
+            );
+            
+            // 1. Check for expired documents
+            appData.documents.forEach(doc => {
+                if (doc.ngay_het_hieu_luc && new Date(doc.ngay_het_hieu_luc) < today && doc.trang_thai !== DocumentStatus.HET_HIEU_LUC) {
+                    documentsToUpdate.push({ ...doc, trang_thai: DocumentStatus.HET_HIEU_LUC });
+                    
+                    const notificationKey = `${doc.ma_tl}_expired`; // Custom key to avoid confusion with other types
+                    if (!existingNotificationKeys.has(notificationKey)) {
+                         const userIdsToNotify = new Set([doc.nguoi_soan_thao, doc.nguoi_ra_soat, doc.nguoi_phe_duyet]);
+                         userIdsToNotify.forEach(userId => {
+                             if(userId) {
+                                 newNotifications.push({
+                                    id: `notif-${uuidv4()}`,
+                                    user_id: userId,
+                                    ma_tl: doc.ma_tl,
+                                    type: NotificationType.EXPIRY_APPROACHING, // Re-use for expired event
+                                    message: `Tài liệu "${doc.ten_tai_lieu}" đã hết hiệu lực.`,
+                                    timestamp: new Date().toISOString(),
+                                    is_read: false
+                                });
+                             }
+                         });
+                         existingNotificationKeys.add(notificationKey);
+                    }
+                }
+            });
+
+            // 2. Check for overdue reviews
+            appData.reviewSchedules.forEach(schedule => {
+                const doc = appData.documents.find(d => d.ma_tl === schedule.ma_tl);
+                if (doc && !schedule.ket_qua_ra_soat && new Date(schedule.ngay_ra_soat_ke_tiep) < today) {
+                    // Update document status to "in review" if it's not already, to prompt action
+                    if (doc.trang_thai === DocumentStatus.DA_BAN_HANH) {
+                         documentsToUpdate.push({ ...doc, trang_thai: DocumentStatus.DANG_RA_SOAT });
+                    }
+
+                    const notificationKey = `${doc.ma_tl}_${NotificationType.REVIEW_OVERDUE}`;
+                    if (!existingNotificationKeys.has(notificationKey)) {
+                        newNotifications.push({
+                            id: `notif-${uuidv4()}`,
+                            user_id: schedule.nguoi_chiu_trach_nhiem,
+                            ma_tl: doc.ma_tl,
+                            type: NotificationType.REVIEW_OVERDUE,
+                            message: `Tài liệu "${doc.ten_tai_lieu}" đã quá hạn rà soát.`,
+                            timestamp: new Date().toISOString(),
+                            is_read: false
+                        });
+                        existingNotificationKeys.add(notificationKey);
+                    }
+                }
+            });
+
+            if (documentsToUpdate.length > 0 || newNotifications.length > 0) {
+                 setAppData(prevData => {
+                    const updatedDocsMap = new Map(documentsToUpdate.map(doc => [doc.ma_tl, doc]));
+                    const finalDocuments = prevData.documents.map(doc => updatedDocsMap.get(doc.ma_tl) || doc);
+                    
+                    return {
+                        ...prevData,
+                        documents: finalDocuments,
+                        notifications: [...prevData.notifications, ...newNotifications]
+                    };
+                });
+            }
+        };
+
+        checkForOverdueTasks();
+    }, [isLoading, currentUser]);
+
 
     // Persist data changes (debounced)
     useEffect(() => {
