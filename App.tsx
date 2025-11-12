@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -31,6 +32,8 @@ import PersonnelForm from './components/forms/PersonnelForm';
 import DepartmentForm from './components/forms/DepartmentForm';
 import GenericCategoryForm from './components/forms/GenericCategoryForm';
 import AuditorForm from './components/forms/AuditorForm';
+// FIX: Import the Badge component.
+import Badge from './components/ui/Badge';
 
 // Define View states
 type View =

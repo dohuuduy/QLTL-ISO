@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import type { NhanSu, ThongBao, ReportType, ChucVu } from '../../types';
+import { useSidebar } from '@/hooks/use-sidebar';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -22,46 +23,42 @@ const Layout: React.FC<LayoutProps> = ({
     notifications, onMarkNotificationRead, onMarkAllNotificationsRead, onNavigateToDocument,
     currentView, onNavigateToReport, chucVuList
 }) => {
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { isCollapsed, isMobileOpen, setMobileOpen, toggleSidebar } = useSidebar();
 
     useEffect(() => {
-        if (isMobileMenuOpen) {
+        if (isMobileOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'auto';
         }
-        // Cleanup function to restore scrolling if component unmounts while menu is open
         return () => {
             document.body.style.overflow = 'auto';
         };
-    }, [isMobileMenuOpen]);
+    }, [isMobileOpen]);
 
+    // Close mobile menu on navigation
+    useEffect(() => {
+        if (isMobileOpen) {
+            setMobileOpen(false);
+        }
+    }, [currentView]);
 
-    const toggleSidebar = () => {
-        setIsSidebarCollapsed(!isSidebarCollapsed);
-    };
-
-    const toggleMobileMenu = () => {
-        setIsMobileMenuOpen(!isMobileMenuOpen);
-    }
 
     return (
         <div className="flex h-screen bg-gray-50">
             <Sidebar
-                isCollapsed={isSidebarCollapsed}
-                isMobileOpen={isMobileMenuOpen}
-                onCloseMobileMenu={() => setIsMobileMenuOpen(false)}
+                isCollapsed={isCollapsed}
+                isMobileOpen={isMobileOpen}
+                onCloseMobileMenu={() => setMobileOpen(false)}
                 onNavigate={onNavigate}
                 currentUser={currentUser}
                 currentView={currentView}
-                onNavigateToReport={onNavigateToReport}
                 onToggleSidebar={toggleSidebar}
             />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Navbar
                     onLogoClick={() => onNavigate('dashboard')}
-                    onToggleMobileMenu={toggleMobileMenu}
+                    onToggleMobileMenu={() => setMobileOpen(true)}
                     currentUser={currentUser}
                     onLogout={onLogout}
                     notifications={notifications}
