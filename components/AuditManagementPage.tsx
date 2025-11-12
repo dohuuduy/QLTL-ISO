@@ -315,8 +315,14 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                                     </button>
                                 </div>
                                 {canManage && (
-                                    <button type="button" onClick={() => openModal()} className="btn-primary h-full">
-                                        <Icon type="plus" className="h-5 w-5" />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => openModal()} 
+                                        className="btn-primary btn-responsive" 
+                                        title="Thêm mới Lịch Audit"
+                                    >
+                                        <Icon type="plus" className="btn-icon h-5 w-5" />
+                                        <span className="btn-text">Thêm mới</span>
                                     </button>
                                 )}
                             </div>

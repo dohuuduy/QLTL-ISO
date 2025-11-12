@@ -311,10 +311,11 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
                         <button
                             type="button"
                             onClick={() => openModal()}
-                            className="btn-primary"
+                            className="btn-primary btn-responsive"
+                            title="Thêm mới"
                         >
-                            <Icon type="plus" className="-ml-1 mr-2 h-4 w-4" />
-                            Thêm mới
+                            <Icon type="plus" className="btn-icon h-5 w-5" />
+                            <span className="btn-text">Thêm mới</span>
                         </button>
                     </div>
                 </div>

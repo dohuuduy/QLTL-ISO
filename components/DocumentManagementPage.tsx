@@ -522,10 +522,11 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             <button
                                 type="button"
                                 onClick={() => openModal()}
-                                className="btn-primary"
+                                className="btn-primary btn-responsive"
+                                title="Thêm Tài liệu"
                             >
-                                <Icon type="plus" className="-ml-1 mr-2 h-5 w-5" />
-                                Thêm Tài liệu
+                                <Icon type="plus" className="btn-icon h-5 w-5" />
+                                <span className="btn-text">Thêm Tài liệu</span>
                             </button>
                         )}
                     </div>

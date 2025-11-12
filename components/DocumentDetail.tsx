@@ -590,11 +590,14 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                         </div>
                         <div className="flex items-center space-x-2 flex-shrink-0 no-print sm:ml-auto">
                              {canUpdateDocument && (
-                                <button onClick={() => setIsEditingDocument(true)} className="btn-secondary">Sửa thông tin</button>
+                                <button onClick={() => setIsEditingDocument(true)} className="btn-secondary btn-responsive" title="Sửa thông tin">
+                                    <Icon type="pencil" className="btn-icon h-5 w-5" />
+                                    <span className="btn-text">Sửa</span>
+                                </button>
                              )}
-                              <button onClick={handlePrint} className="btn-secondary" title={document.file_pdf ? "In file PDF" : "In trang này"}>
-                                <Icon type="printer" className="-ml-1 mr-2 h-5 w-5" />
-                                <span>In</span>
+                              <button onClick={handlePrint} className="btn-secondary btn-responsive" title={document.file_pdf ? "In file PDF" : "In trang này"}>
+                                <Icon type="printer" className="btn-icon h-5 w-5" />
+                                <span className="btn-text">In</span>
                             </button>
                         </div>
                     </div>
