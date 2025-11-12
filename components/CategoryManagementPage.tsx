@@ -17,7 +17,6 @@ interface CategoryManagementPageProps<T extends { id: string, ten: string, is_ac
     items: T[];
     columns?: {
         header: React.ReactNode;
-        // FIX: Allow accessor to be a string key of T, which is supported by the Table component.
         accessor: keyof T | ((item: T) => React.ReactNode);
         sortKey: string;
     }[];
@@ -30,6 +29,14 @@ interface CategoryManagementPageProps<T extends { id: string, ten: string, is_ac
 }
 
 type SortConfig = { key: string; direction: 'ascending' | 'descending'; } | null;
+
+const normalizeString = (str: string) => {
+  if (!str) return '';
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+};
 
 const CategoryManagementPage = <T extends { id: string, ten: string, is_active?: boolean }>({
     title,
@@ -49,15 +56,17 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
     const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ten', direction: 'ascending' });
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(15);
-    
+    const [filters, setFilters] = useState({ searchTerm: '', status: 'all' });
+
     useEffect(() => {
         setCurrentPage(1);
         setSortConfig({ key: 'ten', direction: 'ascending' });
+        setFilters({ searchTerm: '', status: 'all' });
     }, [categoryKey]);
     
     useEffect(() => {
         setCurrentPage(1);
-    }, [itemsPerPage]);
+    }, [itemsPerPage, filters, sortConfig]);
 
     const requestSort = (key: string) => {
         let direction: 'ascending' | 'descending' = 'ascending';
@@ -79,12 +88,43 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
         );
     };
 
+    const filteredItems = useMemo(() => {
+        const normalizedSearchTerm = normalizeString(filters.searchTerm);
+
+        return items.filter(item => {
+            const matchesSearch = normalizedSearchTerm ? normalizeString(item.ten).includes(normalizedSearchTerm) : true;
+            
+            const matchesStatus = (() => {
+                if (filters.status === 'all') return true;
+                if (filters.status === 'active') return item.is_active !== false;
+                if (filters.status === 'inactive') return item.is_active === false;
+                return true;
+            })();
+
+            return matchesSearch && matchesStatus;
+        });
+    }, [items, filters]);
+
+
     const sortedItems = useMemo(() => {
-        let sortableItems = [...items];
+        let sortableItems = [...filteredItems];
         if (sortConfig) {
             sortableItems.sort((a, b) => {
-                const aValue = a[sortConfig.key as keyof T];
-                const bValue = b[sortConfig.key as keyof T];
+                // Special handling for accessor functions in columns
+                const columnToSort = (columns || []).find(c => c.sortKey === sortConfig.key);
+                let aValue: any;
+                let bValue: any;
+
+                if (columnToSort && typeof columnToSort.accessor === 'function') {
+                    // This is a naive sort for rendered content, might not be perfect for complex components
+                    const renderedA = columnToSort.accessor(a);
+                    const renderedB = columnToSort.accessor(b);
+                    aValue = typeof renderedA === 'string' ? renderedA : JSON.stringify(renderedA);
+                    bValue = typeof renderedB === 'string' ? renderedB : JSON.stringify(renderedB);
+                } else {
+                     aValue = a[sortConfig.key as keyof T];
+                     bValue = b[sortConfig.key as keyof T];
+                }
                 
                 if (aValue == null) return 1;
                 if (bValue == null) return -1;
@@ -92,6 +132,11 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
                 if (typeof aValue === 'string' && typeof bValue === 'string') {
                     return aValue.localeCompare(bValue, 'vi') * (sortConfig.direction === 'ascending' ? 1 : -1);
                 }
+                
+                if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+                    return (aValue === bValue ? 0 : aValue ? -1 : 1) * (sortConfig.direction === 'ascending' ? 1 : -1);
+                }
+
 
                 if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
                 if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
@@ -99,7 +144,7 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
             });
         }
         return sortableItems;
-    }, [items, sortConfig]);
+    }, [filteredItems, sortConfig, columns]);
     
     const paginatedItems = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
@@ -158,12 +203,18 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
     };
 
     const defaultColumns = [
-        { header: getSortableHeader(`Tên ${title.replace('Quản lý ', '').toLowerCase()}`, 'ten'), accessor: (item: T) => item.ten, sortKey: 'ten' },
+        { header: `Tên ${title.replace('Quản lý ', '').toLowerCase()}`, accessor: (item: T) => item.ten, sortKey: 'ten' },
     ];
 
-    const finalColumns = (columns || defaultColumns).concat([
-        { header: 'Trạng thái', accessor: (item: T) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} />, sortKey: 'is_active' }
+    const finalColumns = (columns || defaultColumns).map(col => ({
+        ...col,
+        header: typeof col.header === 'string' && col.sortKey
+            ? getSortableHeader(col.header, col.sortKey)
+            : col.header,
+    })).concat([
+        { header: getSortableHeader('Trạng thái', 'is_active'), accessor: (item: T) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} />, sortKey: 'is_active' }
     ]);
+
 
     const modalTitle = `${modalData ? 'Chỉnh sửa' : 'Thêm mới'} ${title.replace('Quản lý ', '')}`;
     const deletionMessage = `Bạn có chắc chắn muốn xóa '${deletingItem?.ten || ''}' không? Hành động này không thể hoàn tác.`;
@@ -183,6 +234,37 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
                         Thêm mới
                     </button>
                 </Card.Header>
+                 <Card.Body>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <div className="md:col-span-2">
+                            <label htmlFor="search-input" className="form-label">Tìm kiếm theo tên</label>
+                            <div className="search-input-container">
+                                <Icon type="search" className="search-input-icon h-5 w-5" />
+                                <input
+                                    id="search-input"
+                                    type="text"
+                                    placeholder="Nhập tên để tìm kiếm..."
+                                    value={filters.searchTerm}
+                                    onChange={(e) => setFilters(f => ({ ...f, searchTerm: e.target.value }))}
+                                    className="form-input search-input"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label htmlFor="status-filter" className="form-label">Trạng thái</label>
+                            <select
+                                id="status-filter"
+                                value={filters.status}
+                                onChange={(e) => setFilters(f => ({ ...f, status: e.target.value }))}
+                                className="form-select"
+                            >
+                                <option value="all">Tất cả</option>
+                                <option value="active">Đang hoạt động</option>
+                                <option value="inactive">Vô hiệu hóa</option>
+                            </select>
+                        </div>
+                    </div>
+                </Card.Body>
                 <Table
                     columns={finalColumns}
                     data={paginatedItems}
