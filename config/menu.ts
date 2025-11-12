@@ -15,12 +15,6 @@ export const menuConfig: MenuItem[] = [
   },
   {
     type: 'item',
-    label: 'Quản lý tiêu chuẩn',
-    view: 'standards',
-    icon: 'bookmark',
-  },
-  {
-    type: 'item',
     label: 'Lịch audit',
     view: 'audits',
     icon: 'calendar',
@@ -53,6 +47,7 @@ export const menuConfig: MenuItem[] = [
        { label: 'Nhân sự', view: 'settings-personnel', icon: 'document-text' },
        { label: 'Phòng ban', view: 'settings-departments', icon: 'building-library' },
        { label: 'Chức vụ', view: 'settings-positions', icon: 'document-text' },
+       { label: 'Tiêu chuẩn', view: 'standards', icon: 'bookmark' },
        { label: 'Loại tài liệu', view: 'settings-docTypes', icon: 'document-text' },
        { label: 'Cấp độ tài liệu', view: 'settings-docLevels', icon: 'document-text' },
        { label: 'Mức độ bảo mật', view: 'settings-securityLevels', icon: 'lock-closed' },

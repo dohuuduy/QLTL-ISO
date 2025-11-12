@@ -65,7 +65,7 @@ const Navbar: React.FC<NavbarProps> = ({
     }, [menuRef, notificationsRef]);
 
     return (
-        <div className="relative z-10 flex h-16 flex-shrink-0 bg-white shadow-sm border-b border-slate-200 no-print">
+        <header className="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white shadow-sm border-b border-slate-200 no-print">
             
             <div className="flex flex-1 items-center justify-between px-4 sm:px-6">
                 <div className="flex items-center">
@@ -154,7 +154,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     )}
                 </div>
             </div>
-        </div>
+        </header>
     );
 };
 
