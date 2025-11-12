@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { NavItem } from './NavItem';
 import { menuConfig } from '../../config/menu';
 import { Icon } from '../ui/Icon';
@@ -23,40 +23,43 @@ export const Nav = ({ isCollapsed, currentUserRoles, onNavigate, currentView }: 
   const [searchTerm, setSearchTerm] = useState('');
   const normalizedSearchTerm = normalizeString(searchTerm);
 
-  const filterMenu = (menu: MenuItem[]): MenuItem[] => {
-    return menu.reduce((acc: MenuItem[], item) => {
-      if (item.roles && !item.roles.some(role => currentUserRoles.includes(role))) {
-        return acc;
-      }
-
-      if (item.type === 'divider') {
-        if (!normalizedSearchTerm) { // Only show dividers when not searching
-           acc.push(item);
+  const filteredMenu = useMemo(() => {
+    const filterMenu = (menu: MenuItem[]): MenuItem[] => {
+      return menu.reduce((acc: MenuItem[], item) => {
+        if (item.roles && !item.roles.some(role => currentUserRoles.includes(role))) {
+          return acc;
         }
-        return acc;
-      }
 
-      const itemAsNavItem = item as NavItemType; // Cast to NavItemType
-
-      if (normalizedSearchTerm) {
-        const children = itemAsNavItem.children ? filterMenu(itemAsNavItem.children) as NavItemType[] : [];
-        const normalizedLabel = normalizeString(itemAsNavItem.label);
-
-        if (normalizedLabel.includes(normalizedSearchTerm) || children.length > 0) {
-          acc.push({ ...itemAsNavItem, children });
+        if (item.type === 'divider') {
+          if (!normalizedSearchTerm) { // Only show dividers when not searching
+             acc.push(item);
+          }
+          return acc;
         }
-      } else {
-        if (itemAsNavItem.children) {
-          acc.push({ ...itemAsNavItem, children: filterMenu(itemAsNavItem.children) as NavItemType[] });
+
+        const itemAsNavItem = item as NavItemType; // Cast to NavItemType
+
+        if (normalizedSearchTerm) {
+          const children = itemAsNavItem.children ? filterMenu(itemAsNavItem.children) as NavItemType[] : [];
+          const normalizedLabel = normalizeString(itemAsNavItem.label);
+
+          if (normalizedLabel.includes(normalizedSearchTerm) || children.length > 0) {
+            acc.push({ ...itemAsNavItem, children });
+          }
         } else {
-          acc.push(itemAsNavItem);
+          if (itemAsNavItem.children) {
+            acc.push({ ...itemAsNavItem, children: filterMenu(itemAsNavItem.children) as NavItemType[] });
+          } else {
+            acc.push(itemAsNavItem);
+          }
         }
-      }
-      return acc;
-    }, []);
-  };
+        return acc;
+      }, []);
+    };
 
-  const filteredMenu = filterMenu(menuConfig);
+    return filterMenu(menuConfig);
+  }, [normalizedSearchTerm, currentUserRoles]);
+
 
   const searchInput = (
     <div className="relative p-2">
