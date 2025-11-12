@@ -23,6 +23,7 @@ const Avatar: React.FC<{ name: string }> = ({ name }) => {
 
 interface NavbarProps {
     onLogoClick: () => void;
+    onToggleSidebar: () => void;
     onToggleMobileMenu: () => void;
     currentUser?: NhanSu;
     onLogout: () => void;
@@ -34,7 +35,7 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ 
-    onLogoClick, onToggleMobileMenu, 
+    onLogoClick, onToggleSidebar, onToggleMobileMenu, 
     currentUser, onLogout, notifications, onMarkNotificationRead, onMarkAllNotificationsRead, onNavigateToDocument,
     chucVuList
 }) => {
@@ -65,21 +66,32 @@ const Navbar: React.FC<NavbarProps> = ({
 
     return (
         <div className="relative z-10 flex h-16 flex-shrink-0 bg-white shadow-sm border-b border-slate-200 no-print">
-            <button
-                type="button"
-                className="border-r border-slate-200 px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden"
-                onClick={onToggleMobileMenu}
-            >
-                <span className="sr-only">Open sidebar</span>
-                <Icon type="menu" className="h-6 w-6" />
-            </button>
             
             <div className="flex flex-1 items-center justify-between px-4 sm:px-6">
                 <div className="flex items-center">
-                     {/* Desktop: Logo and Title */}
-                    <button onClick={onLogoClick} className="hidden md:flex items-center gap-x-2">
+                     {/* Desktop Sidebar Toggle */}
+                    <button
+                        type="button"
+                        className="hidden md:block -ml-2 mr-2 p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                        onClick={onToggleSidebar}
+                    >
+                        <span className="sr-only">Toggle sidebar</span>
+                        <Icon type="menu" className="h-6 w-6" />
+                    </button>
+                    {/* Mobile Sidebar Toggle */}
+                    <button
+                        type="button"
+                        className="px-4 -ml-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden"
+                        onClick={onToggleMobileMenu}
+                    >
+                        <span className="sr-only">Open sidebar</span>
+                        <Icon type="menu" className="h-6 w-6" />
+                    </button>
+                    
+                    {/* Logo and Title */}
+                    <button onClick={onLogoClick} className="flex items-center gap-x-2">
                         <Icon type="document-duplicate" className="h-8 w-8 text-blue-600" />
-                        <span className="text-xl font-bold tracking-tight text-slate-900">DocManager ISO</span>
+                        <span className="text-xl font-bold tracking-tight text-slate-900 hidden sm:block">DocManager ISO</span>
                     </button>
                 </div>
 

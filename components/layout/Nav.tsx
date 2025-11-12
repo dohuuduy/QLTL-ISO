@@ -60,11 +60,11 @@ export const Nav = ({ isCollapsed, currentUserRoles, onNavigate, currentView }: 
 
   const searchInput = (
     <div className="relative p-2">
-        <Icon type="search" className="search-input-icon h-5 w-5" />
+        <Icon type="search" className="search-input-icon h-5 w-5 !text-slate-400" />
         <input
             type="text"
             placeholder="Tìm kiếm..."
-            className="form-input search-input"
+            className="form-input search-input bg-slate-700 border-slate-600 text-slate-200 placeholder-slate-400 focus:bg-slate-700 focus:ring-blue-500 focus:border-blue-500"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -80,7 +80,7 @@ export const Nav = ({ isCollapsed, currentUserRoles, onNavigate, currentView }: 
                 if (isCollapsed) return null;
                 return (
                     <div key={index} className="pt-4 pb-2 px-2">
-                        <p className="text-xs font-semibold uppercase text-slate-400 tracking-wider">{item.label}</p>
+                        <p className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{item.label}</p>
                     </div>
                 );
             }
