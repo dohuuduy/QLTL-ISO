@@ -50,6 +50,7 @@ export const menuConfig: MenuItem[] = [
   {
     type: 'divider',
     label: 'QUẢN TRỊ',
+    // Chỉ những người dùng có vai trò 'admin' mới thấy được mục này và các mục con bên dưới.
     roles: ['admin'],
   },
   {
@@ -64,8 +65,9 @@ export const menuConfig: MenuItem[] = [
     label: 'Danh mục',
     view: 'categories', // Dummy view for parent accordion
     icon: 'clipboard-document-list',
-    roles: ['admin'],
+    roles: ['admin'], // Chỉ admin mới thấy mục Danh mục
     children: [
+       // Mục "Nhân sự" nằm trong group này, và sẽ được ẩn cùng với cha của nó.
        { label: 'Tổ chức & Nhân sự', view: 'settings-group-org', icon: 'building-library' },
        { label: 'Cấu hình Tài liệu', view: 'settings-group-doc', icon: 'document-text' },
        { label: 'Tiêu chuẩn & Đánh giá', view: 'settings-group-audit', icon: 'bookmark' },

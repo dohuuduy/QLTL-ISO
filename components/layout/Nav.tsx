@@ -24,29 +24,34 @@ export const Nav = ({ isCollapsed, currentUserRoles, onNavigate, currentView }: 
   const normalizedSearchTerm = normalizeString(searchTerm);
 
   const filteredMenu = useMemo(() => {
+    // Hàm đệ quy để lọc menu dựa trên quyền và từ khóa tìm kiếm
     const filterMenu = (menu: MenuItem[]): MenuItem[] => {
       return menu.reduce((acc: MenuItem[], item) => {
+        // Kiểm tra quyền của người dùng. Nếu item yêu cầu vai trò cụ thể,
+        // người dùng phải có ít nhất một trong các vai trò đó.
         if (item.roles && !item.roles.some(role => currentUserRoles.includes(role))) {
-          return acc;
+          return acc; // Bỏ qua item này nếu không có quyền
         }
 
         if (item.type === 'divider') {
-          if (!normalizedSearchTerm) { // Only show dividers when not searching
+          if (!normalizedSearchTerm) { // Chỉ hiển thị dải phân cách khi không tìm kiếm
              acc.push(item);
           }
           return acc;
         }
 
-        const itemAsNavItem = item as NavItemType; // Cast to NavItemType
+        const itemAsNavItem = item as NavItemType;
 
         if (normalizedSearchTerm) {
           const children = itemAsNavItem.children ? filterMenu(itemAsNavItem.children) as NavItemType[] : [];
           const normalizedLabel = normalizeString(itemAsNavItem.label);
 
+          // Hiển thị item nếu tên của nó hoặc tên của con nó khớp với từ khóa
           if (normalizedLabel.includes(normalizedSearchTerm) || children.length > 0) {
             acc.push({ ...itemAsNavItem, children });
           }
         } else {
+          // Nếu không tìm kiếm, xử lý đệ quy cho các mục con
           if (itemAsNavItem.children) {
             acc.push({ ...itemAsNavItem, children: filterMenu(itemAsNavItem.children) as NavItemType[] });
           } else {
@@ -58,7 +63,7 @@ export const Nav = ({ isCollapsed, currentUserRoles, onNavigate, currentView }: 
     };
 
     return filterMenu(menuConfig);
-  }, [normalizedSearchTerm, currentUserRoles]);
+  }, [searchTerm, currentUserRoles, menuConfig]);
 
 
   const searchInput = (
@@ -78,7 +83,7 @@ export const Nav = ({ isCollapsed, currentUserRoles, onNavigate, currentView }: 
     <nav className="flex flex-col h-full">
       {!isCollapsed && searchInput}
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-1">
-        {filteredMenu.map((item, index) => {
+        {filteredMenu.length > 0 ? filteredMenu.map((item, index) => {
             if (item.type === 'divider') {
                 if (isCollapsed) return null;
                 return (
@@ -89,14 +94,16 @@ export const Nav = ({ isCollapsed, currentUserRoles, onNavigate, currentView }: 
             }
             return (
               <NavItem 
-                key={(item as NavItemType).view} 
+                key={(item as NavItemType).view || index} 
                 item={item as NavItemType} 
                 isCollapsed={isCollapsed} 
                 onNavigate={onNavigate} 
                 currentView={currentView} 
               />
             )
-        })}
+        }) : (
+            !isCollapsed && <p className="p-2 text-sm text-slate-400 text-center">Không có kết quả.</p>
+        )}
       </div>
     </nav>
   );
