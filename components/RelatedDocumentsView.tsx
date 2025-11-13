@@ -131,7 +131,7 @@ const RelatedDocumentsView: React.FC<RelatedDocumentsViewProps> = ({ selectedDoc
              <div className="p-6 border-b border-gray-200">
                 <div className="flex items-start justify-between">
                     <div>
-                        <p className="text-sm text-gray-500">Mã tài liệu: {selectedDoc.ma_tl}</p>
+                        <p className="text-sm text-gray-500">Số hiệu: {selectedDoc.so_hieu}</p>
                     </div>
                      <button
                         type="button"

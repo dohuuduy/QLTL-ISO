@@ -197,8 +197,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     title: 'Báo cáo danh sách tài liệu',
                     filters: { 'Phòng ban': phongBanMap.get(selectedDepartment) || 'N/A' },
                     columns: [
-                        { header: 'Mã TL', accessor: (item: DanhMucTaiLieu) => item.ma_tl },
                         { header: 'Tên tài liệu', accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu },
+                        { header: 'Số hiệu', accessor: (item: DanhMucTaiLieu) => item.so_hieu },
                         { header: 'Phiên bản', accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A' },
                         { header: 'Trạng thái', accessor: (item: DanhMucTaiLieu) => translate(item.trang_thai) },
                         { header: 'Ngày hiệu lực', accessor: (item: DanhMucTaiLieu) => formatDateForDisplay(item.ngay_hieu_luc) },
@@ -212,8 +212,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     title: 'Báo cáo danh sách tài liệu',
                     filters: { 'Tiêu chuẩn': tieuChuanMap.get(selectedStandard) || 'N/A' },
                     columns: [
-                        { header: 'Mã TL', accessor: (item: DanhMucTaiLieu) => item.ma_tl },
                         { header: 'Tên tài liệu', accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu },
+                        { header: 'Số hiệu', accessor: (item: DanhMucTaiLieu) => item.so_hieu },
                         { header: 'Phiên bản', accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A' },
                          { header: 'Phòng ban', accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly) },
                         { header: 'Trạng thái', accessor: (item: DanhMucTaiLieu) => translate(item.trang_thai) },
@@ -223,10 +223,12 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
             }
             case 'relationships': {
                 if (!selectedDocumentId) return null;
-                const docName = allData.documents.find(d => d.ma_tl === selectedDocumentId)?.ten_tai_lieu || 'N/A';
+                const selectedDoc = allData.documents.find(d => d.ma_tl === selectedDocumentId);
+                const docName = selectedDoc?.ten_tai_lieu || 'N/A';
+                const docSoHieu = selectedDoc?.so_hieu || selectedDocumentId;
                 return {
                     title: 'Báo cáo quan hệ tài liệu',
-                    filters: { 'Tài liệu gốc': `${docName} (${selectedDocumentId})` },
+                    filters: { 'Tài liệu gốc': `${docName} (${docSoHieu})` },
                     columns: [
                         { header: 'Quan hệ', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => translate(item.relation) },
                         { header: 'Tên tài liệu', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => item.doc.ten_tai_lieu },
@@ -260,8 +262,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     title: 'Báo cáo tài liệu theo lịch audit',
                     filters: { 'Cuộc Audit': audit?.ten_cuoc_audit || 'N/A' },
                     columns: [
-                        { header: 'Mã TL', accessor: (item: any) => item.doc.ma_tl },
                         { header: 'Tên tài liệu', accessor: (item: any) => item.doc.ten_tai_lieu },
+                        { header: 'Số hiệu', accessor: (item: any) => item.doc.so_hieu },
                         { header: 'Phiên bản', accessor: (item: any) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },
                         { header: 'Lý do liên quan', accessor: (item: any) => Array.from(item.reason).map((r: any) => r === 'standard' ? 'Theo tiêu chuẩn' : 'Liên kết trực tiếp').join('; ') },
                         { header: 'Trạng thái', accessor: (item: any) => translate(item.doc.trang_thai) },
@@ -279,7 +281,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
 
     const handleExport = (reportType: ReportType) => {
         const commonHeaders = {
-            ma_tl: 'Mã TL',
             so_hieu: 'Số hiệu',
             ten_tai_lieu: 'Tên tài liệu',
             phien_ban: 'Phiên bản',
@@ -303,7 +304,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     reportTitle: 'Báo cáo Tài liệu theo Phòng ban',
                     filtersApplied: [{ label: 'Phòng ban', value: deptName }],
                     detailData: departmentReportData.map(doc => ({
-                        ma_tl: doc.ma_tl,
                         so_hieu: doc.so_hieu,
                         ten_tai_lieu: doc.ten_tai_lieu,
                         phien_ban: latestVersionMap.get(doc.ma_tl) || 'N/A',
@@ -321,7 +321,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     reportTitle: 'Báo cáo Tài liệu theo Tiêu chuẩn',
                     filtersApplied: [{ label: 'Tiêu chuẩn', value: stdName }],
                     detailData: standardReportData.map(doc => ({
-                        ma_tl: doc.ma_tl,
                         so_hieu: doc.so_hieu,
                         ten_tai_lieu: doc.ten_tai_lieu,
                         phien_ban: latestVersionMap.get(doc.ma_tl) || 'N/A',
@@ -364,7 +363,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         { label: 'Bao gồm đã hết hiệu lực', value: includeExpired ? 'Có' : 'Không' }
                     ],
                     detailData: expiringReportData.map(doc => ({
-                        ma_tl: doc.ma_tl,
                         so_hieu: doc.so_hieu,
                         ten_tai_lieu: doc.ten_tai_lieu,
                         phien_ban: latestVersionMap.get(doc.ma_tl) || 'N/A',
@@ -373,7 +371,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                         tinh_trang: doc.daysRemaining <= 0 ? 'Đã hết hiệu lực' : `Còn ${doc.daysRemaining} ngày`,
                     })),
                     detailHeaders: { 
-                        ma_tl: 'Mã TL', 
                         so_hieu: 'Số hiệu',
                         ten_tai_lieu: 'Tên tài liệu',
                         phien_ban: 'Phiên bản',
@@ -391,7 +388,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     reportTitle: 'Báo cáo Tài liệu theo Lịch Audit',
                     filtersApplied: [{ label: 'Cuộc Audit', value: auditName }],
                     detailData: auditReportData.documents.map(({ doc, reason }) => ({
-                        ma_tl: doc.ma_tl,
                         so_hieu: doc.so_hieu,
                         ten_tai_lieu: doc.ten_tai_lieu,
                         phien_ban: latestVersionMap.get(doc.ma_tl) || 'N/A',
@@ -492,7 +488,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                 departmentReportData.length > 0 ? (
                                 <>
                                     <Table<DanhMucTaiLieu> data={paginatedData} onRowClick={onViewDetails} columns={[
-                                        { header: 'Mã TL', accessor: 'ma_tl' },
                                         { header: 'Số hiệu', accessor: 'so_hieu' },
                                         { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
                                         { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
@@ -531,7 +526,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                 standardReportData.length > 0 ? (
                                 <>
                                     <Table<DanhMucTaiLieu> data={paginatedData} onRowClick={onViewDetails} columns={[
-                                        { header: 'Mã TL', accessor: 'ma_tl' },
                                         { header: 'Số hiệu', accessor: 'so_hieu' },
                                         { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
                                         { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A' },
@@ -556,7 +550,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                 <label htmlFor="document-select" className="form-label">Chọn tài liệu:</label>
                                 <select id="document-select" value={selectedDocumentId} onChange={e => setSelectedDocumentId(e.target.value)} className="form-select">
                                     <option value="">-- Vui lòng chọn --</option>
-                                    {allData.documents.map(d => <option key={d.ma_tl} value={d.ma_tl}>{d.ten_tai_lieu} ({d.ma_tl})</option>)}
+                                    {allData.documents.map(d => <option key={d.ma_tl} value={d.ma_tl}>{d.ten_tai_lieu} ({d.so_hieu})</option>)}
                                 </select>
                             </div>
                             {selectedDocumentId && <div className="flex items-center justify-end gap-4"><ItemsPerPageSelector /> <ExportDropdown onPrint={window.print} onExportCsv={() => handleExport('relationships')} onExportWord={() => handleExportWord('relationships')} /></div>}
@@ -659,7 +653,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                             data={paginatedData} 
                                             onRowClick={item => onViewDetails(item.doc)} 
                                             columns={[
-                                            { header: 'Mã TL', accessor: (item) => item.doc.ma_tl },
                                             { header: 'Số hiệu', accessor: (item) => item.doc.so_hieu },
                                             { header: 'Tên tài liệu', accessor: (item) => item.doc.ten_tai_lieu },
                                             { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },

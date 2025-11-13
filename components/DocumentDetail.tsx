@@ -620,7 +620,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                             <div>
                                 <h2 className="text-2xl font-bold text-gray-900">{document.ten_tai_lieu}</h2>
                                 <div className="mt-2 flex items-center space-x-4">
-                                   <span className="text-sm text-gray-500">{document.ma_tl} / {document.so_hieu}</span>
+                                   <span className="text-sm text-gray-500">{document.so_hieu}</span>
                                    <Badge status={document.trang_thai} />
                                 </div>
                             </div>

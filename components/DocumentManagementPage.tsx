@@ -210,7 +210,6 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             title: 'Danh sách tài liệu',
             filters: activeFilters,
             columns: [
-                { header: 'Mã số tài liệu', accessor: (item: DanhMucTaiLieu) => item.ma_tl },
                 { header: 'Tên tài liệu', accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu },
                 { header: 'Số hiệu', accessor: (item: DanhMucTaiLieu) => item.so_hieu },
                 { header: 'Phiên bản', accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A' },
