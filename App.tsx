@@ -145,6 +145,78 @@ const createProfessionalEmailBody = (
     `;
 };
 
+// ++ DATE NORMALIZATION UTILITIES ++
+/**
+ * Normalizes a date string to 'YYYY-MM-DD' format.
+ * If the string is in ISO 8601 format (e.g., from JSON.stringify(new Date())),
+ * it extracts only the date part, ignoring time and timezone.
+ * @param dateString The date string to normalize.
+ * @returns The normalized 'YYYY-MM-DD' string or undefined.
+ */
+const normalizeDateString = (dateString?: string): string | undefined => {
+    if (!dateString) return undefined;
+    if (dateString.includes('T')) {
+        return dateString.split('T')[0];
+    }
+    return dateString;
+};
+
+/**
+ * Iterates through the entire application data and normalizes all date fields
+ * to ensure a consistent 'YYYY-MM-DD' format.
+ * @param data The raw application data.
+ * @returns The application data with all date fields normalized.
+ */
+const normalizeDataDates = (data: AppData): AppData => {
+    return {
+        ...data,
+        documents: data.documents.map(doc => ({
+            ...doc,
+            ngay_ban_hanh: normalizeDateString(doc.ngay_ban_hanh)!,
+            ngay_hieu_luc: normalizeDateString(doc.ngay_hieu_luc)!,
+            ngay_het_hieu_luc: normalizeDateString(doc.ngay_het_hieu_luc),
+        })),
+        versions: data.versions.map(ver => ({
+            ...ver,
+            ngay_phat_hanh: normalizeDateString(ver.ngay_phat_hanh)!,
+        })),
+        reviewSchedules: data.reviewSchedules.map(rs => ({
+            ...rs,
+            ngay_ra_soat_ke_tiep: normalizeDateString(rs.ngay_ra_soat_ke_tiep)!,
+            ngay_ra_soat_thuc_te: normalizeDateString(rs.ngay_ra_soat_thuc_te),
+        })),
+        changeLogs: data.changeLogs.map(cl => ({
+            ...cl,
+            ngay_de_xuat: normalizeDateString(cl.ngay_de_xuat)!,
+        })),
+        distributions: data.distributions.map(d => ({
+            ...d,
+            ngay_phan_phoi: normalizeDateString(d.ngay_phan_phoi)!,
+            ngay_thu_hoi: normalizeDateString(d.ngay_thu_hoi),
+        })),
+        trainings: data.trainings.map(t => ({
+            ...t,
+            ngay_dao_tao: normalizeDateString(t.ngay_dao_tao)!,
+        })),
+        risks: data.risks.map(r => ({
+            ...r,
+            ngay_nhan_dien: normalizeDateString(r.ngay_nhan_dien)!,
+        })),
+        tieuChuan: data.tieuChuan.map(tc => ({
+            ...tc,
+            ngay_ap_dung: normalizeDateString(tc.ngay_ap_dung)!,
+            ngay_ket_thuc_ap_dung: normalizeDateString(tc.ngay_ket_thuc_ap_dung),
+        })),
+        auditSchedules: data.auditSchedules.map(as => ({
+            ...as,
+            ngay_bat_dau: normalizeDateString(as.ngay_bat_dau)!,
+            ngay_ket_thuc: normalizeDateString(as.ngay_ket_thuc)!,
+        })),
+        // Timestamps in auditTrail and notifications are left as full ISO strings
+        // as they represent a specific point in time, not just a date.
+    };
+};
+
 
 const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<NhanSu | null>(null);
@@ -159,8 +231,9 @@ const App: React.FC = () => {
         const loadData = async () => {
             setIsLoading(true);
             try {
-                const data = await getAllData();
-                setAppData(data);
+                const rawData = await getAllData();
+                const normalizedData = normalizeDataDates(rawData); // Normalize dates on load
+                setAppData(normalizedData);
                 setError(null);
             } catch (e: any) {
                 console.error("Failed to load data from server.", e);

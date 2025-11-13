@@ -101,7 +101,6 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
 
             const matchesSearch =
                 doc.ten_tai_lieu.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                doc.ma_tl.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 doc.so_hieu.toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesStatus = (() => {
@@ -379,9 +378,8 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
 
     const handleExportCsv = () => {
         const dataToExport = sortedDocuments.map(doc => ({
-            ma_tl: doc.ma_tl,
-            ten_tai_lieu: doc.ten_tai_lieu,
             so_hieu: doc.so_hieu,
+            ten_tai_lieu: doc.ten_tai_lieu,
             phien_ban: latestVersionMap.get(doc.ma_tl) || 'N/A',
             loai_tai_lieu: loaiTaiLieuMap.get(doc.loai_tai_lieu) || '',
             phong_ban_quan_ly: phongBanMap.get(doc.phong_ban_quan_ly) || '',
@@ -391,9 +389,8 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         }));
 
         const headers = {
-            ma_tl: 'Mã số tài liệu',
-            ten_tai_lieu: 'Tên Tài liệu',
             so_hieu: 'Số hiệu',
+            ten_tai_lieu: 'Tên Tài liệu',
             phien_ban: 'Phiên bản',
             loai_tai_lieu: 'Loại Tài liệu',
             phong_ban_quan_ly: 'Phòng ban',
@@ -467,7 +464,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             header: getSortableHeader('Tên tài liệu', 'ten_tai_lieu'), 
             accessor: (item: DanhMucTaiLieu) => (
                 <div>
-                    <div className="font-semibold text-blue-700 truncate" title={item.ten_tai_lieu}>
+                    <div className="font-semibold text-blue-700 truncate text-base" title={item.ten_tai_lieu}>
                         {item.ten_tai_lieu}
                     </div>
                     <div className="text-sm text-slate-600 font-mono">{item.so_hieu}</div>
@@ -550,7 +547,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                     <input
                                         id="search-input"
                                         type="text"
-                                        placeholder="Tên, mã, số hiệu..."
+                                        placeholder="Tên, số hiệu..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="form-input search-input"
@@ -630,7 +627,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                         {/* Top section: Title and Bookmark */}
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-semibold text-blue-700 truncate" title={doc.ten_tai_lieu}>{doc.ten_tai_lieu}</p>
+                                                <p className="font-semibold text-blue-700 truncate text-base" title={doc.ten_tai_lieu}>{doc.ten_tai_lieu}</p>
                                                 <p className="text-sm text-slate-600 font-mono mt-1">{doc.so_hieu}</p>
                                             </div>
                                             <button
