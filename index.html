@@ -188,6 +188,72 @@
         padding-left: 2.5rem !important;
     }
 
+    /* Responsive Table Styles */
+    @media (max-width: 767px) { /* Corresponds to md breakpoint in Tailwind */
+        /* hide thead */
+        .responsive-table thead {
+            display: none;
+        }
+
+        /* make table, tbody, tr, td display as block */
+        .responsive-table, .responsive-table tbody, .responsive-table tr, .responsive-table td {
+            display: block;
+        }
+
+        /* style each row as a card */
+        .responsive-table tr {
+            border: 1px solid #e2e8f0; /* slate-200 */
+            border-radius: 0.5rem; /* rounded-lg */
+            margin-bottom: 1rem;
+            padding: 0.5rem 0; /* add some vertical padding inside the card */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        /* style cells */
+        .responsive-table td {
+            padding-left: 50%; /* Make space for the label */
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+            position: relative;
+            text-align: right;
+            border-bottom: 1px solid #f1f5f9; /* slate-100 */
+        }
+
+        .responsive-table tr td:last-child {
+            border-bottom: 0;
+        }
+
+        /* style the label */
+        .responsive-table td:before {
+            content: attr(data-label);
+            position: absolute;
+            left: 1rem; /* px-4 */
+            width: 45%;
+            padding-right: 0.75rem; /* pr-3 */
+            text-align: left;
+            font-weight: 600; /* font-semibold */
+            color: #475569; /* slate-600 */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* special styles for the actions cell */
+        .responsive-table td.actions-cell {
+             padding-left: 1rem;
+             padding-right: 1rem;
+             text-align: center;
+             border-top: 1px dashed #e2e8f0;
+             margin-top: 0.5rem;
+        }
+        .responsive-table td.actions-cell:before {
+            content: none;
+        }
+        .responsive-table td.actions-cell > div {
+            justify-content: center;
+        }
+    }
+
 
     /* Print-specific styles */
     .print-only {

@@ -2,6 +2,7 @@ import React from 'react';
 
 interface Column<T> {
     header: React.ReactNode;
+    label?: string;
     accessor: keyof T | ((item: T) => React.ReactNode);
     className?: string;
 }
@@ -18,7 +19,7 @@ const Table = <T extends { [key: string]: any }>({ columns, data, onRowClick, ac
     return (
         // Wrapper div to contain the table element
         <div>
-            <table className="w-full table-fixed">
+            <table className="w-full responsive-table md:table-fixed">
                 <thead className="bg-slate-100 border-b-2 border-slate-300">
                     <tr>
                         {columns.map((col, index) => (
@@ -50,6 +51,7 @@ const Table = <T extends { [key: string]: any }>({ columns, data, onRowClick, ac
                                         key={colIndex}
                                         className={`py-4 px-4 text-sm text-slate-800 truncate ${col.className || ''}`}
                                         title={typeof col.accessor !== 'function' ? String(item[col.accessor as keyof T] ?? '') : undefined}
+                                        data-label={col.label || (typeof col.header === 'string' ? col.header : '')}
                                     >
                                         {typeof col.accessor === 'function'
                                             ? col.accessor(item)
@@ -58,7 +60,7 @@ const Table = <T extends { [key: string]: any }>({ columns, data, onRowClick, ac
                                     </td>
                                 ))}
                                 {actions && (
-                                    <td className="py-4 px-4 text-right text-sm font-medium no-print w-32">
+                                    <td className="py-4 px-4 text-right text-sm font-medium no-print w-32 actions-cell">
                                         {actions(item)}
                                     </td>
                                 )}

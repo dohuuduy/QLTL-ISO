@@ -291,13 +291,13 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                         </Card.Header>
                         <Table<LichAudit>
                             columns={[
-                                { header: getSortableHeader('Tên cuộc audit', 'ten_cuoc_audit'), accessor: 'ten_cuoc_audit' },
-                                { header: getSortableHeader('Loại', 'loai_audit'), accessor: (item) => item.loai_audit === 'internal' ? 'Nội bộ' : 'Bên ngoài' },
-                                { header: 'Tổ chức', accessor: (item) => item.loai_audit === 'external' ? toChucDanhGiaMap.get(item.to_chuc_danh_gia_id || '') : '' },
-                                { header: getSortableHeader('Ngày bắt đầu', 'ngay_bat_dau'), accessor: (item) => formatDateForDisplay(item.ngay_bat_dau) },
-                                { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc'), accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc) },
-                                { header: 'Trưởng đoàn', accessor: (item) => danhGiaVienMap.get(item.chuyen_gia_danh_gia_truong_id) },
-                                { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item) => <Badge status={item.trang_thai} /> },
+                                { header: getSortableHeader('Tên cuộc audit', 'ten_cuoc_audit'), label: 'Tên cuộc audit', accessor: 'ten_cuoc_audit' },
+                                { header: getSortableHeader('Loại', 'loai_audit'), label: 'Loại', accessor: (item) => item.loai_audit === 'internal' ? 'Nội bộ' : 'Bên ngoài' },
+                                { header: 'Tổ chức', label: 'Tổ chức', accessor: (item) => item.loai_audit === 'external' ? toChucDanhGiaMap.get(item.to_chuc_danh_gia_id || '') : '' },
+                                { header: getSortableHeader('Ngày bắt đầu', 'ngay_bat_dau'), label: 'Ngày bắt đầu', accessor: (item) => formatDateForDisplay(item.ngay_bat_dau) },
+                                { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc'), label: 'Ngày kết thúc', accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc) },
+                                { header: 'Trưởng đoàn', label: 'Trưởng đoàn', accessor: (item) => danhGiaVienMap.get(item.chuyen_gia_danh_gia_truong_id) },
+                                { header: getSortableHeader('Trạng thái', 'trang_thai'), label: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} /> },
                             ]}
                             data={paginatedAudits}
                             actions={canManage ? (item) => (
