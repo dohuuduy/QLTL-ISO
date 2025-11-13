@@ -49,6 +49,22 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
     const [itemsPerPage, setItemsPerPage] = useState(15);
     
     useEffect(() => {
+        // Default to list view on smaller screens
+        const mediaQuery = window.matchMedia('(max-width: 768px)');
+        if (mediaQuery.matches) {
+            setViewMode('list');
+        }
+        
+        const handler = (e: MediaQueryListEvent) => {
+            if (e.matches) {
+                setViewMode('list');
+            }
+        };
+        mediaQuery.addEventListener('change', handler);
+        return () => mediaQuery.removeEventListener('change', handler);
+    }, []);
+
+    useEffect(() => {
         setCurrentPage(1);
     }, [itemsPerPage, sortConfig, dateFilter]);
 
@@ -236,7 +252,7 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                                 </div>
                             </div>
                             <div className="flex items-center gap-x-2 self-start sm:self-end">
-                                <div className="flex items-center rounded-md shadow-sm">
+                                <div className="hidden items-center rounded-md shadow-sm md:flex">
                                     <button
                                         type="button"
                                         onClick={() => setViewMode('calendar')}
@@ -278,36 +294,75 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                 </Card>
 
                 {viewMode === 'calendar' ? (
-                    <CalendarView 
-                        currentDate={calendarDate}
-                        setCurrentDate={setCalendarDate}
-                        events={calendarEvents}
-                        onEventClick={(audit) => canManage && openModal(audit)}
-                    />
-                ) : (
+                     <div className="hidden md:block">
+                        <CalendarView 
+                            currentDate={calendarDate}
+                            setCurrentDate={setCalendarDate}
+                            events={calendarEvents}
+                            onEventClick={(audit) => canManage && openModal(audit)}
+                        />
+                    </div>
+                ) : null}
+
+                {viewMode === 'list' ? (
                     <Card>
                         <Card.Header>
                             <ExportDropdown onPrint={handlePrint} onExportCsv={handleExportCsv} onExportWord={handleExportWord} />
                         </Card.Header>
-                        <Table<LichAudit>
-                            columns={[
-                                { header: getSortableHeader('Tên cuộc audit', 'ten_cuoc_audit'), label: 'Tên cuộc audit', accessor: 'ten_cuoc_audit' },
-                                { header: getSortableHeader('Loại', 'loai_audit'), label: 'Loại', accessor: (item) => item.loai_audit === 'internal' ? 'Nội bộ' : 'Bên ngoài' },
-                                { header: 'Tổ chức', label: 'Tổ chức', accessor: (item) => item.loai_audit === 'external' ? toChucDanhGiaMap.get(item.to_chuc_danh_gia_id || '') : '' },
-                                { header: getSortableHeader('Ngày bắt đầu', 'ngay_bat_dau'), label: 'Ngày bắt đầu', accessor: (item) => formatDateForDisplay(item.ngay_bat_dau) },
-                                { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc'), label: 'Ngày kết thúc', accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc) },
-                                { header: 'Trưởng đoàn', label: 'Trưởng đoàn', accessor: (item) => danhGiaVienMap.get(item.chuyen_gia_danh_gia_truong_id) },
-                                { header: getSortableHeader('Trạng thái', 'trang_thai'), label: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} /> },
-                            ]}
-                            data={paginatedAudits}
-                            actions={canManage ? (item) => (
-                                <div className="flex items-center justify-end space-x-2">
-                                    <button onClick={() => openModal(item)} className="p-2 text-blue-600 hover:text-blue-800" title="Sửa"><Icon type="pencil" className="h-4 w-4" /></button>
-                                    <button onClick={() => setDeletingId(item.id)} className="p-2 text-red-600 hover:text-red-800" title="Xóa"><Icon type="trash" className="h-4 w-4" /></button>
+
+                        {/* Mobile View */}
+                        <div className="md:hidden">
+                            {paginatedAudits.length > 0 ? (
+                                <ul className="divide-y divide-gray-200">
+                                    {paginatedAudits.map(audit => (
+                                        <li key={audit.id} className="p-4 hover:bg-slate-50" onClick={() => canManage && openModal(audit)}>
+                                            <div className="flex items-start justify-between gap-4">
+                                                <p className="font-semibold text-gray-900 flex-1">{audit.ten_cuoc_audit}</p>
+                                                <Badge status={audit.trang_thai} />
+                                            </div>
+                                            <div className="mt-2 text-xs text-gray-600 space-y-1">
+                                                <p><span className="font-medium text-gray-500 w-20 inline-block">Thời gian:</span> {formatDateForDisplay(audit.ngay_bat_dau)} - {formatDateForDisplay(audit.ngay_ket_thuc)}</p>
+                                                <p><span className="font-medium text-gray-500 w-20 inline-block">Trưởng đoàn:</span> {danhGiaVienMap.get(audit.chuyen_gia_danh_gia_truong_id) || 'N/A'}</p>
+                                                <p><span className="font-medium text-gray-500 w-20 inline-block">Loại:</span> {audit.loai_audit === 'internal' ? 'Nội bộ' : `Bên ngoài (${toChucDanhGiaMap.get(audit.to_chuc_danh_gia_id || '') || 'N/A'})`}</p>
+                                            </div>
+                                             {canManage && (
+                                                <div className="mt-3 flex justify-end space-x-2">
+                                                    <button onClick={(e) => { e.stopPropagation(); openModal(audit); }} className="p-2 text-blue-600 hover:bg-blue-100 rounded-full" title="Sửa"><Icon type="pencil" className="h-5 w-5" /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); setDeletingId(audit.id); }} className="p-2 text-red-600 hover:bg-red-100 rounded-full" title="Xóa"><Icon type="trash" className="h-5 w-5" /></button>
+                                                </div>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <div className="text-center py-10">
+                                    <p className="text-gray-500">Không có lịch audit nào.</p>
                                 </div>
-                            ) : undefined}
-                            onRowClick={(item) => canManage && openModal(item)}
-                        />
+                            )}
+                        </div>
+
+                        {/* Desktop View */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <Table<LichAudit>
+                                columns={[
+                                    { header: getSortableHeader('Tên cuộc audit', 'ten_cuoc_audit'), accessor: 'ten_cuoc_audit' },
+                                    { header: getSortableHeader('Loại', 'loai_audit'), accessor: (item) => item.loai_audit === 'internal' ? 'Nội bộ' : 'Bên ngoài' },
+                                    { header: 'Tổ chức', accessor: (item) => item.loai_audit === 'external' ? toChucDanhGiaMap.get(item.to_chuc_danh_gia_id || '') : '' },
+                                    { header: getSortableHeader('Ngày bắt đầu', 'ngay_bat_dau'), accessor: (item) => formatDateForDisplay(item.ngay_bat_dau) },
+                                    { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc'), accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc) },
+                                    { header: 'Trưởng đoàn', accessor: (item) => danhGiaVienMap.get(item.chuyen_gia_danh_gia_truong_id) },
+                                    { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item) => <Badge status={item.trang_thai} /> },
+                                ]}
+                                data={paginatedAudits}
+                                actions={canManage ? (item) => (
+                                    <div className="flex items-center justify-end space-x-2">
+                                        <button onClick={() => openModal(item)} className="p-2 text-blue-600 hover:text-blue-800" title="Sửa"><Icon type="pencil" className="h-4 w-4" /></button>
+                                        <button onClick={() => setDeletingId(item.id)} className="p-2 text-red-600 hover:text-red-800" title="Xóa"><Icon type="trash" className="h-4 w-4" /></button>
+                                    </div>
+                                ) : undefined}
+                                onRowClick={(item) => canManage && openModal(item)}
+                            />
+                        </div>
                         {sortedAudits.length > 0 && (
                             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}>
                                  <div className="flex items-center gap-x-4">
@@ -329,7 +384,7 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
                             </Pagination>
                         )}
                     </Card>
-                )}
+                ) : null}
 
                 {canManage && (
                      <Modal isOpen={isModalOpen} onClose={closeModal} title={editingAudit ? 'Chỉnh sửa Lịch Audit' : 'Thêm mới Lịch Audit'}>

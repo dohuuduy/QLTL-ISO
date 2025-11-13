@@ -140,15 +140,22 @@ type ModalContent = {
 
 type TabKey = 'changeLogs' | 'distributions' | 'reviewSchedules' | 'trainings' | 'risks' | 'auditTrail';
 
-const idKeyMap: Record<ModalType, string> = {
+const idKeyMap: Record<string, string> = {
     versions: 'id_phien_ban',
     changeLogs: 'id_thay_doi',
     distributions: 'id_phan_phoi',
     reviewSchedules: 'id_lich',
     trainings: 'id_dt',
     risks: 'id_rr',
-    viewChangeLog: 'id_thay_doi'
+    viewChangeLog: 'id_thay_doi',
+    auditTrail: 'id',
 };
+
+const NoData: React.FC<{ message?: string }> = ({ message = "Không có dữ liệu." }) => (
+    <div className="text-center py-10">
+        <p className="text-gray-500">{message}</p>
+    </div>
+);
 
 
 const TabContentWrapper: React.FC<{
@@ -522,9 +529,38 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                     onButtonClick={() => openModal(key as ModalType)} 
                     showButton={canUpdateDocument && key !== 'auditTrail'}
                 >
-                    <div className="overflow-x-auto">
-                        <Table data={paginatedData as any} columns={columns as any} actions={actions as any} />
+                    {/* Mobile View */}
+                    <div className="md:hidden">
+                        {paginatedData.length > 0 ? (
+                            <ul className="divide-y divide-gray-200">
+                                {paginatedData.map((item: any, index: number) => (
+                                    <li key={idKeyMap[key] ? item[idKeyMap[key]] : index} className="p-4">
+                                        <dl className="space-y-2">
+                                            {columns.map((col: any, colIndex: number) => {
+                                                const value = typeof col.accessor === 'function' ? col.accessor(item) : item[col.accessor];
+                                                if (value === '' || value === null || value === undefined) return null;
+                                                return (
+                                                    <div key={colIndex} className="grid grid-cols-3 gap-2 text-sm">
+                                                        <dt className="font-medium text-gray-500 col-span-1">{col.header}</dt>
+                                                        <dd className="text-gray-900 col-span-2">{value}</dd>
+                                                    </div>
+                                                );
+                                            })}
+                                        </dl>
+                                        {actions && <div className="mt-4 flex justify-end">{actions(item)}</div>}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : <NoData />}
                     </div>
+
+                    {/* Desktop View */}
+                    <div className="hidden md:block">
+                        <div className="overflow-x-auto">
+                            <Table data={paginatedData as any} columns={columns as any} actions={actions as any} />
+                        </div>
+                    </div>
+
                     {totalItems > 0 && totalPages > 1 && (
                          <Pagination
                             currentPage={paging.page}

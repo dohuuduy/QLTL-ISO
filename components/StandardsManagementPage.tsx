@@ -255,12 +255,12 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
                 <Card>
                     <Table<TieuChuan>
                         columns={[
-                            { header: getSortableHeader('Tên tiêu chuẩn', 'ten'), label: 'Tên tiêu chuẩn', accessor: 'ten', className: 'font-medium text-gray-900' },
-                            { header: getSortableHeader('Viết tắt', 'ten_viet_tat'), label: 'Viết tắt', accessor: 'ten_viet_tat' },
-                            { header: getSortableHeader('Phiên bản', 'phien_ban'), label: 'Phiên bản', accessor: 'phien_ban' },
-                            { header: getSortableHeader('Ngày áp dụng', 'ngay_ap_dung'), label: 'Ngày áp dụng', accessor: (item) => formatDateForDisplay(item.ngay_ap_dung) },
-                            { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc_ap_dung'), label: 'Ngày kết thúc', accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc_ap_dung) },
-                            { header: 'Trạng thái', label: 'Trạng thái', accessor: (item) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} /> },
+                            { header: getSortableHeader('Tên tiêu chuẩn', 'ten'), accessor: 'ten', className: 'font-medium text-gray-900' },
+                            { header: getSortableHeader('Viết tắt', 'ten_viet_tat'), accessor: 'ten_viet_tat' },
+                            { header: getSortableHeader('Phiên bản', 'phien_ban'), accessor: 'phien_ban' },
+                            { header: getSortableHeader('Ngày áp dụng', 'ngay_ap_dung'), accessor: (item) => formatDateForDisplay(item.ngay_ap_dung) },
+                            { header: getSortableHeader('Ngày kết thúc', 'ngay_ket_thuc_ap_dung'), accessor: (item) => formatDateForDisplay(item.ngay_ket_thuc_ap_dung) },
+                            { header: 'Trạng thái', accessor: (item) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} /> },
                         ]}
                         data={paginatedStandards}
                         actions={canManage ? renderActions : undefined}

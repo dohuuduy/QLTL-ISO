@@ -685,7 +685,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                     </div>
                     
                     {/* Desktop View: Table */}
-                    <div className="hidden md:block">
+                    <div className="hidden md:block overflow-x-auto">
                         <Table<DanhMucTaiLieu>
                             columns={tableColumns}
                             data={paginatedDocuments}

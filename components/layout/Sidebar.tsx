@@ -1,7 +1,7 @@
 import React from 'react';
 import { Nav } from './Nav';
 import { Icon } from '../ui/Icon';
-import type { NhanSu, ReportType } from '../../types';
+import type { NhanSu } from '../../types';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -43,13 +43,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* Mobile Sidebar (Sheet) */}
+      {/* Mobile Sidebar (Drawer) */}
       <div 
-        className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${isMobileOpen ? 'bg-black bg-opacity-50' : 'bg-transparent pointer-events-none'}`}
+        className={`fixed inset-0 z-30 bg-black bg-opacity-50 transition-opacity md:hidden ${isMobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onCloseMobileMenu}
         aria-hidden="true"
       />
-      <aside className={`fixed top-0 left-0 h-full w-72 z-50 md:hidden bg-slate-800 transform transition-transform duration-300 ease-in-out ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed top-0 left-0 h-full w-72 z-40 md:hidden bg-slate-800 transform transition-transform duration-300 ease-in-out ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           {navContent(true)}
       </aside>
 

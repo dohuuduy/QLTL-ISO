@@ -24,7 +24,6 @@ interface CategoryManagementPageProps<T extends { id: string, ten: string, is_ac
     items: T[];
     columns?: {
         header: React.ReactNode;
-        label: string;
         accessor: keyof T | ((item: T) => React.ReactNode);
         sortKey: string;
     }[];
@@ -184,7 +183,7 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
     };
     
     const defaultColumns = [
-        { header: `Tên ${title.replace('Quản lý ', '').toLowerCase()}`, label: `Tên ${title.replace('Quản lý ', '').toLowerCase()}`, accessor: (item: T) => item.ten, sortKey: 'ten' },
+        { header: `Tên ${title.replace('Quản lý ', '').toLowerCase()}`, accessor: (item: T) => item.ten, sortKey: 'ten' },
     ];
 
     const finalColumns = (columns || defaultColumns).map(col => ({
@@ -193,7 +192,7 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
             ? getSortableHeader(col.header, col.sortKey)
             : col.header,
     })).concat([
-        { header: getSortableHeader('Trạng thái', 'is_active'), label: 'Trạng thái', accessor: (item: T) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} />, sortKey: 'is_active' }
+        { header: getSortableHeader('Trạng thái', 'is_active'), accessor: (item: T) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} />, sortKey: 'is_active' }
     ]);
     
     const printLayoutProps = useMemo(() => {
@@ -354,7 +353,7 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
                         </div>
                     </Card.Body>
                     <Table
-                        columns={finalColumns as any}
+                        columns={finalColumns}
                         data={paginatedItems}
                         actions={renderActions}
                         onRowClick={(item) => openModal(item)}
