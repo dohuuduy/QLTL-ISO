@@ -210,6 +210,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             title: 'Danh sách tài liệu',
             filters: activeFilters,
             columns: [
+                { header: 'Mã số tài liệu', accessor: (item: DanhMucTaiLieu) => item.ma_tl },
                 { header: 'Tên tài liệu', accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu },
                 { header: 'Số hiệu', accessor: (item: DanhMucTaiLieu) => item.so_hieu },
                 { header: 'Phiên bản', accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A' },
@@ -379,6 +380,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
 
     const handleExportCsv = () => {
         const dataToExport = sortedDocuments.map(doc => ({
+            ma_tl: doc.ma_tl,
             ten_tai_lieu: doc.ten_tai_lieu,
             so_hieu: doc.so_hieu,
             phien_ban: latestVersionMap.get(doc.ma_tl) || 'N/A',
@@ -390,6 +392,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         }));
 
         const headers = {
+            ma_tl: 'Mã số tài liệu',
             ten_tai_lieu: 'Tên Tài liệu',
             so_hieu: 'Số hiệu',
             phien_ban: 'Phiên bản',
@@ -464,13 +467,15 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         { 
             header: getSortableHeader('Tên tài liệu', 'ten_tai_lieu'), 
             accessor: (item: DanhMucTaiLieu) => (
-                <div className="truncate" title={item.ten_tai_lieu}>
-                    {item.ten_tai_lieu}
+                <div>
+                    <div className="font-semibold text-blue-700 truncate" title={item.ten_tai_lieu}>
+                        {item.ten_tai_lieu}
+                    </div>
+                    <div className="text-sm text-slate-600 font-mono">{item.so_hieu}</div>
                 </div>
             ), 
-            className: 'font-medium text-gray-900 max-w-md' 
+            className: 'max-w-md' 
         },
-        { header: getSortableHeader('Số hiệu', 'so_hieu'), accessor: (item: DanhMucTaiLieu) => item.so_hieu, className: 'w-28' },
         { header: getSortableHeader('Phiên bản', 'phien_ban'), accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A', className: 'w-20 text-center' },
         { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item: DanhMucTaiLieu) => <Badge status={item.trang_thai} />, className: 'w-36' },
         { 
@@ -626,8 +631,8 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                         {/* Top section: Title and Bookmark */}
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-semibold text-gray-900 truncate" title={doc.ten_tai_lieu}>{doc.ten_tai_lieu}</p>
-                                                <p className="text-xs text-gray-500 mt-1">{doc.so_hieu}</p>
+                                                <p className="font-semibold text-blue-700 truncate" title={doc.ten_tai_lieu}>{doc.ten_tai_lieu}</p>
+                                                <p className="text-sm text-slate-600 font-mono mt-1">{doc.so_hieu}</p>
                                             </div>
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onToggleBookmark(doc.ma_tl); }}

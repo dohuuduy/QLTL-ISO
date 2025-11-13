@@ -96,7 +96,7 @@ const Badge: React.FC<BadgeProps> = ({ status, size = 'md', title }) => {
     const sizeClass = sizeClasses[size];
     
     return (
-        <span title={title} className={`inline-flex items-center font-medium rounded-full ${sizeClass} ${colorClass} badge-print`}>
+        <span title={title} className={`inline-flex items-center font-medium rounded-full whitespace-nowrap ${sizeClass} ${colorClass} badge-print`}>
             <svg className={`-ml-0.5 mr-1.5 h-2 w-2 ${dotColorClass}`} viewBox="0 0 6 6" aria-hidden="true">
                 <circle cx={3} cy={3} r={3} />
             </svg>

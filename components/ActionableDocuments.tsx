@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import type { DanhMucTaiLieu, NhanSu, PhienBanTaiLieu } from '../types';
 import { DocumentStatus } from '../constants';
 import Card from './ui/Card';
-import Table from './ui/Table';
 import Badge from './ui/Badge';
 import { Icon } from './ui/Icon';
 
@@ -19,10 +18,14 @@ const ActionableDocuments: React.FC<ActionableDocumentsProps> = ({ documents, ve
         versions.filter(v => v.is_moi_nhat).map(v => [v.ma_tl, v.phien_ban])
     ), [versions]);
 
-    const myActionableDocs = documents.filter(doc => 
-        (doc.trang_thai === DocumentStatus.DANG_RA_SOAT && doc.nguoi_ra_soat === currentUser.id) ||
-        (doc.trang_thai === DocumentStatus.CHO_PHE_DUYET && doc.nguoi_phe_duyet === currentUser.id)
-    );
+    const myActionableDocs = useMemo(() => {
+        return documents
+            .filter(doc => 
+                (doc.trang_thai === DocumentStatus.DANG_RA_SOAT && doc.nguoi_ra_soat === currentUser.id) ||
+                (doc.trang_thai === DocumentStatus.CHO_PHE_DUYET && doc.nguoi_phe_duyet === currentUser.id)
+            )
+            .sort((a, b) => new Date(b.ngay_ban_hanh).getTime() - new Date(a.ngay_ban_hanh).getTime()); // Sort by most recent
+    }, [documents, currentUser.id]);
 
     if (myActionableDocs.length === 0) {
         return (
@@ -36,46 +39,54 @@ const ActionableDocuments: React.FC<ActionableDocumentsProps> = ({ documents, ve
         );
     }
     
+    const getStatusIcon = (status: DocumentStatus) => {
+        switch (status) {
+            case DocumentStatus.DANG_RA_SOAT:
+                return { iconType: 'clock', bgColor: 'bg-blue-100', textColor: 'text-blue-600' };
+            case DocumentStatus.CHO_PHE_DUYET:
+                return { iconType: 'paper-airplane', bgColor: 'bg-yellow-100', textColor: 'text-yellow-700' };
+            default:
+                return { iconType: 'document-text', bgColor: 'bg-gray-100', textColor: 'text-gray-600' };
+        }
+    };
+
     return (
         <Card>
-             <Card.Header>
+            <Card.Header>
                 <h3 className="text-base font-semibold text-gray-900">Tài liệu cần xử lý</h3>
             </Card.Header>
-             <Table<DanhMucTaiLieu>
-                columns={[
-                    { header: 'Tên tài liệu', accessor: 'ten_tai_lieu', className: 'min-w-[12rem]' },
-                    { header: 'Số hiệu', accessor: 'so_hieu', className: 'w-32' },
-                    { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.ma_tl) || 'N/A', className: 'w-24 text-center' },
-                    { header: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} />, className: 'w-40' },
-                    {
-                        header: 'In',
-                        accessor: (item: DanhMucTaiLieu) => {
-                            if (item.file_pdf) {
-                                return (
-                                    <a
-                                        href={item.file_pdf}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="inline-flex items-center justify-center text-gray-500 hover:text-blue-700 w-full"
-                                        title="Mở PDF để in"
-                                    >
-                                        <Icon type="printer" className="h-5 w-5" />
-                                    </a>
-                                )
-                            }
-                            return (
-                                <span className="inline-flex items-center justify-center text-gray-300 w-full cursor-not-allowed" title="Không có file PDF">
-                                    <Icon type="printer" className="h-5 w-5" />
-                                </span>
-                            );
-                        },
-                        className: 'w-16 text-center'
-                    }
-                ]}
-                data={myActionableDocs}
-                onRowClick={onDocumentClick}
-            />
+            <Card.Body className="p-0">
+                <ul role="list" className="divide-y divide-gray-200">
+                    {myActionableDocs.map(doc => {
+                        const { iconType, bgColor, textColor } = getStatusIcon(doc.trang_thai);
+                        return (
+                            <li key={doc.ma_tl}>
+                                <button
+                                    onClick={() => onDocumentClick(doc)}
+                                    className="w-full text-left p-4 hover:bg-slate-50 transition-colors block"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <div className={`flex-shrink-0 mt-0.5 flex items-center justify-center h-8 w-8 rounded-full ${bgColor}`}>
+                                            <Icon type={iconType} className={`h-5 w-5 ${textColor}`} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-semibold text-gray-900 truncate" title={doc.ten_tai_lieu}>
+                                                {doc.ten_tai_lieu}
+                                            </p>
+                                            <div className="flex items-center gap-x-3 mt-1">
+                                                <Badge status={doc.trang_thai} size="sm" />
+                                                <span className="text-xs text-gray-500">
+                                                    Phiên bản: {latestVersionMap.get(doc.ma_tl) || 'N/A'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </Card.Body>
         </Card>
     );
 };
