@@ -73,6 +73,76 @@ type View =
     | { type: 'settings-group-audit' };
 
 
+/**
+ * Creates a professional HTML email body.
+ * @param title The main headline of the email.
+ * @param doc The document object.
+ * @param mainMessage The primary message body.
+ * @param details An object containing key-value pairs of details to display.
+ * @param ctaText Text for the call-to-action button.
+ * @param ctaLink URL for the call-to-action button.
+ * @returns A string containing the full HTML for the email.
+ */
+const createProfessionalEmailBody = (
+    title: string,
+    doc: DanhMucTaiLieu,
+    mainMessage: string,
+    details: Record<string, string>,
+    ctaText: string,
+    ctaLink: string
+): string => {
+    const detailRows = Object.entries(details)
+        .map(([key, value]) => `
+            <tr>
+                <td style="padding: 4px 0; font-weight: 600; color: #4b5563; width: 150px;">${key}:</td>
+                <td style="padding: 4px 0; color: #111827;">${value}</td>
+            </tr>
+        `).join('');
+
+    const pdfButton = doc.file_pdf
+        ? `
+            <a href="${doc.file_pdf}" target="_blank" style="display: inline-block; margin-top: 15px; margin-right: 10px; padding: 10px 18px; font-size: 14px; font-weight: 500; color: #1e40af; background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; text-decoration: none;">
+                Tải file PDF
+            </a>
+        `
+        : '';
+
+    return `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #374151; background-color: #f9fafb; padding: 20px;">
+            <table style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-collapse: collapse; border: 1px solid #e5e7eb; border-radius: 8px;">
+                <tr>
+                    <td style="padding: 24px; text-align: center; background-color: #1d4ed8; color: #ffffff; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                        <h1 style="margin: 0; font-size: 24px;">Hệ thống Quản lý Tài liệu ISO</h1>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 32px;">
+                        <h2 style="margin-top: 0; font-size: 20px; color: #111827;">${title}</h2>
+                        <p>${mainMessage}</p>
+                        <div style="margin: 24px 0; padding: 16px; background-color: #f3f4f6; border-radius: 6px;">
+                            <h3 style="margin-top: 0; font-size: 16px; color: #111827;">Thông tin chi tiết:</h3>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                ${detailRows}
+                            </table>
+                        </div>
+                        
+                        ${pdfButton}
+                        <a href="${ctaLink}" target="_blank" style="display: inline-block; margin-top: 15px; padding: 10px 18px; font-size: 14px; font-weight: 500; color: #ffffff; background-color: #2563eb; border-radius: 6px; text-decoration: none;">
+                            ${ctaText}
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 24px; text-align: center; border-top: 1px solid #e5e7eb;">
+                        <p style="margin: 0; font-size: 12px; color: #6b7280;">Đây là email tự động từ Hệ thống Quản lý Tài liệu ISO. Vui lòng không trả lời.</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    `;
+};
+
+
 const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<NhanSu | null>(null);
     const [appData, setAppData] = useState<AppData>(initialAppData);
@@ -122,6 +192,7 @@ const App: React.FC = () => {
             let newNotifications: ThongBao[] = [];
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+            const appUrl = window.location.origin;
 
             const existingNotificationKeys = new Set(
                 appData.notifications.map(n => {
@@ -135,15 +206,15 @@ const App: React.FC = () => {
                 })
             );
 
-            // FIX: Explicitly type `nhanSuMap` to ensure correct type inference for `user` later on.
             const nhanSuMap: Map<string, NhanSu> = new Map(appData.nhanSu.map(ns => [ns.id, ns]));
             const admin = appData.nhanSu.find(ns => ns.role === 'admin');
             
             // 1. Check for expired and expiring documents
             appData.documents.forEach(doc => {
                 if (doc.ngay_het_hieu_luc) {
-                    const expiryDate = new Date(doc.ngay_het_hieu_luc);
-                    expiryDate.setHours(0, 0, 0, 0);
+                    // Use UTC parsing to avoid timezone issues
+                    const expiryDateParts = doc.ngay_het_hieu_luc.split('-');
+                    const expiryDate = new Date(Date.UTC(parseInt(expiryDateParts[0]), parseInt(expiryDateParts[1]) - 1, parseInt(expiryDateParts[2])));
 
                     const diffTime = expiryDate.getTime() - today.getTime();
                     const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -175,7 +246,18 @@ const App: React.FC = () => {
 
                             if(emailsToSend.size > 0) {
                                 const subject = `[ISO] Thông báo: Tài liệu "${doc.ten_tai_lieu}" đã hết hiệu lực`;
-                                const emailBody = `<p>Hệ thống quản lý tài liệu ISO xin thông báo:</p><p>Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> đã hết hiệu lực vào ngày ${expiryDate.toLocaleDateString('vi-VN')}.</p><p>Vui lòng truy cập hệ thống để xem chi tiết.</p>`;
+                                const emailBody = createProfessionalEmailBody(
+                                    'Tài liệu đã hết hiệu lực',
+                                    doc,
+                                    `Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> đã hết hiệu lực vào ngày ${expiryDate.toLocaleDateString('vi-VN')}.`,
+                                    {
+                                        "Tên tài liệu": doc.ten_tai_lieu,
+                                        "Mã hiệu": doc.so_hieu,
+                                        "Ngày hết hiệu lực": expiryDate.toLocaleDateString('vi-VN')
+                                    },
+                                    'Xem chi tiết trên hệ thống',
+                                    appUrl
+                                );
                                 emailsToSend.forEach(email => sendEmail(email, subject, emailBody).catch(console.error));
                             }
                             existingNotificationKeys.add(notificationKey);
@@ -205,7 +287,18 @@ const App: React.FC = () => {
                             });
                              if(emailsToSend.size > 0) {
                                 const subject = `[ISO] Cảnh báo: Tài liệu "${doc.ten_tai_lieu}" sắp hết hiệu lực`;
-                                const emailBody = `<p>Hệ thống quản lý tài liệu ISO xin thông báo:</p><p>Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> sẽ hết hiệu lực sau <strong>${daysRemaining} ngày</strong> (vào ngày ${expiryDate.toLocaleDateString('vi-VN')}).</p><p>Vui lòng truy cập hệ thống để thực hiện rà soát hoặc gia hạn.</p>`;
+                                const emailBody = createProfessionalEmailBody(
+                                    'Cảnh báo Tài liệu Sắp hết hiệu lực',
+                                    doc,
+                                    `Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> sẽ hết hiệu lực sau <strong>${daysRemaining} ngày</strong> (vào ngày ${expiryDate.toLocaleDateString('vi-VN')}).`,
+                                    {
+                                        "Tên tài liệu": doc.ten_tai_lieu,
+                                        "Mã hiệu": doc.so_hieu,
+                                        "Ngày hết hiệu lực": expiryDate.toLocaleDateString('vi-VN')
+                                    },
+                                    'Thực hiện rà soát hoặc gia hạn',
+                                    appUrl
+                                );
                                 emailsToSend.forEach(email => sendEmail(email, subject, emailBody).catch(console.error));
                             }
                             existingNotificationKeys.add(notificationKey);
@@ -219,12 +312,11 @@ const App: React.FC = () => {
                 const doc = appData.documents.find(d => d.ma_tl === schedule.ma_tl);
                 if (!doc || schedule.ket_qua_ra_soat) return;
 
-                const nextReviewDate = new Date(schedule.ngay_ra_soat_ke_tiep);
-                nextReviewDate.setHours(0, 0, 0, 0);
+                const reviewDateParts = schedule.ngay_ra_soat_ke_tiep.split('-');
+                const nextReviewDate = new Date(Date.UTC(parseInt(reviewDateParts[0]), parseInt(reviewDateParts[1]) - 1, parseInt(reviewDateParts[2])));
                 
                 const diffTime = nextReviewDate.getTime() - today.getTime();
                 const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
 
                 // Overdue reviews
                 if (nextReviewDate < today) {
@@ -253,7 +345,18 @@ const App: React.FC = () => {
                         });
                         if (emailsToSend.size > 0) {
                             const subject = `[ISO] Cảnh báo: Tài liệu "${doc.ten_tai_lieu}" đã QUÁ HẠN rà soát`;
-                            const emailBody = `<p>Hệ thống quản lý tài liệu ISO xin nhắc nhở:</p><p>Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> đã quá hạn rà soát (hạn chót: ${nextReviewDate.toLocaleDateString('vi-VN')}).</p><p>Vui lòng truy cập hệ thống để thực hiện rà soát.</p>`;
+                            const emailBody = createProfessionalEmailBody(
+                                'Tài liệu đã quá hạn rà soát',
+                                doc,
+                                `Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> đã quá hạn rà soát (hạn chót: ${nextReviewDate.toLocaleDateString('vi-VN')}).`,
+                                {
+                                    "Tên tài liệu": doc.ten_tai_lieu,
+                                    "Mã hiệu": doc.so_hieu,
+                                    "Hạn rà soát": nextReviewDate.toLocaleDateString('vi-VN')
+                                },
+                                'Thực hiện rà soát ngay',
+                                appUrl
+                            );
                             emailsToSend.forEach(email => sendEmail(email, subject, emailBody).catch(console.error));
                         }
                         existingNotificationKeys.add(notificationKey);
@@ -284,7 +387,18 @@ const App: React.FC = () => {
 
                         if (emailsToSend.size > 0) {
                             const subject = `[ISO] Nhắc nhở: Rà soát tài liệu "${doc.ten_tai_lieu}"`;
-                            const emailBody = `<p>Hệ thống quản lý tài liệu ISO xin nhắc nhở:</p><p>Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> sắp đến hạn rà soát sau <strong>${daysRemaining} ngày</strong> (hạn chót: ${nextReviewDate.toLocaleDateString('vi-VN')}).</p><p>Vui lòng truy cập hệ thống để chuẩn bị thực hiện rà soát.</p>`;
+                            const emailBody = createProfessionalEmailBody(
+                                'Nhắc nhở Rà soát Tài liệu',
+                                doc,
+                                `Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> sắp đến hạn rà soát sau <strong>${daysRemaining} ngày</strong> (hạn chót: ${nextReviewDate.toLocaleDateString('vi-VN')}).`,
+                                {
+                                    "Tên tài liệu": doc.ten_tai_lieu,
+                                    "Mã hiệu": doc.so_hieu,
+                                    "Hạn rà soát": nextReviewDate.toLocaleDateString('vi-VN')
+                                },
+                                'Chuẩn bị rà soát',
+                                appUrl
+                            );
                             emailsToSend.forEach(email => sendEmail(email, subject, emailBody).catch(console.error));
                         }
                         existingNotificationKeys.add(notificationKey);
