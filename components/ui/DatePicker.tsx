@@ -20,8 +20,8 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
     const [displayValue, setDisplayValue] = useState(formatDateForDisplay(value));
     const [viewMode, setViewMode] = useState<'days' | 'months' | 'years'>('days');
 
-    let initialDate = value ? new Date(`${value}T00:00:00Z`) : new Date();
-    if (isNaN(initialDate.getTime())) initialDate = new Date();
+    let initialDate = value ? new Date(`${value}T00:00:00Z`) : new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()));
+    if (isNaN(initialDate.getTime())) initialDate = new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()));
     const [displayDate, setDisplayDate] = useState(initialDate);
 
     const wrapperRef = useRef<HTMLDivElement | null>(null); // wrapper around input
@@ -135,30 +135,42 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
     };
 
     const handleDateSelect = (day: Date) => {
-        onChange(formatDate(day));
+        onChange(formatDate(day)); // formatDate is now UTC-based
         setIsOpen(false);
     };
 
     const handleMonthSelect = (monthIndex: number) => {
-        setDisplayDate(new Date(displayDate.getFullYear(), monthIndex, 1));
+        setDisplayDate(new Date(Date.UTC(displayDate.getUTCFullYear(), monthIndex, 1)));
         setViewMode('days');
     };
 
     const handleYearSelect = (year: number) => {
-        setDisplayDate(new Date(year, displayDate.getMonth(), 1));
+        setDisplayDate(new Date(Date.UTC(year, displayDate.getUTCMonth(), 1)));
         setViewMode('months');
     };
 
     const changeDate = (amount: number) => {
         switch (viewMode) {
             case 'days':
-                setDisplayDate(prev => new Date(prev.getFullYear(), prev.getMonth() + amount, 1));
+                setDisplayDate(prev => {
+                    const newDate = new Date(prev);
+                    newDate.setUTCMonth(newDate.getUTCMonth() + amount);
+                    return newDate;
+                });
                 break;
             case 'months':
-                setDisplayDate(prev => new Date(prev.getFullYear() + amount, prev.getMonth(), 1));
+                 setDisplayDate(prev => {
+                    const newDate = new Date(prev);
+                    newDate.setUTCFullYear(newDate.getUTCFullYear() + amount);
+                    return newDate;
+                });
                 break;
             case 'years':
-                setDisplayDate(prev => new Date(prev.getFullYear() + amount * 10, prev.getMonth(), 1));
+                setDisplayDate(prev => {
+                    const newDate = new Date(prev);
+                    newDate.setUTCFullYear(newDate.getUTCFullYear() + amount * 10);
+                    return newDate;
+                });
                 break;
         }
     };
@@ -183,7 +195,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
     };
 
     const yearRange = useMemo(() => {
-        const year = displayDate.getFullYear();
+        const year = displayDate.getUTCFullYear();
         const startYear = Math.floor(year / 10) * 10;
         return { start: startYear, end: startYear + 9 };
     }, [displayDate]);
@@ -192,7 +204,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
         let text = '';
         switch (viewMode) {
             case 'days': text = getMonthYearText(displayDate); break;
-            case 'months': text = displayDate.getFullYear().toString(); break;
+            case 'months': text = displayDate.getUTCFullYear().toString(); break;
             case 'years': text = `${yearRange.start} - ${yearRange.end}`; break;
         }
         return (
@@ -217,6 +229,9 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
         let selectedDateObj = value ? new Date(`${value}T00:00:00Z`) : null;
         if (selectedDateObj && isNaN(selectedDateObj.getTime())) selectedDateObj = null;
 
+        const now = new Date();
+        const todayAtUTCMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
         return (
             <div className="grid grid-cols-7 gap-y-1 text-center text-sm">
                 {weekdays.map(day => (
@@ -225,9 +240,9 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
                 {calendarGrid.flat().map((day, index) => {
                     if (!day) return <div key={index}></div>;
 
-                    const isCurrentMonthDay = day.getMonth() === displayDate.getMonth();
-                    const isSelected = selectedDateObj && day.toDateString() === selectedDateObj.toDateString();
-                    const isToday = day.toDateString() === new Date().toDateString();
+                    const isCurrentMonthDay = day.getUTCMonth() === displayDate.getUTCMonth();
+                    const isSelected = selectedDateObj && day.getTime() === selectedDateObj.getTime();
+                    const isToday = day.getTime() === todayAtUTCMidnight.getTime();
 
                     return (
                         <div key={index} className="py-1 flex justify-center">
@@ -241,7 +256,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
                                     ${!isCurrentMonthDay ? 'text-gray-400 hover:bg-gray-100' : ''}
                                 `}
                             >
-                                {day.getDate()}
+                                {day.getUTCDate()}
                             </button>
                         </div>
                     );
@@ -252,11 +267,11 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
 
     const renderMonthsGrid = () => {
         const months = [...Array(12).keys()];
-        const currentMonth = displayDate.getMonth();
+        const currentMonth = displayDate.getUTCMonth();
         return (
             <div className="grid grid-cols-4 gap-2">
                 {months.map(monthIndex => {
-                    const monthName = new Date(0, monthIndex).toLocaleString('vi-VN', { month: 'short' });
+                    const monthName = new Date(Date.UTC(2000, monthIndex)).toLocaleString('vi-VN', { month: 'short', timeZone: 'UTC' });
                     return (
                         <button
                             key={monthIndex}
@@ -275,7 +290,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, required, 
     };
 
     const renderYearsGrid = () => {
-        const currentYear = displayDate.getFullYear();
+        const currentYear = displayDate.getUTCFullYear();
         const years = Array.from({ length: 12 }, (_, i) => yearRange.start - 1 + i);
         return (
             <div className="grid grid-cols-4 gap-2">

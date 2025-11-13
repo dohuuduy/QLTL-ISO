@@ -33,7 +33,7 @@ import GroupedCategoryPage from './components/GroupedCategoryPage';
 import DashboardSkeleton from './components/DashboardSkeleton';
 
 // Import Utils
-import { formatDate } from './utils/dateUtils';
+import { formatDateForDisplay as formatDateInGMT7 } from './utils/dateUtils';
 
 type AppData = typeof mockData;
 
@@ -150,34 +150,43 @@ const createProfessionalEmailBody = (
 
 // ++ DATE NORMALIZATION UTILITIES ++
 /**
- * Normalizes a date string to 'YYYY-MM-DD' format.
+ * Normalizes a date string to 'YYYY-MM-DD' format representing the date in GMT+7.
  * If the string is a full ISO timestamp (e.g., from JSON.stringify(new Date())),
- * it correctly converts it to a 'YYYY-MM-DD' string in the user's local timezone,
- * avoiding off-by-one errors caused by UTC conversion.
+ * it correctly converts it to a 'YYYY-MM-DD' string in GMT+7.
  * @param dateString The date string to normalize.
  * @returns The normalized 'YYYY-MM-DD' string or undefined.
  */
 const normalizeDateString = (dateString?: string): string | undefined => {
     if (!dateString) return undefined;
 
-    // Check if the string is likely a full ISO timestamp.
-    // This handles cases like "2025-08-18T17:00:00.000Z" which are created when
-    // a server (like Google Apps Script) serializes a Date object.
-    if (dateString.includes('T')) {
-        const date = new Date(dateString);
-        // Ensure the date is valid before formatting.
-        if (!isNaN(date.getTime())) {
-            // Use our utility that formats based on local date parts (getFullYear, etc.).
-            // This correctly reverses the UTC conversion from the server.
-            // e.g., new Date("2025-08-18T17:00:00.000Z") in a GMT+7 timezone is August 19.
-            // formatDate will then correctly produce "2025-08-19".
-            return formatDate(date);
+    // Regex to check for ISO 8601 format with timezone info
+    const isFullISO = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[-+]\d{2}:\d{2})/.test(dateString);
+
+    if (isFullISO) {
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                 return dateString.split('T')[0]; // Fallback if date is invalid
+            }
+            // Use Intl to get the YYYY-MM-DD representation in GMT+7 timezone.
+            // 'en-CA' locale reliably produces the YYYY-MM-DD format.
+            return new Intl.DateTimeFormat('en-CA', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                timeZone: 'Asia/Ho_Chi_Minh',
+            }).format(date);
+        } catch (e) {
+            console.error(`Error normalizing date string "${dateString}":`, e);
+            // In case of a formatting error, fallback to just taking the date part.
+            return dateString.split('T')[0];
         }
     }
-
-    // If it's already in 'YYYY-MM-DD' format or some other format, return it as is.
-    return dateString;
+    
+    // If it's not a full ISO string (e.g., already 'YYYY-MM-DD'), just return the date part.
+    return dateString.split('T')[0];
 };
+
 
 /**
  * Iterates through the entire application data and normalizes all date fields
@@ -343,11 +352,11 @@ const App: React.FC = () => {
                                 const emailBody = createProfessionalEmailBody(
                                     'Tài liệu đã hết hiệu lực',
                                     doc,
-                                    `Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> đã hết hiệu lực vào ngày ${expiryDate.toLocaleDateString('vi-VN')}.`,
+                                    `Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> đã hết hiệu lực vào ngày ${formatDateInGMT7(expiryDate)}.`,
                                     {
                                         "Tên tài liệu": doc.ten_tai_lieu,
                                         "Mã hiệu": doc.so_hieu,
-                                        "Ngày hết hiệu lực": expiryDate.toLocaleDateString('vi-VN')
+                                        "Ngày hết hiệu lực": formatDateInGMT7(expiryDate)
                                     },
                                     'Xem chi tiết trên hệ thống',
                                     appUrl
@@ -384,11 +393,11 @@ const App: React.FC = () => {
                                 const emailBody = createProfessionalEmailBody(
                                     'Cảnh báo Tài liệu Sắp hết hiệu lực',
                                     doc,
-                                    `Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> sẽ hết hiệu lực sau <strong>${daysRemaining} ngày</strong> (vào ngày ${expiryDate.toLocaleDateString('vi-VN')}).`,
+                                    `Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> sẽ hết hiệu lực sau <strong>${daysRemaining} ngày</strong> (vào ngày ${formatDateInGMT7(expiryDate)}).`,
                                     {
                                         "Tên tài liệu": doc.ten_tai_lieu,
                                         "Mã hiệu": doc.so_hieu,
-                                        "Ngày hết hiệu lực": expiryDate.toLocaleDateString('vi-VN')
+                                        "Ngày hết hiệu lực": formatDateInGMT7(expiryDate)
                                     },
                                     'Thực hiện rà soát hoặc gia hạn',
                                     appUrl
@@ -442,11 +451,11 @@ const App: React.FC = () => {
                             const emailBody = createProfessionalEmailBody(
                                 'Tài liệu đã quá hạn rà soát',
                                 doc,
-                                `Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> đã quá hạn rà soát (hạn chót: ${nextReviewDate.toLocaleDateString('vi-VN')}).`,
+                                `Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> đã quá hạn rà soát (hạn chót: ${formatDateInGMT7(nextReviewDate)}).`,
                                 {
                                     "Tên tài liệu": doc.ten_tai_lieu,
                                     "Mã hiệu": doc.so_hieu,
-                                    "Hạn rà soát": nextReviewDate.toLocaleDateString('vi-VN')
+                                    "Hạn rà soát": formatDateInGMT7(nextReviewDate)
                                 },
                                 'Thực hiện rà soát ngay',
                                 appUrl
@@ -484,11 +493,11 @@ const App: React.FC = () => {
                             const emailBody = createProfessionalEmailBody(
                                 'Nhắc nhở Rà soát Tài liệu',
                                 doc,
-                                `Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> sắp đến hạn rà soát sau <strong>${daysRemaining} ngày</strong> (hạn chót: ${nextReviewDate.toLocaleDateString('vi-VN')}).`,
+                                `Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> sắp đến hạn rà soát sau <strong>${daysRemaining} ngày</strong> (hạn chót: ${formatDateInGMT7(nextReviewDate)}).`,
                                 {
                                     "Tên tài liệu": doc.ten_tai_lieu,
                                     "Mã hiệu": doc.so_hieu,
-                                    "Hạn rà soát": nextReviewDate.toLocaleDateString('vi-VN')
+                                    "Hạn rà soát": formatDateInGMT7(nextReviewDate)
                                 },
                                 'Chuẩn bị rà soát',
                                 appUrl

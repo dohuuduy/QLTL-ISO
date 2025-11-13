@@ -1,47 +1,62 @@
 
 
 
+
+/**
+ * WARNING: This file is now mostly UTC-based for internal logic,
+ * and GMT+7 based for display logic.
+ */
+const TIMEZONE = 'Asia/Ho_Chi_Minh'; // GMT+7
+
+/**
+ * Formats a Date object into a 'YYYY-MM-DD' string based on its UTC values.
+ * This is used for internal state representation and by the UTC-based DatePicker.
+ */
 export const formatDate = (date: Date): string => {
-    //
-    // WARNING: Do NOT use toISOString() as it will convert the date to UTC and may result in the previous day.
-    // Instead, we manually construct the YYYY-MM-DD string from the local date components.
-    //
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 };
 
+/**
+ * Gets the month and year text from a Date object based on its UTC values.
+ * Used for the DatePicker header.
+ */
 export const getMonthYearText = (date: Date): string => {
-    const month = date.toLocaleString('vi-VN', { month: 'long' });
-    const year = date.getFullYear();
+    const month = date.toLocaleString('vi-VN', { month: 'long', timeZone: 'UTC' });
+    const year = date.getUTCFullYear();
     return `${month} ${year}`;
 };
 
+/**
+ * Generates a 6x7 calendar grid for a given month, based on UTC dates.
+ * Used by the DatePicker.
+ */
 export const getCalendarGrid = (displayDate: Date) => {
-    const year = displayDate.getFullYear();
-    const month = displayDate.getMonth();
+    const year = displayDate.getUTCFullYear();
+    const month = displayDate.getUTCMonth();
 
-    const firstDayOfMonth = new Date(year, month, 1).getDay();
-    const daysInLastMonth = new Date(year, month, 0).getDate();
+    const firstDayOfMonth = new Date(Date.UTC(year, month, 1)).getUTCDay(); // 0=Sun, 1=Mon...
+    const daysInLastMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
     
     const grid: Date[] = [];
 
     // Previous month's padding
     for (let i = firstDayOfMonth; i > 0; i--) {
-        grid.push(new Date(year, month - 1, daysInLastMonth - i + 1));
+        grid.push(new Date(Date.UTC(year, month - 1, daysInLastMonth - i + 1)));
     }
 
     // Current month's days
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
     for (let i = 1; i <= daysInMonth; i++) {
-        grid.push(new Date(year, month, i));
+        grid.push(new Date(Date.UTC(year, month, i)));
     }
 
     // Next month's padding
     const remaining = 42 - grid.length;
     for (let i = 1; i <= remaining; i++) {
-        grid.push(new Date(year, month + 1, i));
+        grid.push(new Date(Date.UTC(year, month + 1, i)));
     }
     
     // Chunk into weeks
@@ -53,23 +68,29 @@ export const getCalendarGrid = (displayDate: Date) => {
     return weeks;
 }
 
-export const formatDateForDisplay = (isoDate?: string): string => {
-    if (!isoDate) return '';
+/**
+ * Formats a date string or object for display in dd/MM/yyyy format, in GMT+7 timezone.
+ */
+export const formatDateForDisplay = (dateInput?: string | Date): string => {
+    if (!dateInput) return '';
     try {
-        // Using UTC methods to avoid timezone issues. The input is 'YYYY-MM-DD'.
-        const parts = isoDate.split('T')[0].split('-');
-        if (parts.length !== 3) return '';
-        const year = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10);
-        const day = parseInt(parts[2], 10);
-        
-        const date = new Date(Date.UTC(year, month - 1, day));
-        if (isNaN(date.getTime())) return '';
+        let date: Date;
+        if (typeof dateInput === 'string') {
+            // Robustly handle 'YYYY-MM-DD' by treating it as a UTC date to avoid browser inconsistencies.
+            const safeDateStr = dateInput.includes('T') ? dateInput : `${dateInput}T00:00:00Z`;
+            date = new Date(safeDateStr);
+        } else {
+            date = dateInput;
+        }
 
-        const displayDay = String(date.getUTCDate()).padStart(2, '0');
-        const displayMonth = String(date.getUTCMonth() + 1).padStart(2, '0');
-        const displayYear = date.getUTCFullYear();
-        return `${displayDay}/${displayMonth}/${displayYear}`;
+        if (isNaN(date.getTime())) return '';
+        
+        return new Intl.DateTimeFormat('vi-VN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            timeZone: TIMEZONE,
+        }).format(date);
     } catch (e) {
         return '';
     }
@@ -112,20 +133,25 @@ export const parseDisplayDate = (displayDate?: string): string | null => {
 };
 
 
-export const formatDateTimeForDisplay = (isoTimestamp?: string): string => {
-    if (!isoTimestamp) return '';
+/**
+ * Formats a datetime string or object for display in dd/MM/yyyy HH:mm:ss format, in GMT+7 timezone.
+ */
+export const formatDateTimeForDisplay = (dateInput?: string | Date): string => {
+    if (!dateInput) return '';
     try {
-        const date = new Date(isoTimestamp);
+        const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
         if (isNaN(date.getTime())) return '';
-        
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const seconds = String(date.getSeconds()).padStart(2, '0');
 
-        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+        return new Intl.DateTimeFormat('vi-VN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+            timeZone: TIMEZONE,
+        }).format(date).replace(',', '');
     } catch (e) {
         return '';
     }
