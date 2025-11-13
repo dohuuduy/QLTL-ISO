@@ -40,7 +40,7 @@ const RelatedList: React.FC<{
                             className="w-full text-left hover:bg-gray-50 rounded p-2"
                         >
                             <div className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-blue-600">{doc.ten_tai_lieu} ({doc.ma_tl})</span>
+                                <span className="text-sm font-medium text-blue-600">{`${doc.ten_tai_lieu} (${doc.so_hieu})`}</span>
                                 <Badge status={doc.trang_thai} size="sm" />
                             </div>
                         </button>
@@ -72,7 +72,7 @@ const RelatedDocumentsView: React.FC<RelatedDocumentsViewProps> = ({ selectedDoc
                             columns={[
                                 { header: 'Loại quan hệ', accessor: 'relationType' },
                                 { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
-                                { header: 'Mã TL', accessor: 'ma_tl' },
+                                { header: 'Số hiệu', accessor: 'so_hieu' },
                                 { header: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} /> },
                             ]}
                         />
@@ -92,7 +92,7 @@ const RelatedDocumentsView: React.FC<RelatedDocumentsViewProps> = ({ selectedDoc
                             onRowClick={onViewDetailsClick}
                             columns={[
                                 { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
-                                { header: 'Mã TL', accessor: 'ma_tl' },
+                                { header: 'Số hiệu', accessor: 'so_hieu' },
                                 { header: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} /> },
                             ]}
                         />
@@ -112,7 +112,7 @@ const RelatedDocumentsView: React.FC<RelatedDocumentsViewProps> = ({ selectedDoc
                             onRowClick={onViewDetailsClick}
                             columns={[
                                 { header: 'Tên tài liệu', accessor: 'ten_tai_lieu' },
-                                { header: 'Mã TL', accessor: 'ma_tl' },
+                                { header: 'Số hiệu', accessor: 'so_hieu' },
                                 { header: 'Trạng thái', accessor: (item) => <Badge status={item.trang_thai} /> },
                             ]}
                         />

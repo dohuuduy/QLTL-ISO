@@ -230,7 +230,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     columns: [
                         { header: 'Quan hệ', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => translate(item.relation) },
                         { header: 'Tên tài liệu', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => item.doc.ten_tai_lieu },
-                        { header: 'Mã TL', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => item.doc.ma_tl },
+                        { header: 'Số hiệu', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => item.doc.so_hieu },
                         { header: 'Phiên bản', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },
                         { header: 'Trạng thái', accessor: (item: { doc: DanhMucTaiLieu, relation: string }) => translate(item.doc.trang_thai) },
                     ],
@@ -340,13 +340,18 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                     filtersApplied: [{ label: 'Tài liệu gốc', value: `${docName} (${selectedDocumentId})` }],
                     detailData: relationshipReportData.map(item => ({
                         quan_he: translate(item.relation),
-                        ma_tl: item.doc.ma_tl,
                         so_hieu: item.doc.so_hieu,
                         ten_tai_lieu: item.doc.ten_tai_lieu,
                         phien_ban: latestVersionMap.get(item.doc.ma_tl) || 'N/A',
                         trang_thai: translate(item.doc.trang_thai),
                     })),
-                    detailHeaders: { quan_he: 'Quan hệ', ...commonHeaders },
+                    detailHeaders: { 
+                        quan_he: 'Quan hệ',
+                        so_hieu: 'Số hiệu',
+                        ten_tai_lieu: 'Tên tài liệu',
+                        phien_ban: 'Phiên bản',
+                        trang_thai: 'Trạng thái',
+                    },
                 };
                 break;
             case 'expiring':
@@ -562,7 +567,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ allData, initialReportType, o
                                     <Table data={paginatedData} onRowClick={item => onViewDetails(item.doc)} columns={[
                                         { header: 'Quan hệ', accessor: (item) => { const text = translate(item.relation); return item.relation === 'self' ? <strong className="text-blue-600">{text}</strong> : text; }},
                                         { header: 'Tên tài liệu', accessor: (item) => { if (item.relation === 'child') return <span className="pl-4">└─ {item.doc.ten_tai_lieu}</span>; return item.doc.ten_tai_lieu; }},
-                                        { header: 'Mã TL', accessor: (item) => item.doc.ma_tl },
                                         { header: 'Số hiệu', accessor: (item) => item.doc.so_hieu },
                                         { header: 'Phiên bản', accessor: (item) => latestVersionMap.get(item.doc.ma_tl) || 'N/A' },
                                         { header: 'Trạng thái', accessor: (item) => <Badge status={item.doc.trang_thai} /> },

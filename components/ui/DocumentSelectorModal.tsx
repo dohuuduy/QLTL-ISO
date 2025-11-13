@@ -57,7 +57,7 @@ const DocumentSelectorModal: React.FC<DocumentSelectorModalProps> = ({
                                 >
                                     <div>
                                         <p className="text-sm font-medium text-gray-900">{doc.ten_tai_lieu}</p>
-                                        <p className="text-xs text-gray-500">{doc.ma_tl} / {doc.so_hieu}</p>
+                                        <p className="text-xs text-gray-500">{doc.so_hieu}</p>
                                     </div>
                                     {doc.ma_tl === currentSelectionId && (
                                         <Icon type="check-circle" className="h-5 w-5 text-blue-600" />

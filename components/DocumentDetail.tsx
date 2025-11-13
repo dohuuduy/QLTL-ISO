@@ -69,7 +69,7 @@ const RelationshipItem: React.FC<{
         <dt className="text-sm font-medium text-gray-500">{label}</dt>
         <dd className="mt-1 text-sm text-gray-900 flex items-center justify-between">
             {doc ? (
-                <span className="truncate pr-4">{`${doc.ten_tai_lieu} (${doc.ma_tl})`}</span>
+                <span className="truncate pr-4">{`${doc.ten_tai_lieu} (${doc.so_hieu})`}</span>
             ) : (
                 <span className="text-gray-400">Không có</span>
             )}

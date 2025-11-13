@@ -410,7 +410,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                 <label htmlFor="ma_tl_cha" className={labelStyles}>Tài liệu cha (tùy chọn)</label>
                                 <select id="ma_tl_cha" name="ma_tl_cha" value={formData.ma_tl_cha || ''} onChange={handleChange} className={`${inputStyles} border-gray-300`}>
                                     <option value="">Không có</option>
-                                    {potentialParentDocuments.map(doc => <option key={doc.ma_tl} value={doc.ma_tl}>{doc.ten_tai_lieu} ({doc.ma_tl})</option>)}
+                                    {potentialParentDocuments.map(doc => <option key={doc.ma_tl} value={doc.ma_tl}>{`${doc.ten_tai_lieu} (${doc.so_hieu})`}</option>)}
                                 </select>
                             </div>
 

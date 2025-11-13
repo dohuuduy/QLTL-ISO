@@ -10,7 +10,8 @@ import type {
     ReportType,
     DanhMucChung,
     LichRaSoat,
-    ThongBao
+    ThongBao,
+    PhienBanTaiLieu
 } from './types';
 import { VersionStatus, DocumentStatus, NotificationType } from './constants';
 
@@ -512,8 +513,53 @@ const App: React.FC = () => {
     
     const handleUpdateVersionStatus = useCallback((versionId: string, newStatus: VersionStatus) => {
         setAppData(prev => {
-            const newVersions = prev.versions.map(v => v.id_phien_ban === versionId ? { ...v, trang_thai_phien_ban: newStatus } : v);
-            return { ...prev, versions: newVersions };
+            const targetVersion = prev.versions.find(v => v.id_phien_ban === versionId);
+            if (!targetVersion) {
+                return prev; // Safety check if version not found
+            }
+
+            let updatedVersions = prev.versions;
+            let updatedDocuments = prev.documents;
+
+            if (newStatus === VersionStatus.BAN_HANH) {
+                const docId = targetVersion.ma_tl;
+                
+                // 1. Update versions array:
+                //    - Set the target version's status to BAN_HANH and is_moi_nhat to true.
+                //    - Set all other versions of the same document to is_moi_nhat = false.
+                updatedVersions = prev.versions.map(v => {
+                    if (v.ma_tl === docId) {
+                        return {
+                            ...v,
+                            trang_thai_phien_ban: v.id_phien_ban === versionId ? newStatus : v.trang_thai_phien_ban,
+                            is_moi_nhat: v.id_phien_ban === versionId,
+                        };
+                    }
+                    return v;
+                });
+
+                // 2. Update documents array:
+                //    - Find the parent document and update its status and issue date.
+                updatedDocuments = prev.documents.map(doc => {
+                    if (doc.ma_tl === docId) {
+                        return { 
+                            ...doc, 
+                            trang_thai: DocumentStatus.DA_BAN_HANH,
+                            ngay_ban_hanh: targetVersion.ngay_phat_hanh 
+                        };
+                    }
+                    return doc;
+                });
+            } else {
+                // For other status changes (e.g., Draft -> For Approval), just update the version.
+                updatedVersions = prev.versions.map(v => 
+                    v.id_phien_ban === versionId 
+                        ? { ...v, trang_thai_phien_ban: newStatus } 
+                        : v
+                );
+            }
+            
+            return { ...prev, versions: updatedVersions, documents: updatedDocuments };
         });
     }, []);
 
