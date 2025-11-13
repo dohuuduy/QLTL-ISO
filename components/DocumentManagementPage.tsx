@@ -211,6 +211,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             filters: activeFilters,
             columns: [
                 { header: 'Tên tài liệu', accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu },
+                { header: 'Số hiệu', accessor: (item: DanhMucTaiLieu) => item.so_hieu },
                 { header: 'Phiên bản', accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A' },
                 { header: 'Phòng ban', accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly) },
                 { header: 'Trạng thái', accessor: (item: DanhMucTaiLieu) => translate(item.trang_thai) },
@@ -460,11 +461,18 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             ),
             className: 'w-12 text-center'
         },
-        { header: getSortableHeader('Tên tài liệu', 'ten_tai_lieu'), accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu, className: 'font-medium text-gray-900' },
+        { 
+            header: getSortableHeader('Tên tài liệu', 'ten_tai_lieu'), 
+            accessor: (item: DanhMucTaiLieu) => (
+                <div className="truncate" title={item.ten_tai_lieu}>
+                    {item.ten_tai_lieu}
+                </div>
+            ), 
+            className: 'font-medium text-gray-900 max-w-md' 
+        },
         { header: getSortableHeader('Số hiệu', 'so_hieu'), accessor: (item: DanhMucTaiLieu) => item.so_hieu, className: 'w-28' },
         { header: getSortableHeader('Phiên bản', 'phien_ban'), accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A', className: 'w-20 text-center' },
         { header: getSortableHeader('Trạng thái', 'trang_thai'), accessor: (item: DanhMucTaiLieu) => <Badge status={item.trang_thai} />, className: 'w-36' },
-        { header: getSortableHeader('Phòng ban', 'phong_ban_quan_ly'), accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly), className: 'w-40' },
         { 
             header: getSortableHeader('Ngày hiệu lực', 'ngay_hieu_luc'), 
             accessor: (item: DanhMucTaiLieu) => formatDateForDisplay(item.ngay_hieu_luc),
@@ -617,8 +625,8 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                     <li key={doc.ma_tl} className="p-4 hover:bg-slate-50 cursor-pointer" onClick={() => onViewDetails(doc)}>
                                         {/* Top section: Title and Bookmark */}
                                         <div className="flex items-start justify-between gap-4">
-                                            <div className="flex-1">
-                                                <p className="font-semibold text-gray-900">{doc.ten_tai_lieu}</p>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-semibold text-gray-900 truncate" title={doc.ten_tai_lieu}>{doc.ten_tai_lieu}</p>
                                                 <p className="text-xs text-gray-500 mt-1">{doc.so_hieu}</p>
                                             </div>
                                             <button
@@ -632,10 +640,6 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
 
                                         {/* Middle section: Info */}
                                         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
-                                            <div className="flex items-center gap-1.5">
-                                                <Icon type="building-library" className="h-3 w-3 text-gray-400" />
-                                                <span>{phongBanMap.get(doc.phong_ban_quan_ly) || 'N/A'}</span>
-                                            </div>
                                             <div className="flex items-center gap-1.5">
                                                 <Icon type="calendar" className="h-3 w-3 text-gray-400" />
                                                 <span>{formatDateForDisplay(doc.ngay_hieu_luc)}</span>
