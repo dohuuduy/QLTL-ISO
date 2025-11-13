@@ -165,7 +165,7 @@ const TabContentWrapper: React.FC<{
                 <button
                     type="button"
                     onClick={onButtonClick}
-                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none no-print"
+                    className="btn-primary no-print"
                 >
                     <Icon type="plus" className="-ml-1 mr-2 h-4 w-4" />
                     {buttonLabel}
@@ -377,28 +377,28 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
         return (
             <div className="flex items-center justify-end space-x-2">
                 {item.trang_thai_phien_ban === VersionStatus.BAN_THAO && isEditor && (
-                    <button onClick={(e) => { e.stopPropagation(); onUpdateVersionStatus(item.id_phien_ban, VersionStatus.PHE_DUYET); }} className="btn-secondary px-2 py-1 text-xs" title="Gửi phê duyệt">
+                    <button onClick={(e) => { e.stopPropagation(); onUpdateVersionStatus(item.id_phien_ban, VersionStatus.PHE_DUYET); }} className="btn-secondary p-2" title="Gửi phê duyệt">
                         <Icon type="paper-airplane" className="h-4 w-4"/>
                     </button>
                 )}
                 {item.trang_thai_phien_ban === VersionStatus.PHE_DUYET && isApprover && (
                     <>
-                        <button onClick={(e) => { e.stopPropagation(); onUpdateVersionStatus(item.id_phien_ban, VersionStatus.BAN_HANH); }} className="btn-primary px-2 py-1 text-xs" title="Phê duyệt & Ban hành">
+                        <button onClick={(e) => { e.stopPropagation(); onUpdateVersionStatus(item.id_phien_ban, VersionStatus.BAN_HANH); }} className="btn-primary p-2" title="Phê duyệt & Ban hành">
                             <Icon type="check-circle" className="h-4 w-4"/>
                         </button>
-                        <button onClick={(e) => { e.stopPropagation(); onUpdateVersionStatus(item.id_phien_ban, VersionStatus.BAN_THAO); }} className="btn-secondary px-2 py-1 text-xs" title="Yêu cầu chỉnh sửa">
+                        <button onClick={(e) => { e.stopPropagation(); onUpdateVersionStatus(item.id_phien_ban, VersionStatus.BAN_THAO); }} className="btn-secondary p-2" title="Yêu cầu chỉnh sửa">
                             <Icon type="arrow-uturn-left" className="h-4 w-4"/>
                         </button>
                     </>
                 )}
     
                 {canUpdateDocument && (
-                    <button onClick={(e) => { e.stopPropagation(); openModal('versions', item); }} className="p-1 text-blue-600 hover:text-blue-800" title="Chỉnh sửa chi tiết">
+                    <button onClick={(e) => { e.stopPropagation(); openModal('versions', item); }} className="p-2 text-blue-600 hover:text-blue-800" title="Chỉnh sửa chi tiết">
                         <Icon type="pencil" className="h-4 w-4" />
                     </button>
                 )}
                 {canDeleteDocument && (
-                    <button onClick={(e) => { e.stopPropagation(); openConfirm('versions', item); }} className="p-1 text-red-600 hover:text-red-800" title="Xóa">
+                    <button onClick={(e) => { e.stopPropagation(); openConfirm('versions', item); }} className="p-2 text-red-600 hover:text-red-800" title="Xóa">
                         <Icon type="trash" className="h-4 w-4" />
                     </button>
                 )}
@@ -425,11 +425,11 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
             ],
             actions: (item: NhatKyThayDoi) => (
                 <div className="flex items-center justify-end space-x-2">
-                    <button onClick={(e) => { e.stopPropagation(); openModal('viewChangeLog', item); }} className="p-1 text-gray-500 hover:text-gray-800" title="Xem chi tiết thay đổi">
+                    <button onClick={(e) => { e.stopPropagation(); openModal('viewChangeLog', item); }} className="p-2 text-gray-500 hover:text-gray-800" title="Xem chi tiết thay đổi">
                         <Icon type="eye" className="h-5 w-5" />
                     </button>
-                    {canUpdateDocument && <button onClick={(e) => { e.stopPropagation(); openModal('changeLogs', item); }} className="p-1 text-blue-600 hover:text-blue-800" title="Chỉnh sửa"><Icon type="pencil" className="h-4 w-4" /></button>}
-                    {canDeleteDocument && <button onClick={(e) => { e.stopPropagation(); openConfirm('changeLogs', item); }} className="p-1 text-red-600 hover:text-red-800" title="Xóa"><Icon type="trash" className="h-4 w-4" /></button>}
+                    {canUpdateDocument && <button onClick={(e) => { e.stopPropagation(); openModal('changeLogs', item); }} className="p-2 text-blue-600 hover:text-blue-800" title="Chỉnh sửa"><Icon type="pencil" className="h-4 w-4" /></button>}
+                    {canDeleteDocument && <button onClick={(e) => { e.stopPropagation(); openConfirm('changeLogs', item); }} className="p-2 text-red-600 hover:text-red-800" title="Xóa"><Icon type="trash" className="h-4 w-4" /></button>}
                 </div>
             )
         },
@@ -443,8 +443,8 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
             ],
             actions: canUpdateDocument ? (item: PhanPhoiTaiLieu) => (
                      <div className="flex items-center justify-end space-x-2">
-                        <button onClick={() => openModal('distributions', item)} className="text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
-                        <button onClick={() => openConfirm('distributions', item)} className="text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
+                        <button onClick={() => openModal('distributions', item)} className="p-2 text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
+                        <button onClick={() => openConfirm('distributions', item)} className="p-2 text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
                     </div>
                 ) : undefined
         },
@@ -458,8 +458,8 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                 ],
             actions: canUpdateDocument ? (item: LichRaSoat) => (
                      <div className="flex items-center justify-end space-x-2">
-                        <button onClick={() => openModal('reviewSchedules', item)} className="text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
-                        <button onClick={() => openConfirm('reviewSchedules', item)} className="text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
+                        <button onClick={() => openModal('reviewSchedules', item)} className="p-2 text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
+                        <button onClick={() => openConfirm('reviewSchedules', item)} className="p-2 text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
                     </div>
                 ) : undefined
         },
@@ -472,8 +472,8 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                 ],
             actions: canUpdateDocument ? (item: DaoTaoTruyenThong) => (
                      <div className="flex items-center justify-end space-x-2">
-                        <button onClick={() => openModal('trainings', item)} className="text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
-                        <button onClick={() => openConfirm('trainings', item)} className="text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
+                        <button onClick={() => openModal('trainings', item)} className="p-2 text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
+                        <button onClick={() => openConfirm('trainings', item)} className="p-2 text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
                     </div>
                 ) : undefined
         },
@@ -487,8 +487,8 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                 ],
             actions: canUpdateDocument ? (item: RuiRoCoHoi) => (
                     <div className="flex items-center justify-end space-x-2">
-                        <button onClick={() => openModal('risks', item)} className="text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
-                        <button onClick={() => openConfirm('risks', item)} className="text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
+                        <button onClick={() => openModal('risks', item)} className="p-2 text-blue-600 hover:text-blue-800"><Icon type="pencil" className="h-4 w-4" /></button>
+                        <button onClick={() => openConfirm('risks', item)} className="p-2 text-red-600 hover:text-red-800"><Icon type="trash" className="h-4 w-4" /></button>
                     </div>
                 ) : undefined
         },
@@ -522,8 +522,9 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                     onButtonClick={() => openModal(key as ModalType)} 
                     showButton={canUpdateDocument && key !== 'auditTrail'}
                 >
-                    {/* FIX: Cast props to 'any' to resolve TypeScript union type inference issue with generic Table component. */}
-                    <Table data={paginatedData as any} columns={columns as any} actions={actions as any} />
+                    <div className="overflow-x-auto">
+                        <Table data={paginatedData as any} columns={columns as any} actions={actions as any} />
+                    </div>
                     {totalItems > 0 && totalPages > 1 && (
                          <Pagination
                             currentPage={paging.page}
@@ -734,7 +735,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                             <button
                                 type="button"
                                 onClick={() => openModal('versions')}
-                                className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none"
+                                className="btn-primary"
                             >
                                 <Icon type="plus" className="-ml-1 mr-2 h-4 w-4" />
                                 Thêm Phiên bản
@@ -743,18 +744,20 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                     </div>
                 </Card.Header>
                 <Card.Body>
-                    <Table<PhienBanTaiLieu>
-                        columns={[
-                            { header: 'Phiên bản', accessor: (item) => <div className="flex items-center gap-2">{item.phien_ban} {item.is_moi_nhat && <Badge status={VersionStatus.BAN_HANH} size="sm" title="Phiên bản mới nhất đang được ban hành" />}</div> },
-                            { header: 'Ngày phát hành', accessor: item => formatDateForDisplay(item.ngay_phat_hanh) },
-                            { header: 'Trạng thái', accessor: item => <Badge status={item.trang_thai_phien_ban} /> },
-                            { header: 'Tóm tắt thay đổi', accessor: 'tom_tat_thay_doi' },
-                            { header: 'Người thực hiện', accessor: item => nhanSuMap.get(item.nguoi_thuc_hien) },
-                        ]}
-                        data={displayVersions}
-                        actions={renderVersionActions}
-                        onRowClick={(item) => openModal('versions', item)}
-                    />
+                    <div className="overflow-x-auto">
+                        <Table<PhienBanTaiLieu>
+                            columns={[
+                                { header: 'Phiên bản', accessor: (item) => <div className="flex items-center gap-2">{item.phien_ban} {item.is_moi_nhat && <Badge status={VersionStatus.BAN_HANH} size="sm" title="Phiên bản mới nhất đang được ban hành" />}</div> },
+                                { header: 'Ngày phát hành', accessor: item => formatDateForDisplay(item.ngay_phat_hanh) },
+                                { header: 'Trạng thái', accessor: item => <Badge status={item.trang_thai_phien_ban} /> },
+                                { header: 'Tóm tắt thay đổi', accessor: 'tom_tat_thay_doi' },
+                                { header: 'Người thực hiện', accessor: item => nhanSuMap.get(item.nguoi_thuc_hien) },
+                            ]}
+                            data={displayVersions}
+                            actions={renderVersionActions}
+                            onRowClick={(item) => openModal('versions', item)}
+                        />
+                    </div>
                 </Card.Body>
             </Card>
 

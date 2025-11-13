@@ -61,43 +61,45 @@ const CalendarView: React.FC<CalendarViewProps> = ({ currentDate, setCurrentDate
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200 rounded-lg overflow-hidden">
-                {weekdays.map(day => (
-                    <div key={day} className="py-2 text-center text-sm font-semibold text-gray-600 bg-slate-50">{day}</div>
-                ))}
+            <div className="overflow-x-auto">
+                <div className="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200 rounded-lg overflow-hidden min-w-[640px]">
+                    {weekdays.map(day => (
+                        <div key={day} className="py-2 text-center text-sm font-semibold text-gray-600 bg-slate-50">{day}</div>
+                    ))}
 
-                {calendarGrid.flat().map((day, index) => {
-                    const isCurrentMonth = day.getMonth() === currentDate.getMonth();
-                    const isToday = day.getTime() === today.getTime();
-                    const dateString = day.toISOString().split('T')[0];
-                    const dayEvents = eventsByDate.get(dateString) || [];
+                    {calendarGrid.flat().map((day, index) => {
+                        const isCurrentMonth = day.getMonth() === currentDate.getMonth();
+                        const isToday = day.getTime() === today.getTime();
+                        const dateString = day.toISOString().split('T')[0];
+                        const dayEvents = eventsByDate.get(dateString) || [];
 
-                    return (
-                        <div key={index} className={`min-h-[120px] p-1.5 bg-white overflow-hidden ${isCurrentMonth ? '' : 'bg-slate-50'}`}>
-                            <div className={`flex items-center justify-center w-7 h-7 rounded-full text-sm
-                                ${isToday ? 'bg-blue-600 text-white font-bold' : ''}
-                                ${!isToday && isCurrentMonth ? 'text-gray-800' : ''}
-                                ${!isCurrentMonth ? 'text-gray-400' : ''}
-                            `}>
-                                {day.getDate()}
+                        return (
+                            <div key={index} className={`min-h-[120px] p-1.5 bg-white overflow-hidden ${isCurrentMonth ? '' : 'bg-slate-50'}`}>
+                                <div className={`flex items-center justify-center w-7 h-7 rounded-full text-sm
+                                    ${isToday ? 'bg-blue-600 text-white font-bold' : ''}
+                                    ${!isToday && isCurrentMonth ? 'text-gray-800' : ''}
+                                    ${!isCurrentMonth ? 'text-gray-400' : ''}
+                                `}>
+                                    {day.getDate()}
+                                </div>
+                                <div className="mt-1 space-y-1 h-[85px] overflow-y-auto">
+                                    {dayEvents.map(event => (
+                                        <button 
+                                            key={event.id}
+                                            onClick={() => onEventClick(event.data)}
+                                            className={`w-full text-left p-1 rounded-md text-xs font-medium truncate transition-colors
+                                                ${event.data.loai_audit === 'internal' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' : 'bg-green-100 text-green-800 hover:bg-green-200'}
+                                            `}
+                                            title={event.title}
+                                        >
+                                            {event.title}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="mt-1 space-y-1 h-[85px] overflow-y-auto">
-                                {dayEvents.map(event => (
-                                    <button 
-                                        key={event.id}
-                                        onClick={() => onEventClick(event.data)}
-                                        className={`w-full text-left p-1 rounded-md text-xs font-medium truncate transition-colors
-                                            ${event.data.loai_audit === 'internal' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' : 'bg-green-100 text-green-800 hover:bg-green-200'}
-                                        `}
-                                        title={event.title}
-                                    >
-                                        {event.title}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );

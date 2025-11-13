@@ -23,9 +23,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 }) => {
     if (!isOpen) return null;
 
-    const buttonColorClasses = variant === 'danger'
-        ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
-        : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500';
+    const buttonClass = variant === 'danger' ? 'btn-danger' : 'btn-primary';
 
     const iconWrapperColorClasses = variant === 'danger'
         ? 'bg-red-100'
@@ -58,10 +56,10 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                             </div>
                         </div>
                         <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                            <button onClick={onConfirm} type="button" className={`inline-flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto ${buttonColorClasses}`}>
+                            <button onClick={onConfirm} type="button" className={`${buttonClass} w-full sm:ml-3 sm:w-auto`}>
                                 {confirmButtonText}
                             </button>
-                            <button onClick={onClose} type="button" className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:w-auto">
+                            <button onClick={onClose} type="button" className="btn-secondary mt-3 w-full sm:mt-0 sm:w-auto">
                                 Hủy
                             </button>
                         </div>

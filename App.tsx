@@ -122,45 +122,85 @@ const App: React.FC = () => {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
+            const REVIEW_DUE_DAYS = 7;
+            const EXPIRY_APPROACHING_DAYS = 30;
+
+            const reviewDueDateThreshold = new Date(today);
+            reviewDueDateThreshold.setDate(today.getDate() + REVIEW_DUE_DAYS);
+
+            const expiryDateThreshold = new Date(today);
+            expiryDateThreshold.setDate(today.getDate() + EXPIRY_APPROACHING_DAYS);
+
             const existingNotificationKeys = new Set(
                 appData.notifications.map(n => `${n.ma_tl}_${n.type}`)
             );
             
-            // 1. Check for expired documents
+            // 1. Check for expired and expiring documents
             appData.documents.forEach(doc => {
-                if (doc.ngay_het_hieu_luc && new Date(doc.ngay_het_hieu_luc) < today && doc.trang_thai !== DocumentStatus.HET_HIEU_LUC) {
-                    documentsToUpdate.push({ ...doc, trang_thai: DocumentStatus.HET_HIEU_LUC });
-                    
-                    const notificationKey = `${doc.ma_tl}_expired`; // Custom key to avoid confusion with other types
-                    if (!existingNotificationKeys.has(notificationKey)) {
-                         const userIdsToNotify = new Set([doc.nguoi_soan_thao, doc.nguoi_ra_soat, doc.nguoi_phe_duyet]);
-                         userIdsToNotify.forEach(userId => {
-                             if(userId) {
-                                 newNotifications.push({
-                                    id: `notif-${uuidv4()}`,
-                                    user_id: userId,
-                                    ma_tl: doc.ma_tl,
-                                    type: NotificationType.EXPIRY_APPROACHING, // Re-use for expired event
-                                    message: `Tài liệu "${doc.ten_tai_lieu}" đã hết hiệu lực.`,
-                                    timestamp: new Date().toISOString(),
-                                    is_read: false
-                                });
-                             }
-                         });
-                         existingNotificationKeys.add(notificationKey);
+                if (doc.ngay_het_hieu_luc) {
+                    const expiryDate = new Date(doc.ngay_het_hieu_luc);
+                    expiryDate.setHours(0, 0, 0, 0);
+
+                    // Expired documents
+                    if (expiryDate < today && doc.trang_thai !== DocumentStatus.HET_HIEU_LUC) {
+                        documentsToUpdate.push({ ...doc, trang_thai: DocumentStatus.HET_HIEU_LUC });
+                        
+                        const notificationKey = `${doc.ma_tl}_${NotificationType.DOCUMENT_EXPIRED}`;
+                        if (!existingNotificationKeys.has(notificationKey)) {
+                            const userIdsToNotify = new Set([doc.nguoi_soan_thao, doc.nguoi_ra_soat, doc.nguoi_phe_duyet]);
+                            userIdsToNotify.forEach(userId => {
+                                if (userId) {
+                                    newNotifications.push({
+                                        id: `notif-${uuidv4()}`,
+                                        user_id: userId,
+                                        ma_tl: doc.ma_tl,
+                                        type: NotificationType.DOCUMENT_EXPIRED,
+                                        message: `Tài liệu "${doc.ten_tai_lieu}" đã hết hiệu lực.`,
+                                        timestamp: new Date().toISOString(),
+                                        is_read: false
+                                    });
+                                }
+                            });
+                            existingNotificationKeys.add(notificationKey);
+                        }
+                    } 
+                    // Expiring documents
+                    else if (expiryDate >= today && expiryDate <= expiryDateThreshold && doc.trang_thai !== DocumentStatus.HET_HIEU_LUC) {
+                        const notificationKey = `${doc.ma_tl}_${NotificationType.EXPIRY_APPROACHING}`;
+                        if (!existingNotificationKeys.has(notificationKey)) {
+                            const userIdsToNotify = new Set([doc.nguoi_soan_thao, doc.nguoi_ra_soat, doc.nguoi_phe_duyet]);
+                            userIdsToNotify.forEach(userId => {
+                                if (userId) {
+                                    newNotifications.push({
+                                        id: `notif-${uuidv4()}`,
+                                        user_id: userId,
+                                        ma_tl: doc.ma_tl,
+                                        type: NotificationType.EXPIRY_APPROACHING,
+                                        message: `Tài liệu "${doc.ten_tai_lieu}" sắp hết hiệu lực vào ngày ${expiryDate.toLocaleDateString('vi-VN')}.`,
+                                        timestamp: new Date().toISOString(),
+                                        is_read: false
+                                    });
+                                }
+                            });
+                            existingNotificationKeys.add(notificationKey);
+                        }
                     }
                 }
             });
 
-            // 2. Check for overdue reviews
+            // 2. Check for due and overdue reviews
             appData.reviewSchedules.forEach(schedule => {
                 const doc = appData.documents.find(d => d.ma_tl === schedule.ma_tl);
-                if (doc && !schedule.ket_qua_ra_soat && new Date(schedule.ngay_ra_soat_ke_tiep) < today) {
-                    // Update document status to "in review" if it's not already, to prompt action
+                if (!doc || schedule.ket_qua_ra_soat) return;
+
+                const nextReviewDate = new Date(schedule.ngay_ra_soat_ke_tiep);
+                nextReviewDate.setHours(0, 0, 0, 0);
+
+                // Overdue reviews
+                if (nextReviewDate < today) {
                     if (doc.trang_thai === DocumentStatus.DA_BAN_HANH) {
                          documentsToUpdate.push({ ...doc, trang_thai: DocumentStatus.DANG_RA_SOAT });
                     }
-
                     const notificationKey = `${doc.ma_tl}_${NotificationType.REVIEW_OVERDUE}`;
                     if (!existingNotificationKeys.has(notificationKey)) {
                         newNotifications.push({
@@ -169,6 +209,22 @@ const App: React.FC = () => {
                             ma_tl: doc.ma_tl,
                             type: NotificationType.REVIEW_OVERDUE,
                             message: `Tài liệu "${doc.ten_tai_lieu}" đã quá hạn rà soát.`,
+                            timestamp: new Date().toISOString(),
+                            is_read: false
+                        });
+                        existingNotificationKeys.add(notificationKey);
+                    }
+                }
+                // Reviews due soon
+                else if (nextReviewDate >= today && nextReviewDate <= reviewDueDateThreshold) {
+                    const notificationKey = `${doc.ma_tl}_${NotificationType.REVIEW_DUE}`;
+                     if (!existingNotificationKeys.has(notificationKey)) {
+                        newNotifications.push({
+                            id: `notif-${uuidv4()}`,
+                            user_id: schedule.nguoi_chiu_trach_nhiem,
+                            ma_tl: doc.ma_tl,
+                            type: NotificationType.REVIEW_DUE,
+                            message: `Tài liệu "${doc.ten_tai_lieu}" sắp đến hạn rà soát.`,
                             timestamp: new Date().toISOString(),
                             is_read: false
                         });

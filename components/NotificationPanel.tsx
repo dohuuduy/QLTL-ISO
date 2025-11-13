@@ -18,6 +18,7 @@ const NotificationIcon: React.FC<{ type: NotificationType }> = ({ type }) => {
         [NotificationType.REVIEW_DUE]: { iconType: 'clock', color: 'text-blue-500' },
         [NotificationType.REVIEW_OVERDUE]: { iconType: 'bell', color: 'text-red-500' },
         [NotificationType.EXPIRY_APPROACHING]: { iconType: 'exclamation-triangle', color: 'text-orange-500' },
+        [NotificationType.DOCUMENT_EXPIRED]: { iconType: 'archive', color: 'text-red-500' },
     };
     const { iconType, color } = iconMap[type] || { iconType: 'bell', color: 'text-gray-500' };
     
@@ -41,6 +42,9 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ notifications, on
     const handleMarkAll = () => {
         onMarkAllRead();
     };
+    
+    const sortedNotifications = [...notifications].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
 
     return (
         <div className="absolute right-0 mt-2 w-80 sm:w-96 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-20">
@@ -55,12 +59,12 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ notifications, on
                 </div>
             </div>
             <div className="max-h-96 overflow-y-auto">
-                {notifications.length === 0 ? (
+                {sortedNotifications.length === 0 ? (
                     <div className="text-center py-10 px-4">
                         <p className="text-sm text-gray-500">Bạn không có thông báo nào.</p>
                     </div>
                 ) : (
-                    notifications.map(notification => (
+                    sortedNotifications.map(notification => (
                         <button 
                             key={notification.id} 
                             onClick={() => handleItemClick(notification)}

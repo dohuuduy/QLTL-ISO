@@ -133,7 +133,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-75 disabled:cursor-not-allowed"
+                                className="group relative flex w-full justify-center btn-primary disabled:opacity-75 disabled:cursor-not-allowed"
                             >
                                 {isLoading && (
                                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

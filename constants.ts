@@ -47,6 +47,7 @@ export enum NotificationType {
     REVIEW_DUE = 'review_due',
     REVIEW_OVERDUE = 'review_overdue',
     EXPIRY_APPROACHING = 'expiry_approaching',
+    DOCUMENT_EXPIRED = 'document_expired',
 }
 
 export enum AuditStatus {
