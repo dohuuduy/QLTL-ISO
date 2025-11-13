@@ -36,6 +36,7 @@ export interface DanhGiaVien extends DanhMucChung {
 export interface NhanSu {
     id: string;
     ten: string;
+    email: string;
     ten_dang_nhap: string;
     mat_khau: string;
     chuc_vu: string;

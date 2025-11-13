@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,7 +14,7 @@ import type {
 import { VersionStatus, DocumentStatus, NotificationType } from './constants';
 
 // Import Services & Data
-import { login, getAllData, updateAllData } from './services/api';
+import { login, getAllData, updateAllData, sendEmail } from './services/api';
 import { mockData } from './data/mockData';
 
 // Import Components
@@ -122,18 +123,21 @@ const App: React.FC = () => {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            const REVIEW_DUE_DAYS = 7;
-            const EXPIRY_APPROACHING_DAYS = 30;
-
-            const reviewDueDateThreshold = new Date(today);
-            reviewDueDateThreshold.setDate(today.getDate() + REVIEW_DUE_DAYS);
-
-            const expiryDateThreshold = new Date(today);
-            expiryDateThreshold.setDate(today.getDate() + EXPIRY_APPROACHING_DAYS);
-
             const existingNotificationKeys = new Set(
-                appData.notifications.map(n => `${n.ma_tl}_${n.type}`)
+                appData.notifications.map(n => {
+                    if (n.type === NotificationType.EXPIRY_APPROACHING || n.type === NotificationType.REVIEW_DUE) {
+                        const daysMatch = n.message.match(/sau (\d+) ngày/);
+                        if (daysMatch && daysMatch[1]) {
+                            return `${n.ma_tl}_${n.type}_${daysMatch[1]}`;
+                        }
+                    }
+                    return `${n.ma_tl}_${n.type}`;
+                })
             );
+
+            // FIX: Explicitly type `nhanSuMap` to ensure correct type inference for `user` later on.
+            const nhanSuMap: Map<string, NhanSu> = new Map(appData.nhanSu.map(ns => [ns.id, ns]));
+            const admin = appData.nhanSu.find(ns => ns.role === 'admin');
             
             // 1. Check for expired and expiring documents
             appData.documents.forEach(doc => {
@@ -141,15 +145,21 @@ const App: React.FC = () => {
                     const expiryDate = new Date(doc.ngay_het_hieu_luc);
                     expiryDate.setHours(0, 0, 0, 0);
 
+                    const diffTime = expiryDate.getTime() - today.getTime();
+                    const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
                     // Expired documents
                     if (expiryDate < today && doc.trang_thai !== DocumentStatus.HET_HIEU_LUC) {
                         documentsToUpdate.push({ ...doc, trang_thai: DocumentStatus.HET_HIEU_LUC });
                         
                         const notificationKey = `${doc.ma_tl}_${NotificationType.DOCUMENT_EXPIRED}`;
                         if (!existingNotificationKeys.has(notificationKey)) {
-                            const userIdsToNotify = new Set([doc.nguoi_soan_thao, doc.nguoi_ra_soat, doc.nguoi_phe_duyet]);
+                            const userIdsToNotify = new Set([doc.nguoi_soan_thao, doc.nguoi_ra_soat, doc.nguoi_phe_duyet, admin?.id].filter(Boolean) as string[]);
+                            const emailsToSend = new Set<string>();
+
                             userIdsToNotify.forEach(userId => {
-                                if (userId) {
+                                const user = nhanSuMap.get(userId);
+                                if (user) {
                                     newNotifications.push({
                                         id: `notif-${uuidv4()}`,
                                         user_id: userId,
@@ -159,29 +169,45 @@ const App: React.FC = () => {
                                         timestamp: new Date().toISOString(),
                                         is_read: false
                                     });
+                                    if(user.email) emailsToSend.add(user.email);
                                 }
                             });
+
+                            if(emailsToSend.size > 0) {
+                                const subject = `[ISO] Thông báo: Tài liệu "${doc.ten_tai_lieu}" đã hết hiệu lực`;
+                                const emailBody = `<p>Hệ thống quản lý tài liệu ISO xin thông báo:</p><p>Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> đã hết hiệu lực vào ngày ${expiryDate.toLocaleDateString('vi-VN')}.</p><p>Vui lòng truy cập hệ thống để xem chi tiết.</p>`;
+                                emailsToSend.forEach(email => sendEmail(email, subject, emailBody).catch(console.error));
+                            }
                             existingNotificationKeys.add(notificationKey);
                         }
                     } 
-                    // Expiring documents
-                    else if (expiryDate >= today && expiryDate <= expiryDateThreshold && doc.trang_thai !== DocumentStatus.HET_HIEU_LUC) {
-                        const notificationKey = `${doc.ma_tl}_${NotificationType.EXPIRY_APPROACHING}`;
+                    // Expiring documents (30 and 7 days)
+                    else if (doc.trang_thai !== DocumentStatus.HET_HIEU_LUC && (daysRemaining === 30 || daysRemaining === 7)) {
+                        const notificationKey = `${doc.ma_tl}_${NotificationType.EXPIRY_APPROACHING}_${daysRemaining}`;
                         if (!existingNotificationKeys.has(notificationKey)) {
-                            const userIdsToNotify = new Set([doc.nguoi_soan_thao, doc.nguoi_ra_soat, doc.nguoi_phe_duyet]);
+                            const userIdsToNotify = new Set([doc.nguoi_soan_thao, doc.nguoi_ra_soat, doc.nguoi_phe_duyet, admin?.id].filter(Boolean) as string[]);
+                            const emailsToSend = new Set<string>();
+                            
                             userIdsToNotify.forEach(userId => {
-                                if (userId) {
+                                const user = nhanSuMap.get(userId);
+                                if (user) {
                                     newNotifications.push({
                                         id: `notif-${uuidv4()}`,
                                         user_id: userId,
                                         ma_tl: doc.ma_tl,
                                         type: NotificationType.EXPIRY_APPROACHING,
-                                        message: `Tài liệu "${doc.ten_tai_lieu}" sắp hết hiệu lực vào ngày ${expiryDate.toLocaleDateString('vi-VN')}.`,
+                                        message: `Tài liệu "${doc.ten_tai_lieu}" sắp hết hiệu lực sau ${daysRemaining} ngày.`,
                                         timestamp: new Date().toISOString(),
                                         is_read: false
                                     });
+                                    if(user.email) emailsToSend.add(user.email);
                                 }
                             });
+                             if(emailsToSend.size > 0) {
+                                const subject = `[ISO] Cảnh báo: Tài liệu "${doc.ten_tai_lieu}" sắp hết hiệu lực`;
+                                const emailBody = `<p>Hệ thống quản lý tài liệu ISO xin thông báo:</p><p>Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> sẽ hết hiệu lực sau <strong>${daysRemaining} ngày</strong> (vào ngày ${expiryDate.toLocaleDateString('vi-VN')}).</p><p>Vui lòng truy cập hệ thống để thực hiện rà soát hoặc gia hạn.</p>`;
+                                emailsToSend.forEach(email => sendEmail(email, subject, emailBody).catch(console.error));
+                            }
                             existingNotificationKeys.add(notificationKey);
                         }
                     }
@@ -195,6 +221,10 @@ const App: React.FC = () => {
 
                 const nextReviewDate = new Date(schedule.ngay_ra_soat_ke_tiep);
                 nextReviewDate.setHours(0, 0, 0, 0);
+                
+                const diffTime = nextReviewDate.getTime() - today.getTime();
+                const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
 
                 // Overdue reviews
                 if (nextReviewDate < today) {
@@ -203,31 +233,60 @@ const App: React.FC = () => {
                     }
                     const notificationKey = `${doc.ma_tl}_${NotificationType.REVIEW_OVERDUE}`;
                     if (!existingNotificationKeys.has(notificationKey)) {
-                        newNotifications.push({
-                            id: `notif-${uuidv4()}`,
-                            user_id: schedule.nguoi_chiu_trach_nhiem,
-                            ma_tl: doc.ma_tl,
-                            type: NotificationType.REVIEW_OVERDUE,
-                            message: `Tài liệu "${doc.ten_tai_lieu}" đã quá hạn rà soát.`,
-                            timestamp: new Date().toISOString(),
-                            is_read: false
+                        const userIdsToNotify = new Set([schedule.nguoi_chiu_trach_nhiem, admin?.id].filter(Boolean) as string[]);
+                        const emailsToSend = new Set<string>();
+
+                        userIdsToNotify.forEach(userId => {
+                            const user = nhanSuMap.get(userId);
+                            if (user) {
+                                newNotifications.push({
+                                    id: `notif-${uuidv4()}`,
+                                    user_id: userId,
+                                    ma_tl: doc.ma_tl,
+                                    type: NotificationType.REVIEW_OVERDUE,
+                                    message: `Tài liệu "${doc.ten_tai_lieu}" đã quá hạn rà soát.`,
+                                    timestamp: new Date().toISOString(),
+                                    is_read: false
+                                });
+                                if (user.email) emailsToSend.add(user.email);
+                            }
                         });
+                        if (emailsToSend.size > 0) {
+                            const subject = `[ISO] Cảnh báo: Tài liệu "${doc.ten_tai_lieu}" đã QUÁ HẠN rà soát`;
+                            const emailBody = `<p>Hệ thống quản lý tài liệu ISO xin nhắc nhở:</p><p>Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> đã quá hạn rà soát (hạn chót: ${nextReviewDate.toLocaleDateString('vi-VN')}).</p><p>Vui lòng truy cập hệ thống để thực hiện rà soát.</p>`;
+                            emailsToSend.forEach(email => sendEmail(email, subject, emailBody).catch(console.error));
+                        }
                         existingNotificationKeys.add(notificationKey);
                     }
                 }
-                // Reviews due soon
-                else if (nextReviewDate >= today && nextReviewDate <= reviewDueDateThreshold) {
-                    const notificationKey = `${doc.ma_tl}_${NotificationType.REVIEW_DUE}`;
+                // Reviews due soon (30 and 7 days)
+                else if (daysRemaining === 30 || daysRemaining === 7) {
+                    const notificationKey = `${doc.ma_tl}_${NotificationType.REVIEW_DUE}_${daysRemaining}`;
                      if (!existingNotificationKeys.has(notificationKey)) {
-                        newNotifications.push({
-                            id: `notif-${uuidv4()}`,
-                            user_id: schedule.nguoi_chiu_trach_nhiem,
-                            ma_tl: doc.ma_tl,
-                            type: NotificationType.REVIEW_DUE,
-                            message: `Tài liệu "${doc.ten_tai_lieu}" sắp đến hạn rà soát.`,
-                            timestamp: new Date().toISOString(),
-                            is_read: false
+                        const userIdsToNotify = new Set([schedule.nguoi_chiu_trach_nhiem, admin?.id].filter(Boolean) as string[]);
+                        const emailsToSend = new Set<string>();
+                        
+                        userIdsToNotify.forEach(userId => {
+                            const user = nhanSuMap.get(userId);
+                            if (user) {
+                                newNotifications.push({
+                                    id: `notif-${uuidv4()}`,
+                                    user_id: userId,
+                                    ma_tl: doc.ma_tl,
+                                    type: NotificationType.REVIEW_DUE,
+                                    message: `Tài liệu "${doc.ten_tai_lieu}" sắp đến hạn rà soát sau ${daysRemaining} ngày.`,
+                                    timestamp: new Date().toISOString(),
+                                    is_read: false
+                                });
+                                if(user.email) emailsToSend.add(user.email);
+                            }
                         });
+
+                        if (emailsToSend.size > 0) {
+                            const subject = `[ISO] Nhắc nhở: Rà soát tài liệu "${doc.ten_tai_lieu}"`;
+                            const emailBody = `<p>Hệ thống quản lý tài liệu ISO xin nhắc nhở:</p><p>Tài liệu <strong>${doc.ten_tai_lieu} (${doc.ma_tl})</strong> sắp đến hạn rà soát sau <strong>${daysRemaining} ngày</strong> (hạn chót: ${nextReviewDate.toLocaleDateString('vi-VN')}).</p><p>Vui lòng truy cập hệ thống để chuẩn bị thực hiện rà soát.</p>`;
+                            emailsToSend.forEach(email => sendEmail(email, subject, emailBody).catch(console.error));
+                        }
                         existingNotificationKeys.add(notificationKey);
                     }
                 }
@@ -248,7 +307,7 @@ const App: React.FC = () => {
         };
 
         checkForOverdueTasks();
-    }, [isLoading, currentUser, appData.notifications, appData.documents, appData.reviewSchedules]);
+    }, [isLoading, currentUser, appData.notifications, appData.documents, appData.reviewSchedules, appData.nhanSu]);
 
 
     // Persist data changes (debounced)

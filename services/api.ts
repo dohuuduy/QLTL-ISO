@@ -127,3 +127,32 @@ export const login = async (username: string, password: string): Promise<NhanSu 
         throw error;
     }
 };
+
+/**
+ * Sends a request to the Google Apps Script to send an email.
+ * @param to The recipient's email address.
+ * @param subject The email subject.
+ * @param body The email body, which can be HTML.
+ */
+export const sendEmail = async (to: string, subject: string, body: string): Promise<void> => {
+    if (!isUrlConfigured()) {
+        console.warn("Skipping email send: GOOGLE_SCRIPT_URL not configured.");
+        return; // Silently fail if not configured
+    }
+
+    try {
+        const result = await postToGAS({
+            action: 'sendEmail',
+            to,
+            subject,
+            body
+        });
+        if (result.status === 'error') {
+            console.error('Failed to send email via GAS:', result.message);
+        } else {
+            console.log('Email request sent successfully to:', to);
+        }
+    } catch (error) {
+        console.error('Error calling sendEmail API:', error);
+    }
+};

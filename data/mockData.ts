@@ -40,12 +40,12 @@ export const chucVu: ChucVu[] = [
 ];
 
 export const nhanSu: NhanSu[] = [
-  { id: 'ns_admin', ten: 'Quản trị', ten_dang_nhap: 'admin', mat_khau: '123', chuc_vu: 'cv5', phong_ban_id: 'pb4', role: 'admin', is_active: true },
-  { id: 'ns1', ten: 'Nguyễn Văn An', ten_dang_nhap: 'an.nv', mat_khau: 'password123', chuc_vu: 'cv1', phong_ban_id: 'pb2', role: 'user', is_active: true, permissions: { canCreate: true, canUpdate: true, canDelete: false } },
-  { id: 'ns2', ten: 'Trần Thị Bích', ten_dang_nhap: 'bich.tt', mat_khau: 'password123', chuc_vu: 'cv2', phong_ban_id: 'pb2', role: 'user', is_active: true, permissions: { canCreate: false, canUpdate: true, canDelete: false } },
-  { id: 'ns3', ten: 'Lê Minh Cường', ten_dang_nhap: 'cuong.lm', mat_khau: 'password123', chuc_vu: 'cv1', phong_ban_id: 'pb1', role: 'user', is_active: true, permissions: { canCreate: false, canUpdate: false, canDelete: false } },
-  { id: 'ns4', ten: 'Phạm Thị Dung', ten_dang_nhap: 'dung.pt', mat_khau: 'password123', chuc_vu: 'cv3', phong_ban_id: 'pb1', role: 'user', is_active: true, permissions: { canCreate: false, canUpdate: false, canDelete: false } },
-  { id: 'ns5', ten: 'Hoàng Văn Em', ten_dang_nhap: 'em.hv', mat_khau: 'password123', chuc_vu: 'cv4', phong_ban_id: 'pb3', role: 'user', is_active: true, permissions: { canCreate: false, canUpdate: false, canDelete: false } },
+  { id: 'ns_admin', ten: 'Quản trị', email: 'admin@company.com', ten_dang_nhap: 'admin', mat_khau: '123', chuc_vu: 'cv5', phong_ban_id: 'pb4', role: 'admin', is_active: true },
+  { id: 'ns1', ten: 'Nguyễn Văn An', email: 'an.nv@company.com', ten_dang_nhap: 'an.nv', mat_khau: 'password123', chuc_vu: 'cv1', phong_ban_id: 'pb2', role: 'user', is_active: true, permissions: { canCreate: true, canUpdate: true, canDelete: false } },
+  { id: 'ns2', ten: 'Trần Thị Bích', email: 'bich.tt@company.com', ten_dang_nhap: 'bich.tt', mat_khau: 'password123', chuc_vu: 'cv2', phong_ban_id: 'pb2', role: 'user', is_active: true, permissions: { canCreate: false, canUpdate: true, canDelete: false } },
+  { id: 'ns3', ten: 'Lê Minh Cường', email: 'cuong.lm@company.com', ten_dang_nhap: 'cuong.lm', mat_khau: 'password123', chuc_vu: 'cv1', phong_ban_id: 'pb1', role: 'user', is_active: true, permissions: { canCreate: false, canUpdate: false, canDelete: false } },
+  { id: 'ns4', ten: 'Phạm Thị Dung', email: 'dung.pt@company.com', ten_dang_nhap: 'dung.pt', mat_khau: 'password123', chuc_vu: 'cv3', phong_ban_id: 'pb1', role: 'user', is_active: true, permissions: { canCreate: false, canUpdate: false, canDelete: false } },
+  { id: 'ns5', ten: 'Hoàng Văn Em', email: 'em.hv@company.com', ten_dang_nhap: 'em.hv', mat_khau: 'password123', chuc_vu: 'cv4', phong_ban_id: 'pb3', role: 'user', is_active: true, permissions: { canCreate: false, canUpdate: false, canDelete: false } },
 ];
 
 export const loaiTaiLieu: LoaiTaiLieu[] = [
