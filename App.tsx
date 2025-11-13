@@ -32,6 +32,9 @@ import AuditLogPage from './components/AuditLogPage';
 import GroupedCategoryPage from './components/GroupedCategoryPage';
 import DashboardSkeleton from './components/DashboardSkeleton';
 
+// Import Utils
+import { formatDate } from './utils/dateUtils';
+
 type AppData = typeof mockData;
 
 // Define an initial empty state for the application data
@@ -148,16 +151,31 @@ const createProfessionalEmailBody = (
 // ++ DATE NORMALIZATION UTILITIES ++
 /**
  * Normalizes a date string to 'YYYY-MM-DD' format.
- * If the string is in ISO 8601 format (e.g., from JSON.stringify(new Date())),
- * it extracts only the date part, ignoring time and timezone.
+ * If the string is a full ISO timestamp (e.g., from JSON.stringify(new Date())),
+ * it correctly converts it to a 'YYYY-MM-DD' string in the user's local timezone,
+ * avoiding off-by-one errors caused by UTC conversion.
  * @param dateString The date string to normalize.
  * @returns The normalized 'YYYY-MM-DD' string or undefined.
  */
 const normalizeDateString = (dateString?: string): string | undefined => {
     if (!dateString) return undefined;
+
+    // Check if the string is likely a full ISO timestamp.
+    // This handles cases like "2025-08-18T17:00:00.000Z" which are created when
+    // a server (like Google Apps Script) serializes a Date object.
     if (dateString.includes('T')) {
-        return dateString.split('T')[0];
+        const date = new Date(dateString);
+        // Ensure the date is valid before formatting.
+        if (!isNaN(date.getTime())) {
+            // Use our utility that formats based on local date parts (getFullYear, etc.).
+            // This correctly reverses the UTC conversion from the server.
+            // e.g., new Date("2025-08-18T17:00:00.000Z") in a GMT+7 timezone is August 19.
+            // formatDate will then correctly produce "2025-08-19".
+            return formatDate(date);
+        }
     }
+
+    // If it's already in 'YYYY-MM-DD' format or some other format, return it as is.
     return dateString;
 };
 
