@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -28,6 +29,7 @@ import ReportsPage from './components/ReportsPage';
 import SettingsPage from './components/SettingsPage';
 import AuditLogPage from './components/AuditLogPage';
 import GroupedCategoryPage from './components/GroupedCategoryPage';
+import DashboardSkeleton from './components/DashboardSkeleton';
 
 type AppData = typeof mockData;
 
@@ -606,15 +608,8 @@ const App: React.FC = () => {
 
 
     const renderView = () => {
-        if (isLoading) {
-            return (
-                <div className="flex items-center justify-center h-screen">
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="spinner"></div>
-                        <span className="text-gray-600">Đang tải dữ liệu...</span>
-                    </div>
-                </div>
-            );
+        if (isLoading && !currentUser) { // Show skeleton only on initial load before login
+            return <DashboardSkeleton />;
         }
 
         if (error && appData.documents.length === 0) {
