@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -148,42 +146,52 @@ const createProfessionalEmailBody = (
     `;
 };
 
-// ++ DATE NORMALIZATION UTILITIES ++
+// ++ DATE HELPERS ++
+// Chuyển 'YYYY-MM-DD' -> Date local (midnight local time)
+const parseYMDToLocalDate = (ymd?: string): Date | undefined => {
+    if (!ymd) return undefined;
+    const parts = ymd.split('-');
+    if (parts.length < 3) return undefined;
+    const y = Number(parts[0]);
+    const m = Number(parts[1]);
+    const d = Number(parts[2]);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return undefined;
+    return new Date(y, m - 1, d); // local midnight
+};
+
+// Chuyển Date local -> 'YYYY-MM-DD'
+const formatDateToYMD = (date?: Date | null): string | undefined => {
+    if (!date) return undefined;
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
 /**
- * Normalizes a date string to 'YYYY-MM-DD' format representing the date in GMT+7.
- * If the string is a full ISO timestamp (e.g., from JSON.stringify(new Date())),
- * it correctly converts it to a 'YYYY-MM-DD' string in GMT+7.
- * @param dateString The date string to normalize.
- * @returns The normalized 'YYYY-MM-DD' string or undefined.
+ * Normalizes a date string to 'YYYY-MM-DD' format representing the date in local timezone.
+ * If the string is a full ISO timestamp (with time and timezone), it will convert the timestamp
+ * to the date in local timezone and return YYYY-MM-DD. If it's already 'YYYY-MM-DD' it returns unchanged.
  */
 const normalizeDateString = (dateString?: string): string | undefined => {
     if (!dateString) return undefined;
-
-    // Regex to check for ISO 8601 format with timezone info
-    const isFullISO = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[-+]\d{2}:\d{2})/.test(dateString);
-
+    // Full ISO timestamp check (has 'T' and time part)
+    const isFullISO = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(dateString);
     if (isFullISO) {
         try {
             const date = new Date(dateString);
             if (isNaN(date.getTime())) {
-                 return dateString.split('T')[0]; // Fallback if date is invalid
+                return dateString.split('T')[0];
             }
-            // Use Intl to get the YYYY-MM-DD representation in GMT+7 timezone.
-            // 'en-CA' locale reliably produces the YYYY-MM-DD format.
-            return new Intl.DateTimeFormat('en-CA', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                timeZone: 'Asia/Ho_Chi_Minh',
-            }).format(date);
+            // Convert to local date and format
+            const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            return formatDateToYMD(localDate);
         } catch (e) {
             console.error(`Error normalizing date string "${dateString}":`, e);
-            // In case of a formatting error, fallback to just taking the date part.
             return dateString.split('T')[0];
         }
     }
-    
-    // If it's not a full ISO string (e.g., already 'YYYY-MM-DD'), just return the date part.
+    // If already YYYY-MM-DD or other, take date part
     return dateString.split('T')[0];
 };
 
@@ -239,8 +247,7 @@ const normalizeDataDates = (data: AppData): AppData => {
             ngay_bat_dau: normalizeDateString(as.ngay_bat_dau)!,
             ngay_ket_thuc: normalizeDateString(as.ngay_ket_thuc)!,
         })),
-        // Timestamps in auditTrail and notifications are left as full ISO strings
-        // as they represent a specific point in time, not just a date.
+        // auditTrail and notifications left as-is (they may be ISO timestamps)
     };
 };
 
@@ -294,7 +301,7 @@ const App: React.FC = () => {
             let documentsToUpdate: DanhMucTaiLieu[] = [];
             let newNotifications: ThongBao[] = [];
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0); // local midnight
             const appUrl = window.location.origin;
 
             const existingNotificationKeys = new Set(
@@ -315,9 +322,8 @@ const App: React.FC = () => {
             // 1. Check for expired and expiring documents
             appData.documents.forEach(doc => {
                 if (doc.ngay_het_hieu_luc) {
-                    // Use UTC parsing to avoid timezone issues
-                    const expiryDateParts = doc.ngay_het_hieu_luc.split('-');
-                    const expiryDate = new Date(Date.UTC(parseInt(expiryDateParts[0]), parseInt(expiryDateParts[1]) - 1, parseInt(expiryDateParts[2])));
+                    const expiryDate = parseYMDToLocalDate(doc.ngay_het_hieu_luc);
+                    if (!expiryDate) return;
 
                     const diffTime = expiryDate.getTime() - today.getTime();
                     const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -356,7 +362,7 @@ const App: React.FC = () => {
                                     {
                                         "Tên tài liệu": doc.ten_tai_lieu,
                                         "Mã hiệu": doc.so_hieu,
-                                        "Ngày hết hiệu lực": formatDateInGMT7(expiryDate)
+                                        "Ngày hết hiệu lực": formatDateToYMD(expiryDate) || doc.ngay_het_hieu_luc || ''
                                     },
                                     'Xem chi tiết trên hệ thống',
                                     appUrl
@@ -397,7 +403,7 @@ const App: React.FC = () => {
                                     {
                                         "Tên tài liệu": doc.ten_tai_lieu,
                                         "Mã hiệu": doc.so_hieu,
-                                        "Ngày hết hiệu lực": formatDateInGMT7(expiryDate)
+                                        "Ngày hết hiệu lực": formatDateToYMD(expiryDate) || doc.ngay_het_hieu_luc || ''
                                     },
                                     'Thực hiện rà soát hoặc gia hạn',
                                     appUrl
@@ -415,8 +421,8 @@ const App: React.FC = () => {
                 const doc = appData.documents.find(d => d.ma_tl === schedule.ma_tl);
                 if (!doc || schedule.ket_qua_ra_soat) return;
 
-                const reviewDateParts = schedule.ngay_ra_soat_ke_tiep.split('-');
-                const nextReviewDate = new Date(Date.UTC(parseInt(reviewDateParts[0]), parseInt(reviewDateParts[1]) - 1, parseInt(reviewDateParts[2])));
+                const nextReviewDate = parseYMDToLocalDate(schedule.ngay_ra_soat_ke_tiep);
+                if (!nextReviewDate) return;
                 
                 const diffTime = nextReviewDate.getTime() - today.getTime();
                 const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -455,7 +461,7 @@ const App: React.FC = () => {
                                 {
                                     "Tên tài liệu": doc.ten_tai_lieu,
                                     "Mã hiệu": doc.so_hieu,
-                                    "Hạn rà soát": formatDateInGMT7(nextReviewDate)
+                                    "Hạn rà soát": formatDateToYMD(nextReviewDate) || schedule.ngay_ra_soat_ke_tiep || ''
                                 },
                                 'Thực hiện rà soát ngay',
                                 appUrl
@@ -497,7 +503,7 @@ const App: React.FC = () => {
                                 {
                                     "Tên tài liệu": doc.ten_tai_lieu,
                                     "Mã hiệu": doc.so_hieu,
-                                    "Hạn rà soát": formatDateInGMT7(nextReviewDate)
+                                    "Hạn rà soát": formatDateToYMD(nextReviewDate) || schedule.ngay_ra_soat_ke_tiep || ''
                                 },
                                 'Chuẩn bị rà soát',
                                 appUrl
@@ -684,16 +690,19 @@ const App: React.FC = () => {
                 const oldSchedule = (prev.reviewSchedules as LichRaSoat[]).find(rs => rs.id_lich === data.id_lich);
                 const tanSuat = prev.tanSuatRaSoat.find(ts => ts.id === oldSchedule?.tan_suat);
                 if (tanSuat?.so_thang && data.ngay_ra_soat_thuc_te) {
-                    const nextReviewDate = new Date(data.ngay_ra_soat_thuc_te);
-                    nextReviewDate.setMonth(nextReviewDate.getMonth() + tanSuat.so_thang);
-                    const newSchedule: LichRaSoat = {
-                        id_lich: `rs-${uuidv4()}`,
-                        ma_tl: oldSchedule!.ma_tl,
-                        tan_suat: oldSchedule!.tan_suat,
-                        ngay_ra_soat_ke_tiep: nextReviewDate.toISOString().split('T')[0],
-                        nguoi_chiu_trach_nhiem: oldSchedule!.nguoi_chiu_trach_nhiem,
-                    };
-                    newList.push(newSchedule);
+                    // Use local Date parsing and local-format output (YYYY-MM-DD)
+                    const nextReviewDate = parseYMDToLocalDate(data.ngay_ra_soat_thuc_te);
+                    if (nextReviewDate) {
+                        nextReviewDate.setMonth(nextReviewDate.getMonth() + tanSuat.so_thang);
+                        const newSchedule: LichRaSoat = {
+                            id_lich: `rs-${uuidv4()}`,
+                            ma_tl: oldSchedule!.ma_tl,
+                            tan_suat: oldSchedule!.tan_suat,
+                            ngay_ra_soat_ke_tiep: formatDateToYMD(nextReviewDate)!,
+                            nguoi_chiu_trach_nhiem: oldSchedule!.nguoi_chiu_trach_nhiem,
+                        };
+                        newList.push(newSchedule);
+                    }
                 }
             }
 
@@ -760,7 +769,7 @@ const App: React.FC = () => {
 
         if (error && appData.documents.length === 0) {
             return (
-                <div className="flex items-center justify-center h-full p-4">
+                <div className="flex items-center justify-center"h-full p-4>
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md max-w-lg text-center" role="alert">
                         <strong className="font-bold">Đã xảy ra lỗi!</strong>
                         <p className="block sm:inline mt-2">{error}</p>
