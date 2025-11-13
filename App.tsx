@@ -99,9 +99,9 @@ const createProfessionalEmailBody = (
             </tr>
         `).join('');
 
-    const pdfButton = doc.file_pdf
+    const pdfButton = doc.file_pdf && doc.file_pdf.trim() !== ''
         ? `
-            <a href="${doc.file_pdf}" target="_blank" style="display: inline-block; margin-top: 15px; margin-right: 10px; padding: 10px 18px; font-size: 14px; font-weight: 500; color: #1e40af; background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; text-decoration: none;">
+            <a href="${doc.file_pdf.trim()}" target="_blank" style="display: inline-block; margin-top: 15px; margin-right: 10px; padding: 10px 18px; font-size: 14px; font-weight: 500; color: #1e40af; background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; text-decoration: none;">
                 Tải file PDF
             </a>
         `
