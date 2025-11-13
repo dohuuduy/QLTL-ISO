@@ -233,13 +233,43 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
         });
     };
     
+    const getLevelNumber = (capDoId: string | undefined): number => {
+        if (!capDoId) return Infinity; // A document without a level can have any parent
+        const capDoItem = categories.capDoTaiLieu.find(c => c.id === capDoId);
+        if (!capDoItem) return Infinity;
+        
+        // Extract number from "Cấp 1 - Sổ tay chất lượng"
+        const match = capDoItem.ten.match(/^Cấp (\d+)/);
+        return match ? parseInt(match[1], 10) : Infinity;
+    };
+
     const potentialParentDocuments = useMemo(() => {
-        if (!initialData?.ma_tl) return documents;
-        const descendantIds = getDescendantIds(initialData.ma_tl, documents);
-        // FIX: Replaced `descendants` with `descendantIds` to match the variable name defined on the previous line.
-        const forbiddenIds = new Set([initialData.ma_tl, ...descendantIds]);
-        return documents.filter(doc => !forbiddenIds.has(doc.ma_tl));
-    }, [documents, initialData]);
+        // 1. Prevent circular dependencies: a doc cannot be its own parent or child of its descendants.
+        const forbiddenIds = new Set<string>();
+        if (initialData?.ma_tl) {
+            forbiddenIds.add(initialData.ma_tl);
+            const descendantIds = getDescendantIds(initialData.ma_tl, documents);
+            descendantIds.forEach(id => forbiddenIds.add(id));
+        }
+        
+        // 2. Filter by document level
+        const currentDocLevel = getLevelNumber(formData.cap_do);
+        if (currentDocLevel === Infinity) {
+             // If current doc has no level set, only apply circular dependency filter
+            return documents.filter(doc => !forbiddenIds.has(doc.ma_tl));
+        }
+
+        return documents.filter(doc => {
+            // Rule 1: Exclude self and descendants
+            if (forbiddenIds.has(doc.ma_tl)) {
+                return false;
+            }
+
+            // Rule 2: Parent's level must be strictly higher (smaller number)
+            const parentCandidateLevel = getLevelNumber(doc.cap_do);
+            return parentCandidateLevel < currentDocLevel;
+        });
+    }, [documents, initialData, formData.cap_do]);
 
     const activeOrCurrentlySelected = (list: any[], selectedIds: string | string[]) => {
         if (Array.isArray(selectedIds)) {
