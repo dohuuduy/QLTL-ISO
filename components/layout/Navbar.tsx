@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Icon } from '../ui/Icon';
 import type { NhanSu, ThongBao, ChucVu } from '../../types';
 import NotificationPanel from '../NotificationPanel';
+import Breadcrumb from '../ui/Breadcrumb';
+import type { BreadcrumbItem } from '../ui/Breadcrumb';
 
 const Avatar: React.FC<{ name: string }> = ({ name }) => {
     const getInitials = (nameStr: string) => {
@@ -22,7 +24,6 @@ const Avatar: React.FC<{ name: string }> = ({ name }) => {
 
 
 interface NavbarProps {
-    onLogoClick: () => void;
     onToggleSidebar: () => void;
     onToggleMobileMenu: () => void;
     currentUser?: NhanSu;
@@ -32,12 +33,13 @@ interface NavbarProps {
     onMarkAllNotificationsRead: () => void;
     onNavigateToDocument: (docId: string) => void;
     chucVuList: ChucVu[];
+    breadcrumbs: BreadcrumbItem[];
 }
 
 const Navbar: React.FC<NavbarProps> = ({ 
-    onLogoClick, onToggleSidebar, onToggleMobileMenu, 
+    onToggleSidebar, onToggleMobileMenu, 
     currentUser, onLogout, notifications, onMarkNotificationRead, onMarkAllNotificationsRead, onNavigateToDocument,
-    chucVuList
+    chucVuList, breadcrumbs
 }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -68,7 +70,7 @@ const Navbar: React.FC<NavbarProps> = ({
         <header className="z-10 flex h-16 flex-shrink-0 bg-white shadow-sm border-b border-slate-200 no-print">
             
             <div className="flex flex-1 items-center justify-between px-4 sm:px-6">
-                <div className="flex items-center">
+                <div className="flex items-center min-w-0">
                      {/* Desktop Sidebar Toggle */}
                     <button
                         type="button"
@@ -88,11 +90,10 @@ const Navbar: React.FC<NavbarProps> = ({
                         <Icon type="menu" className="h-6 w-6" />
                     </button>
                     
-                    {/* Logo and Title */}
-                    <button onClick={onLogoClick} className="flex items-center gap-x-2">
-                        <Icon type="document-duplicate" className="h-8 w-8 text-blue-600" />
-                        <span className="text-xl font-bold tracking-tight text-slate-900 hidden sm:block">DocManager ISO</span>
-                    </button>
+                    {/* Breadcrumb replaces Logo and Title */}
+                    <div className="min-w-0">
+                        <Breadcrumb items={breadcrumbs} />
+                    </div>
                 </div>
 
                 <div className="flex items-center space-x-2 sm:space-x-4">

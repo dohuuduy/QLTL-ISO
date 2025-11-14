@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 // Import Types
@@ -29,6 +29,7 @@ import SettingsPage from './components/SettingsPage';
 import AuditLogPage from './components/AuditLogPage';
 import GroupedCategoryPage from './components/GroupedCategoryPage';
 import DashboardSkeleton from './components/DashboardSkeleton';
+import type { BreadcrumbItem } from './components/ui/Breadcrumb';
 
 // Import Utils
 import { formatDateForDisplay as formatDateInGMT7 } from './utils/dateUtils';
@@ -762,6 +763,65 @@ const App: React.FC = () => {
     }, []);
 
 
+    const breadcrumbs = useMemo((): BreadcrumbItem[] => {
+        const base: BreadcrumbItem[] = [
+          { label: 'Dashboard', onClick: () => setView({ type: 'dashboard' }) },
+        ];
+    
+        switch (view.type) {
+          case 'dashboard':
+            return [{ label: 'Dashboard' }]; // Only one item, will be hidden by Breadcrumb component
+    
+          case 'documents':
+            return [...base, { label: 'Quản lý tài liệu' }];
+    
+          case 'documentDetail':
+            const doc = appData.documents.find(d => d.ma_tl === view.docId);
+            return [
+              ...base,
+              { label: 'Quản lý tài liệu', onClick: () => setView({ type: 'documents', filter: null }) },
+              { label: doc?.ten_tai_lieu || 'Chi tiết' },
+            ];
+          
+          case 'audits':
+            return [...base, { label: 'Lịch audit' }];
+    
+          case 'reports':
+          case 'reports-detailed':
+          case 'report-by-employee':
+             const reportBase = [...base, { label: 'Báo cáo & thống kê', onClick: () => setView({ type: 'reports', reportType: null }) }];
+             if(view.type === 'report-by-employee') {
+                 return [...reportBase, { label: 'Báo cáo chi tiết' }, {label: 'Theo nhân viên'}]
+             }
+            return reportBase;
+    
+          case 'audit-log':
+            return [...base, { label: 'Nhật ký hệ thống' }];
+          
+          case 'settings':
+             return [...base, { label: 'Cài đặt' }];
+    
+          case 'settings-group-org':
+          case 'settings-group-doc':
+          case 'settings-group-audit':
+            const groupTitles = {
+                'settings-group-org': 'Tổ chức & Nhân sự',
+                'settings-group-doc': 'Cấu hình Tài liệu',
+                'settings-group-audit': 'Tiêu chuẩn & Đánh giá',
+            }
+            return [
+                ...base,
+                // The parent 'Danh mục' navigates to the first group page by default
+                { label: 'Danh mục', onClick: () => setView({ type: 'settings-group-org' }) }, 
+                { label: groupTitles[view.type] }
+            ];
+    
+          default:
+            return base;
+        }
+      }, [view, appData.documents]);
+
+
     const renderView = () => {
         if (isLoading && !currentUser) { // Show skeleton only on initial load before login
             return <DashboardSkeleton />;
@@ -894,6 +954,7 @@ const App: React.FC = () => {
             currentView={currentViewString}
             onNavigateToReport={handleNavigateToReport}
             chucVuList={appData.chucVu}
+            breadcrumbs={breadcrumbs}
         >
             {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
             {isSaving && <div className="fixed top-4 right-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded-md shadow-lg z-50 animate-pulse">Đang lưu...</div>}

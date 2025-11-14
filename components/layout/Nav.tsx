@@ -82,7 +82,7 @@ export const Nav = ({ isCollapsed, currentUserRoles, onNavigate, currentView }: 
   return (
     <nav className="flex flex-col h-full">
       {!isCollapsed && searchInput}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-1">
+      <div className="flex-1 overflow-y-auto p-2 space-y-1">
         {filteredMenu.length > 0 ? filteredMenu.map((item, index) => {
             if (item.type === 'divider') {
                 if (isCollapsed) return null;

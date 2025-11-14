@@ -28,6 +28,8 @@ export const NavItem = React.memo(({ item, isCollapsed, onNavigate, currentView,
 
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(isActive);
   const submenuRef = useRef<HTMLUListElement>(null);
+  const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
+
 
   useEffect(() => {
     // Keep submenu open if it's active, otherwise close it when collapsing the main sidebar
@@ -44,8 +46,12 @@ export const NavItem = React.memo(({ item, isCollapsed, onNavigate, currentView,
     e.stopPropagation();
     if (item.children && !isCollapsed) {
       setIsSubmenuOpen(prev => !prev);
-    } else {
-      onNavigate(item.view);
+    } else if (item.view) {
+      // For collapsed items with children, clicking does nothing, hover shows flyout.
+      // Only navigate if it's a direct link without children in collapsed mode.
+      if (!item.children || !isCollapsed) {
+        onNavigate(item.view);
+      }
     }
   };
 
@@ -57,6 +63,11 @@ export const NavItem = React.memo(({ item, isCollapsed, onNavigate, currentView,
   // Collapsed View
   if (isCollapsed) {
     return (
+      <div 
+        className="relative"
+        onMouseEnter={() => item.children && setIsFlyoutOpen(true)}
+        onMouseLeave={() => item.children && setIsFlyoutOpen(false)}
+      >
         <button
           title={item.label}
           onClick={handleItemClick}
@@ -64,6 +75,28 @@ export const NavItem = React.memo(({ item, isCollapsed, onNavigate, currentView,
         >
           <NavIcon type={item.icon} className="h-6 w-6" />
         </button>
+
+        {item.children && isFlyoutOpen && (
+          <div 
+            className="absolute left-full top-0 ml-2 z-50 w-60 rounded-md bg-slate-800 p-2 shadow-lg ring-1 ring-black ring-opacity-5"
+          >
+            <div className="text-sm font-semibold text-white px-2 py-1 mb-1">{item.label}</div>
+            <ul className="space-y-1">
+              {item.children.map(child => (
+                <li key={child.view}>
+                  <NavItem 
+                    item={child}
+                    isCollapsed={false} // Render children as if in an expanded menu
+                    onNavigate={onNavigate}
+                    currentView={currentView}
+                    depth={0} // Reset depth for flyout
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     );
   }
 
