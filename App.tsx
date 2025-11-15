@@ -1051,6 +1051,7 @@ const App: React.FC = () => {
                     onViewDetails={(doc) => handleNavigateToDocument(doc.ma_tl)}
                     onToggleBookmark={handleToggleBookmark}
                     initialFilter={(view as { type: 'documents'; filter: string | null }).filter}
+                    onDocumentCreated={handleNavigateToDocument}
                 />;
 
             case 'documentDetail':

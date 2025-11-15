@@ -52,6 +52,7 @@ interface DocumentManagementPageProps {
     onViewDetails: (doc: DanhMucTaiLieu) => void;
     onToggleBookmark: (docId: string) => void;
     initialFilter: string | null;
+    onDocumentCreated: (docId: string) => void;
 }
 
 type SortConfig = {
@@ -60,7 +61,7 @@ type SortConfig = {
 } | null;
 
 
-const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData, onUpdateData, currentUser, onViewDetails, onToggleBookmark, initialFilter }) => {
+const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData, onUpdateData, currentUser, onViewDetails, onToggleBookmark, initialFilter, onDocumentCreated }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingDocument, setEditingDocument] = useState<DanhMucTaiLieu | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -251,18 +252,18 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
     };
 
     const handleSave = (formData: DanhMucTaiLieu) => {
+        const isCreating = !editingDocument;
+
         onUpdateData((prev: any) => {
             if (!prev) return null;
 
             let newDocumentsList;
             let newVersionsList = prev.versions;
+            let newDocId = '';
 
-            if (editingDocument) { // Editing
-                newDocumentsList = prev.documents.map((item: DanhMucTaiLieu) =>
-                    item.ma_tl === editingDocument.ma_tl ? formData : item
-                );
-            } else { // Creating
+            if (isCreating) { // Creating
                 const newDoc = { ...formData, ma_tl: `TL-${uuidv4().split('-')[0].toUpperCase()}` };
+                newDocId = newDoc.ma_tl;
                 newDocumentsList = [...prev.documents, newDoc];
 
                 const newVersion: PhienBanTaiLieu = {
@@ -277,7 +278,17 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                     is_moi_nhat: true,
                 };
                 newVersionsList = [...newVersionsList, newVersion];
+            } else { // Editing
+                 newDocId = editingDocument.ma_tl;
+                newDocumentsList = prev.documents.map((item: DanhMucTaiLieu) =>
+                    item.ma_tl === editingDocument.ma_tl ? formData : item
+                );
             }
+
+            if(isCreating && newDocId) {
+                onDocumentCreated(newDocId);
+            }
+            
             return { ...prev, documents: newDocumentsList, versions: newVersionsList };
         });
         closeModal();
@@ -531,9 +542,9 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
 
                 <Card>
                     <Card.Body>
-                        <div className="flex flex-wrap items-end gap-4">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
                             {/* Search Input */}
-                            <div className="w-full sm:flex-1" style={{ minWidth: '15rem' }}>
+                            <div className="flex-grow" style={{ flexBasis: '15rem' }}>
                                 <label htmlFor="search-input" className="form-label">Tìm kiếm</label>
                                 <div className="search-input-container">
                                     <Icon type="search" className="search-input-icon h-5 w-5" />
@@ -559,7 +570,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             </div>
 
                             {/* Status filter */}
-                            <div className="w-full sm:flex-1" style={{ minWidth: '10rem' }}>
+                            <div className="sm:flex-1">
                                 <label htmlFor="status-filter" className="form-label">Trạng thái</label>
                                 <select
                                     id="status-filter"
@@ -574,7 +585,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             </div>
 
                             {/* Department filter */}
-                            <div className="w-full sm:flex-1" style={{ minWidth: '10rem' }}>
+                            <div className="sm:flex-1">
                                 <label htmlFor="department-filter" className="form-label">Phòng ban</label>
                                 <select
                                     id="department-filter"
@@ -588,7 +599,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             </div>
 
                            {/* Doc type filter */}
-                           <div className="w-full sm:flex-1" style={{ minWidth: '10rem' }}>
+                           <div className="sm:flex-1">
                                 <label htmlFor="loai-tai-lieu-filter" className="form-label">Loại tài liệu</label>
                                 <select
                                     id="loai-tai-lieu-filter"
@@ -602,7 +613,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             </div>
                            
                            {/* Standard filter */}
-                           <div className="w-full sm:flex-1" style={{ minWidth: '10rem' }}>
+                           <div className="sm:flex-1">
                                 <label htmlFor="standard-filter" className="form-label">Tiêu chuẩn</label>
                                 <select
                                     id="standard-filter"
@@ -621,7 +632,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             </div>
 
                             {/* Bookmark button */}
-                            <div className="w-full sm:w-auto">
+                            <div>
                                 <label className="form-label hidden sm:block">&nbsp;</label>
                                 <button
                                     id="bookmark-toggle"
