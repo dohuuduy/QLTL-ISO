@@ -204,6 +204,9 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
         auditTrail: { page: 1, perPage: 10 },
     });
 
+    const parentDoc = useMemo(() => allData.documents.find(d => d.ma_tl === document.ma_tl_cha) || null, [allData.documents, document.ma_tl_cha]);
+    const replacementDoc = useMemo(() => allData.documents.find(d => d.ma_tl === document.tai_lieu_thay_the) || null, [allData.documents, document.tai_lieu_thay_the]);
+
     const handlePageChange = (tab: TabKey, page: number) => {
         setTabPaging(prev => ({ ...prev, [tab]: { ...prev[tab], page } }));
     };
@@ -707,18 +710,56 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                                     } 
                                 />
                                 <div>
-                                    <RelationshipItem
-                                        label="Tài liệu cha"
-                                        doc={allData.documents.find(d => d.ma_tl === document.ma_tl_cha) || null}
-                                        canUpdate={canUpdateDocument}
-                                        onAdd={() => setSelectorModalType('parent')}
-                                        onRemove={() => handleRemoveRelationship('parent')}
-                                    />
+                                    <dt className="text-sm font-medium text-gray-500">Tài liệu cha</dt>
+                                    <dd className="mt-1 text-sm text-gray-900 flex items-center justify-between gap-x-4">
+                                        {parentDoc ? (
+                                            <div className="flex items-center gap-x-2 truncate flex-1 min-w-0">
+                                                <strong className="font-semibold text-blue-700 truncate" title={parentDoc.ten_tai_lieu}>{parentDoc.ten_tai_lieu}</strong>
+                                                <span className="text-gray-500 flex-shrink-0">({parentDoc.so_hieu})</span>
+                                                {parentDoc.file_pdf && (
+                                                    <a
+                                                        href={parentDoc.file_pdf}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        title="Mở file PDF của tài liệu cha"
+                                                        className="text-red-600 hover:text-red-800 flex-shrink-0"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <Icon type="document-text" className="h-5 w-5" />
+                                                    </a>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-400">Không có</span>
+                                        )}
+                                        {canUpdateDocument && (
+                                            <div className="flex-shrink-0 flex items-center space-x-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSelectorModalType('parent')}
+                                                    className="text-blue-600 hover:text-blue-800"
+                                                    title={parentDoc ? 'Thay đổi' : 'Thêm'}
+                                                >
+                                                    <Icon type="pencil" className="h-4 w-4" />
+                                                </button>
+                                                {parentDoc && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveRelationship('parent')}
+                                                        className="text-red-600 hover:text-red-800"
+                                                        title="Xóa liên kết"
+                                                    >
+                                                        <Icon type="x-mark" className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </dd>
                                 </div>
                                 <div>
                                     <RelationshipItem
                                         label="Thay thế cho tài liệu"
-                                        doc={allData.documents.find(d => d.ma_tl === document.tai_lieu_thay_the) || null}
+                                        doc={replacementDoc}
                                         canUpdate={canUpdateDocument}
                                         onAdd={() => setSelectorModalType('replacement')}
                                         onRemove={() => handleRemoveRelationship('replacement')}
