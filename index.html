@@ -189,9 +189,11 @@
     .toggle-pill .pill-icon {
         margin-left: -0.25rem; /* -ml-1 */
         margin-right: 0.5rem; /* mr-2 */
-        opacity: 0;
-        transform: scale(0.5);
-        transition: opacity 150ms, transform 150ms;
+        color: #d1d5db; /* gray-300 */
+        transition: color 150ms ease-in-out;
+    }
+    .toggle-pill:hover .pill-icon {
+        color: #9ca3af; /* gray-400 */
     }
     .toggle-pill[aria-pressed="true"] {
         background-color: #2563eb; /* bg-blue-600 */
@@ -202,8 +204,7 @@
         background-color: #1d4ed8; /* bg-blue-700 */
     }
     .toggle-pill[aria-pressed="true"] .pill-icon {
-        opacity: 1;
-        transform: scale(1);
+        color: #ffffff; /* Explicitly set to white */
     }
 
 
