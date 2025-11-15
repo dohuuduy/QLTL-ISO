@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import type { NhanSu, PhongBan, NhanSuRole, DanhMucChung } from '../../types';
+import React, { useState, useEffect, useMemo } from 'react';
+import type { NhanSu, PhongBan, NhanSuRole, DanhMucChung, NhanSuPermissions } from '../../types';
 import { Icon } from '../ui/Icon';
 import { translate } from '../../utils/translations';
 import { DocumentRole } from '../../constants';
+import TogglePillGroup from '../ui/TogglePillGroup';
 
 interface PersonnelFormProps {
     onSubmit: (data: Partial<NhanSu>) => void;
@@ -12,6 +13,19 @@ interface PersonnelFormProps {
     chucVuList: DanhMucChung[];
     currentUser: NhanSu;
 }
+
+const documentRoleOptions = [
+    { id: DocumentRole.SOAN_THAO, label: translate(DocumentRole.SOAN_THAO) },
+    { id: DocumentRole.RA_SOAT, label: translate(DocumentRole.RA_SOAT) },
+    { id: DocumentRole.PHE_DUYET, label: translate(DocumentRole.PHE_DUYET) },
+];
+
+const permissionOptions: { id: keyof NhanSuPermissions, label: string }[] = [
+    { id: 'canCreate', label: 'Tạo' },
+    { id: 'canUpdate', label: 'Sửa' },
+    { id: 'canDelete', label: 'Xóa' },
+];
+
 
 const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initialData, phongBanList, chucVuList, currentUser }) => {
     const getInitialState = () => ({
@@ -78,29 +92,20 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
             });
         }
     };
+    
+    const handleTaskChange = (selectedTasks: DocumentRole[]) => {
+        setFormData(prev => ({ ...prev, nhiem_vu_tai_lieu: selectedTasks }));
+    };
 
-    const handlePermissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, checked } = e.target;
+    const handlePermissionChange = (selectedPermissions: (keyof NhanSuPermissions)[]) => {
         setFormData(prev => ({
             ...prev,
             permissions: {
-                ...prev.permissions,
-                [name]: checked
+                canCreate: selectedPermissions.includes('canCreate'),
+                canUpdate: selectedPermissions.includes('canUpdate'),
+                canDelete: selectedPermissions.includes('canDelete'),
             }
         }));
-    };
-    
-    const handleTaskChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, checked } = e.target;
-        const role = name as DocumentRole;
-        setFormData(prev => {
-            const currentTasks = prev.nhiem_vu_tai_lieu || [];
-            if (checked) {
-                return { ...prev, nhiem_vu_tai_lieu: [...currentTasks, role] };
-            } else {
-                return { ...prev, nhiem_vu_tai_lieu: currentTasks.filter(t => t !== role) };
-            }
-        });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -134,13 +139,12 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
         list.filter(item => item.is_active !== false || item.id === selectedId);
 
     const isEditingSelf = initialData?.id === currentUser.id;
-    
-    const documentRoleOptions = [
-        { id: DocumentRole.SOAN_THAO, label: translate(DocumentRole.SOAN_THAO) },
-        { id: DocumentRole.RA_SOAT, label: translate(DocumentRole.RA_SOAT) },
-        { id: DocumentRole.PHE_DUYET, label: translate(DocumentRole.PHE_DUYET) },
-    ];
 
+    const selectedPermissions = useMemo(() => 
+        (Object.keys(formData.permissions) as (keyof NhanSuPermissions)[])
+        .filter(key => formData.permissions[key]),
+    [formData.permissions]);
+    
     return (
         <form onSubmit={handleSubmit}>
             <div className="p-6 space-y-4">
@@ -266,52 +270,23 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
                 )}
                 
                 {currentUser.role === 'admin' && formData.role === 'user' && !isEditingSelf && (
-                     <div className="space-y-4">
-                        <fieldset className="border-t border-gray-200 pt-4">
-                            <legend className="text-sm font-medium text-gray-900">Nhiệm vụ Tài liệu</legend>
-                            <div className="mt-2 space-y-2">
-                                {documentRoleOptions.map(option => (
-                                    <div key={option.id} className="relative flex items-start">
-                                        <div className="flex h-6 items-center">
-                                            <input id={option.id} name={option.id} type="checkbox" checked={(formData.nhiem_vu_tai_lieu || []).includes(option.id)} onChange={handleTaskChange} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600" />
-                                        </div>
-                                        <div className="ml-3 text-sm leading-6">
-                                            <label htmlFor={option.id} className="font-medium text-gray-700">{option.label}</label>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </fieldset>
-                         <fieldset>
-                            <legend className="text-sm font-medium text-gray-900">Quyền hạn tài liệu</legend>
-                            <div className="mt-2 space-y-2">
-                                <div className="relative flex items-start">
-                                    <div className="flex h-6 items-center">
-                                        <input id="canCreate" name="canCreate" type="checkbox" checked={formData.permissions.canCreate} onChange={handlePermissionChange} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600" />
-                                    </div>
-                                    <div className="ml-3 text-sm leading-6">
-                                        <label htmlFor="canCreate" className="font-medium text-gray-700">Tạo tài liệu</label>
-                                    </div>
-                                </div>
-                                 <div className="relative flex items-start">
-                                    <div className="flex h-6 items-center">
-                                        <input id="canUpdate" name="canUpdate" type="checkbox" checked={formData.permissions.canUpdate} onChange={handlePermissionChange} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600" />
-                                    </div>
-                                    <div className="ml-3 text-sm leading-6">
-                                        <label htmlFor="canUpdate" className="font-medium text-gray-700">Sửa tài liệu</label>
-                                    </div>
-                                </div>
-                                <div className="relative flex items-start">
-                                    <div className="flex h-6 items-center">
-                                        <input id="canDelete" name="canDelete" type="checkbox" checked={formData.permissions.canDelete} onChange={handlePermissionChange} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600" />
-                                    </div>
-                                    <div className="ml-3 text-sm leading-6">
-                                        <label htmlFor="canDelete" className="font-medium text-gray-700">Xóa tài liệu</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
-                    </div>
+                     <fieldset className="border-t border-gray-200 pt-4">
+                        <legend className="text-base font-medium text-gray-900">Quyền & Nhiệm vụ Tài liệu</legend>
+                        <div className="mt-4 space-y-4">
+                            <TogglePillGroup
+                                label="Nhiệm vụ chính"
+                                options={documentRoleOptions}
+                                selectedOptions={formData.nhiem_vu_tai_lieu}
+                                onChange={handleTaskChange as any}
+                            />
+                            <TogglePillGroup
+                                label="Quyền hạn"
+                                options={permissionOptions}
+                                selectedOptions={selectedPermissions}
+                                onChange={handlePermissionChange as any}
+                            />
+                        </div>
+                    </fieldset>
                 )}
 
             </div>

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { PhienBanTaiLieu, NhanSu } from '../../types';
-import { VersionStatus } from '../../constants';
+import { VersionStatus, DocumentRole } from '../../constants';
 import { translate } from '../../utils/translations';
 import DatePicker from '../ui/DatePicker';
 
@@ -44,7 +44,29 @@ const VersionForm: React.FC<VersionFormProps> = ({ onSubmit, onCancel, initialDa
         onSubmit({ ...initialData, ...formData, ma_tl });
     };
     
-    const activeOrCurrentlySelectedUsers = nhanSuList.filter(u => u.is_active !== false || u.id === formData.nguoi_thuc_hien);
+    const implementerOptions = useMemo(() => {
+        const activeUsers = nhanSuList.filter(u => u.is_active !== false);
+        const suggestedUsers = activeUsers.filter(u => u.nhiem_vu_tai_lieu?.includes(DocumentRole.SOAN_THAO));
+        
+        if (suggestedUsers.length === 0) {
+            return activeUsers.map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>);
+        }
+
+        const otherUsers = activeUsers.filter(u => !u.nhiem_vu_tai_lieu?.includes(DocumentRole.SOAN_THAO));
+
+        return (
+            <>
+                <optgroup label="Gợi ý (Người soạn thảo)">
+                    {suggestedUsers.map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
+                </optgroup>
+                {otherUsers.length > 0 && (
+                    <optgroup label="Tất cả nhân viên">
+                        {otherUsers.map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
+                    </optgroup>
+                )}
+            </>
+        );
+    }, [nhanSuList]);
 
     return (
         <form onSubmit={handleSubmit}>
@@ -73,7 +95,7 @@ const VersionForm: React.FC<VersionFormProps> = ({ onSubmit, onCancel, initialDa
                         <label htmlFor="nguoi_thuc_hien" className="form-label">Người thực hiện <span className="text-red-500">*</span></label>
                         <select name="nguoi_thuc_hien" id="nguoi_thuc_hien" value={formData.nguoi_thuc_hien} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn người</option>
-                            {activeOrCurrentlySelectedUsers.map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
+                            {implementerOptions}
                         </select>
                     </div>
                 </div>

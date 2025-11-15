@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { NhatKyThayDoi, PhienBanTaiLieu, NhanSu, DanhMucChung } from '../../types';
 import DatePicker from '../ui/DatePicker';
+import { DocumentRole } from '../../constants';
 
 interface ChangeLogFormProps {
     onSubmit: (data: any) => void;
@@ -50,6 +51,30 @@ const ChangeLogForm: React.FC<ChangeLogFormProps> = ({ onSubmit, onCancel, initi
         onSubmit({ ...initialData, ...formData });
     };
 
+    const proposerOptions = useMemo(() => {
+        const activeUsers = nhanSuList.filter(u => u.is_active !== false);
+        const suggestedUsers = activeUsers.filter(u => u.nhiem_vu_tai_lieu?.includes(DocumentRole.SOAN_THAO));
+        
+        if (suggestedUsers.length === 0) {
+            return activeUsers.map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>);
+        }
+
+        const otherUsers = activeUsers.filter(u => !u.nhiem_vu_tai_lieu?.includes(DocumentRole.SOAN_THAO));
+
+        return (
+            <>
+                <optgroup label="Gợi ý (Người soạn thảo)">
+                    {suggestedUsers.map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
+                </optgroup>
+                {otherUsers.length > 0 && (
+                    <optgroup label="Tất cả nhân viên">
+                        {otherUsers.map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
+                    </optgroup>
+                )}
+            </>
+        );
+    }, [nhanSuList]);
+
     const activeOrCurrentlySelected = (list: any[], selectedId: string) => 
         list.filter(item => item.is_active !== false || item.id === selectedId);
 
@@ -93,7 +118,7 @@ const ChangeLogForm: React.FC<ChangeLogFormProps> = ({ onSubmit, onCancel, initi
                         <label htmlFor="nguoi_de_xuat" className="form-label">Người đề xuất <span className="text-red-500">*</span></label>
                         <select name="nguoi_de_xuat" id="nguoi_de_xuat" value={formData.nguoi_de_xuat} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn người</option>
-                            {nhanSuList.filter(u => u.is_active !== false || u.id === formData.nguoi_de_xuat).map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
+                            {proposerOptions}
                         </select>
                     </div>
                     <div>
