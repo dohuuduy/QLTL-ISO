@@ -81,16 +81,13 @@ const PrintReportLayout: React.FC<PrintReportLayoutProps> = ({ title, filters, c
                 <table>
                     <tbody>
                         <tr>
-                            <td className="date-location"><i>Cà Mau, {formattedDate}</i></td>
-                        </tr>
-                        <tr>
-                            <td className="sign-title">Người lập báo cáo</td>
-                        </tr>
-                        <tr>
-                            <td className="sign-note"><i>(Ký và ghi rõ họ tên)</i></td>
-                        </tr>
-                        <tr>
-                            <td className="sign-name">{currentUser.ten}</td>
+                            <td style={{ width: '60%', verticalAlign: 'top' }}>&nbsp;</td>
+                            <td style={{ width: '40%', verticalAlign: 'top', textAlign: 'center' }}>
+                                <div className="date-location"><i>Cà Mau, {formattedDate}</i></div>
+                                <div className="sign-title">Người lập báo cáo</div>
+                                <div className="sign-note"><i>(Ký và ghi rõ họ tên)</i></div>
+                                <div className="sign-name">{currentUser.ten}</div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
