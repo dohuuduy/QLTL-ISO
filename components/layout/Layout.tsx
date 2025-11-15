@@ -29,7 +29,7 @@ const Layout: React.FC<LayoutProps> = ({
     currentView, onNavigateToReport, chucVuList, breadcrumbs,
     saveStatus
 }) => {
-    const { isCollapsed, isMobileOpen, setMobileOpen, toggleSidebar } = useSidebar();
+    const { isCollapsed, isMobileOpen, setMobileOpen, toggleSidebar, setOpenFlyoutView } = useSidebar();
 
     useEffect(() => {
         if (isMobileOpen) {
@@ -60,7 +60,14 @@ const Layout: React.FC<LayoutProps> = ({
                 currentUser={currentUser}
                 currentView={currentView}
             />
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div 
+                className="flex-1 flex flex-col overflow-hidden"
+                onClick={() => {
+                    if (isCollapsed) {
+                        setOpenFlyoutView(null);
+                    }
+                }}
+            >
                 <Navbar
                     onToggleSidebar={toggleSidebar}
                     onToggleMobileMenu={() => setMobileOpen(true)}

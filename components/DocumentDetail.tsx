@@ -320,7 +320,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
         const initiallyCollapsed = new Set<string>();
         // Collapse any node that has children and is NOT an ancestor of the current doc
         for (const docId of docChildrenMap.keys()) {
-            if (!ancestors.has(docId) && docId !== document.ma_tl && !getAncestorIds(docId, docMap).has(document.ma_tl)) {
+            if (!ancestors.has(docId) && docId !== document.ma_tl) {
                  initiallyCollapsed.add(docId);
             }
         }

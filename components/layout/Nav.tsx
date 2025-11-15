@@ -3,6 +3,7 @@ import { NavItem } from './NavItem';
 import { menuConfig } from '../../config/menu';
 import { Icon } from '../ui/Icon';
 import type { MenuItem, NavItem as NavItemType } from '../../types/menu';
+import { useSidebar } from '../../hooks/use-sidebar';
 
 interface NavProps {
   isCollapsed: boolean;
@@ -22,6 +23,7 @@ const normalizeString = (str: string) => {
 export const Nav = ({ isCollapsed, currentUserRoles, onNavigate, currentView }: NavProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const normalizedSearchTerm = normalizeString(searchTerm);
+  const { openFlyoutView, toggleFlyoutView } = useSidebar();
 
   const filteredMenu = useMemo(() => {
     // Hàm đệ quy để lọc menu dựa trên quyền và từ khóa tìm kiếm
@@ -90,7 +92,14 @@ export const Nav = ({ isCollapsed, currentUserRoles, onNavigate, currentView }: 
   );
 
   return (
-    <nav className="flex flex-col h-full">
+    <nav 
+        className="flex flex-col h-full"
+        onClick={(e) => {
+            if (isCollapsed) {
+                e.stopPropagation();
+            }
+        }}
+    >
       {!isCollapsed && searchInput}
       <div className="flex-1 overflow-y-auto p-2 space-y-1">
         {filteredMenu.length > 0 ? filteredMenu.map((item, index) => {
@@ -108,7 +117,9 @@ export const Nav = ({ isCollapsed, currentUserRoles, onNavigate, currentView }: 
                 item={item as NavItemType} 
                 isCollapsed={isCollapsed} 
                 onNavigate={onNavigate} 
-                currentView={currentView} 
+                currentView={currentView}
+                openFlyoutView={openFlyoutView}
+                toggleFlyoutView={toggleFlyoutView}
               />
             )
         }) : (
