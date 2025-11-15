@@ -21,6 +21,11 @@
 }
 </script>
 <style>
+    /* Make page background transparent in browser (non-print) */
+    html, body {
+        background-color: transparent !important;
+    }
+
     /* Custom Scrollbar Styling for Webkit browsers */
     ::-webkit-scrollbar {
         width: 8px;
@@ -313,6 +318,7 @@
             display: block !important;
         }
 
+        /* Force white background when printing */
         html, body {
             background-color: #ffffff !important;
         }
@@ -407,7 +413,7 @@
     }
 </style>
 </head>
-<body class="bg-gray-50">
+<body>
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
 </body>
