@@ -78,15 +78,24 @@ const PrintReportLayout: React.FC<PrintReportLayoutProps> = ({ title, filters, c
                 </table>
             </main>
 
-            <footer className="footer">
-                <i>Cà Mau, {formattedDate}</i>
-            </footer>
-
-            <section className="signature">
-                <div className="sign-title">Người lập báo cáo</div>
-                <div className="sign-note"><i>(Ký và ghi rõ họ tên)</i></div>
-                <div className="sign-name">{currentUser.ten}</div>
-            </section>
+            <div className="signature-section">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td className="date-location"><i>Cà Mau, {formattedDate}</i></td>
+                        </tr>
+                        <tr>
+                            <td className="sign-title">Người lập báo cáo</td>
+                        </tr>
+                        <tr>
+                            <td className="sign-note"><i>(Ký và ghi rõ họ tên)</i></td>
+                        </tr>
+                        <tr>
+                            <td className="sign-name">{currentUser.ten}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

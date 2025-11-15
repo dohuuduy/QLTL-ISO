@@ -143,7 +143,7 @@ export const exportVisibleReportToWord = (filename: string) => {
     // Inline the print styles to ensure Word formats the document correctly.
     const styles = `
         <style>
-            .print-report-container { font-family: "Times New Roman", Times, serif; line-height: 1.5; color: #000; }
+            .print-report-container { font-family: "Arial", sans-serif; line-height: 1.5; color: #000; }
             .header { text-align: center; margin-bottom: 20px; }
             .header table, .header tr, .header td { border: none !important; }
             .header .company { font-weight: bold; text-transform: uppercase; text-align: left; vertical-align: top; }
@@ -152,13 +152,15 @@ export const exportVisibleReportToWord = (filename: string) => {
             .report-title { text-align: center; font-weight: bold; font-size: 16pt; text-transform: uppercase; margin: 30px 0 15px; }
             .filter-section { margin: 15px 0; font-style: italic; }
             table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11pt; table-layout: fixed; }
-            th, td { border: 1px solid black !important; padding: 6px 8px; text-align: left; word-wrap: break-word; }
-            th { text-align: center; font-weight: bold; }
-            .footer { margin-top: 30px; text-align: right; }
-            .signature { margin-top: 10px; text-align: center; width: 35%; margin-left: auto; }
-            .sign-title { font-weight: bold; text-transform: uppercase; }
-            .sign-note { font-style: italic; margin-top: 5px; }
-            .sign-name { margin-top: 60px; font-weight: bold; }
+            th, td { border: 1px solid black !important; padding: 8px 10px; text-align: left; word-wrap: break-word; }
+            th { text-align: center; font-weight: bold; background-color: #e9ecef; }
+            .signature-section { margin-top: 40px; page-break-inside: avoid; }
+            .signature-section table { width: 40%; margin-left: auto; margin-right: 0; border: none !important; text-align: center; }
+            .signature-section td { border: none !important; padding: 2px 0; }
+            .signature-section .date-location { font-style: italic; }
+            .signature-section .sign-title { font-weight: bold; text-transform: uppercase; padding-top: 10px; }
+            .signature-section .sign-note { font-style: italic; font-size: 10pt; }
+            .signature-section .sign-name { padding-top: 60px; font-weight: bold; }
         </style>
     `;
 

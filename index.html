@@ -313,7 +313,7 @@
         }
 
         .print-report-container {
-            font-family: "Times New Roman", Times, serif;
+            font-family: "Arial", sans-serif;
             line-height: 1.5;
             color: #000;
             background-color: #fff !important;
@@ -358,30 +358,34 @@
         }
         .print-report-container th, .print-report-container td {
             border: 1px solid black !important;
-            padding: 6px 8px;
+            padding: 8px 10px;
             text-align: left;
             word-wrap: break-word; /* Added to wrap long text */
         }
         .print-report-container th {
             text-align: center;
             font-weight: bold;
-            background-color: #fff !important;
+            background-color: #e9ecef !important;
         }
-        .print-report-container .footer {
-            margin-top: 30px;
-            text-align: right;
-            page-break-before: auto;
-        }
-        .print-report-container .signature {
-            margin-top: 10px;
-            text-align: center;
-            width: 35%;
-            margin-left: auto;
+        .print-report-container .signature-section {
+            margin-top: 40px;
             page-break-inside: avoid;
         }
-        .print-report-container .signature .sign-title { font-weight: bold; text-transform: uppercase; }
-        .print-report-container .signature .sign-note { font-style: italic; margin-top: 5px; }
-        .print-report-container .signature .sign-name { margin-top: 60px; font-weight: bold; }
+        .print-report-container .signature-section table {
+            width: 40%;
+            margin-left: auto;
+            margin-right: 0;
+            border: none !important;
+            text-align: center;
+        }
+        .print-report-container .signature-section td {
+            border: none !important;
+            padding: 2px 0;
+        }
+        .print-report-container .signature-section .date-location { font-style: italic; }
+        .print-report-container .signature-section .sign-title { font-weight: bold; text-transform: uppercase; padding-top: 10px; }
+        .print-report-container .signature-section .sign-note { font-style: italic; font-size: 10pt; }
+        .print-report-container .signature-section .sign-name { padding-top: 60px; font-weight: bold; }
     }
 </style>
 </head>
