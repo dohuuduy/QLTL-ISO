@@ -57,7 +57,7 @@ export const menuConfig: MenuItem[] = [
     type: 'item',
     label: 'Nhật ký hệ thống',
     view: 'audit-log',
-    icon: 'document-text',
+    icon: 'clock',
     roles: ['admin'],
   },
   {
