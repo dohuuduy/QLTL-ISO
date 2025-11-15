@@ -44,6 +44,16 @@ const DocumentSelectorModal: React.FC<DocumentSelectorModalProps> = ({
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="form-input search-input"
                     />
+                     {searchTerm && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchTerm('')}
+                            className="search-input-clear-btn"
+                            title="Xóa"
+                        >
+                            <Icon type="x-mark" className="h-5 w-5" />
+                        </button>
+                    )}
                 </div>
             </div>
             <div className="max-h-96 overflow-y-auto">

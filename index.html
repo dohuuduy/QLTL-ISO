@@ -185,8 +185,20 @@
         pointer-events: none;
         color: #9ca3af; /* text-gray-400 */
     }
+    .search-input-clear-btn {
+        position: absolute;
+        top: 50%;
+        right: 0.75rem;
+        transform: translateY(-50%);
+        color: #9ca3af; /* text-gray-400 */
+        cursor: pointer;
+    }
+    .search-input-clear-btn:hover {
+        color: #374151; /* text-gray-700 */
+    }
     .search-input {
         padding-left: 2.5rem !important;
+        padding-right: 2.5rem !important; /* Make space for clear button */
     }
 
 

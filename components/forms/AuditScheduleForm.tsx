@@ -161,7 +161,25 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
                     {isOpen && (
                         <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-hidden flex flex-col">
                             <div className="p-2 border-b border-gray-200">
-                                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Tìm kiếm..." className="form-input"/>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        placeholder="Tìm kiếm..."
+                                        className="form-input pr-10"
+                                    />
+                                    {searchTerm && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setSearchTerm('')}
+                                            className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                            title="Xóa"
+                                        >
+                                            <Icon type="x-mark" className="h-5 w-5" />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             <ul className="overflow-y-auto">
                                 {availableItems.length > 0 ? (

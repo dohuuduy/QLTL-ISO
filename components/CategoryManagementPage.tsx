@@ -335,6 +335,16 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
                                         onChange={(e) => setFilters(f => ({ ...f, searchTerm: e.target.value }))}
                                         className="form-input search-input"
                                     />
+                                    {filters.searchTerm && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setFilters(f => ({ ...f, searchTerm: '' }))}
+                                            className="search-input-clear-btn"
+                                            title="Xóa"
+                                        >
+                                            <Icon type="x-mark" className="h-5 w-5" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                             <div>

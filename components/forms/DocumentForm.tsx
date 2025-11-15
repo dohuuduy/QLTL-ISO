@@ -483,13 +483,25 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                                 {isStandardsDropdownOpen && (
                                                     <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-hidden flex flex-col">
                                                         <div className="p-2 border-b border-gray-200">
-                                                            <input
-                                                                type="text"
-                                                                value={standardsSearchTerm}
-                                                                onChange={(e) => setStandardsSearchTerm(e.target.value)}
-                                                                placeholder="Tìm kiếm tiêu chuẩn..."
-                                                                className="w-full rounded-md border-gray-300 py-1.5 px-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                                            />
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="text"
+                                                                    value={standardsSearchTerm}
+                                                                    onChange={(e) => setStandardsSearchTerm(e.target.value)}
+                                                                    placeholder="Tìm kiếm tiêu chuẩn..."
+                                                                    className="w-full rounded-md border-gray-300 py-1.5 px-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 pr-8"
+                                                                />
+                                                                {standardsSearchTerm && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setStandardsSearchTerm('')}
+                                                                        className="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600"
+                                                                        title="Xóa"
+                                                                    >
+                                                                        <Icon type="x-mark" className="h-4 w-4" />
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                         <ul className="overflow-y-auto">
                                                             {availableStandards.length > 0 ? (
@@ -546,13 +558,25 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                                 {isIsoRefDropdownOpen && (
                                                     <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-hidden flex flex-col">
                                                         <div className="p-2 border-b border-gray-200">
-                                                            <input
-                                                                type="text"
-                                                                value={isoRefSearchTerm}
-                                                                onChange={(e) => setIsoRefSearchTerm(e.target.value)}
-                                                                placeholder="Tìm kiếm tiêu chuẩn..."
-                                                                className="w-full rounded-md border-gray-300 py-1.5 px-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                                            />
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="text"
+                                                                    value={isoRefSearchTerm}
+                                                                    onChange={(e) => setIsoRefSearchTerm(e.target.value)}
+                                                                    placeholder="Tìm kiếm tiêu chuẩn..."
+                                                                    className="w-full rounded-md border-gray-300 py-1.5 px-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 pr-8"
+                                                                />
+                                                                {isoRefSearchTerm && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setIsoRefSearchTerm('')}
+                                                                        className="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600"
+                                                                        title="Xóa"
+                                                                    >
+                                                                        <Icon type="x-mark" className="h-4 w-4" />
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                         <ul className="overflow-y-auto">
                                                             {availableIsoRefs.length > 0 ? (

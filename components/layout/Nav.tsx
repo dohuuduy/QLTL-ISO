@@ -76,6 +76,16 @@ export const Nav = ({ isCollapsed, currentUserRoles, onNavigate, currentView }: 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
         />
+        {searchTerm && (
+            <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="search-input-clear-btn !text-slate-400 hover:!text-slate-200"
+                title="Xóa"
+            >
+                <Icon type="x-mark" className="h-5 w-5" />
+            </button>
+        )}
     </div>
   );
 

@@ -552,6 +552,16 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="form-input search-input"
                                     />
+                                    {searchTerm && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setSearchTerm('')}
+                                            className="search-input-clear-btn"
+                                            title="Xóa"
+                                        >
+                                            <Icon type="x-mark" className="h-5 w-5" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                             <div>
