@@ -257,7 +257,7 @@ export const documents: DanhMucTaiLieu[] = [
     nguoi_soan_thao: 'ns5',
     nguoi_ra_soat: 'ns5',
     nguoi_phe_duyet: 'ns_admin',
-    ma_tl_cha: 'TL-001'
+    ma_tl_cha: 'TL-001',
   },
   {
     ma_tl: 'TL-006',
