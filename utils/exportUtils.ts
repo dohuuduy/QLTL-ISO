@@ -144,16 +144,17 @@ export const exportVisibleReportToWord = (filename: string) => {
     const styles = `
         <style>
             .print-report-container { font-family: "Arial", sans-serif; line-height: 1.5; color: #000; }
-            .header { text-align: center; margin-bottom: 20px; }
+            .header { text-align: center; margin-bottom: 25px; }
             .header table, .header tr, .header td { border: none !important; }
             .header .company { font-weight: bold; text-transform: uppercase; text-align: left; vertical-align: top; }
             .header .nation { font-weight: bold; text-transform: uppercase; text-align: center; }
-            .header .motto { font-style: italic; font-weight: bold; text-align: center; }
-            .report-title { text-align: center; font-weight: bold; font-size: 16pt; text-transform: uppercase; margin: 30px 0 15px; }
-            .filter-section { margin: 15px 0; font-style: italic; }
-            table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11pt; table-layout: fixed; }
-            th, td { border: 1px solid black !important; padding: 8px 10px; text-align: left; word-wrap: break-word; }
+            .header .motto { font-style: italic; font-weight: bold; text-align: center; padding-bottom: 5px; border-bottom: 1.5px solid black; display: inline-block; }
+            .report-title { text-align: center; font-weight: bold; font-size: 16pt; text-transform: uppercase; margin: 35px 0 20px; }
+            .filter-section { margin: 20px 0; font-style: italic; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 10pt; table-layout: fixed; }
+            th, td { border: 1px solid black !important; padding: 6px 8px; text-align: left; word-wrap: break-word; }
             th { text-align: center; font-weight: bold; background-color: #e9ecef; }
+            tbody tr:nth-child(even) { background-color: #f8f9fa; }
             .signature-section { margin-top: 40px; page-break-inside: avoid; }
             .signature-section table { width: 40%; margin-left: auto; margin-right: 0; border: none !important; text-align: center; }
             .signature-section td { border: none !important; padding: 2px 0; }

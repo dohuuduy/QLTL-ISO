@@ -25,7 +25,6 @@ const PrintReportLayout: React.FC<PrintReportLayoutProps> = ({ title, filters, c
                             <td style={{ textAlign: 'center', border: 'none', verticalAlign: 'top' }}>
                                 <div className="nation">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
                                 <div className="motto">Độc lập - Tự do - Hạnh phúc</div>
-                                <div>––––––––––––––––––––––––</div>
                             </td>
                         </tr>
                     </tbody>
