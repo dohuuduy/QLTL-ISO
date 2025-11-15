@@ -417,35 +417,44 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         return '';
     };
 
-    const renderActions = (doc: DanhMucTaiLieu) => (
-        <div className="flex items-center justify-end space-x-3">
-             <button
-                onClick={(e) => { e.stopPropagation(); handleOpenRelatedModal(doc); }}
-                className="text-gray-500 hover:text-gray-800"
-                title="Xem tài liệu liên quan"
-            >
-                <Icon type="link" className="h-5 w-5" />
-            </button>
-            {canUpdate && (
-                <button 
-                    onClick={(e) => { e.stopPropagation(); openModal(doc); }} 
-                    className="text-blue-600 hover:text-blue-800" 
-                    title="Chỉnh sửa"
+    const renderActions = (doc: DanhMucTaiLieu) => {
+        const hasParent = !!doc.ma_tl_cha;
+        const hasReplacement = !!doc.tai_lieu_thay_the;
+        const hasChildren = allData.documents.some(d => d.ma_tl_cha === doc.ma_tl);
+        const isReplacedBy = allData.documents.some(d => d.tai_lieu_thay_the === doc.ma_tl);
+        const docHasRelations = hasParent || hasChildren || hasReplacement || isReplacedBy;
+
+        return (
+            <div className="flex items-center justify-end space-x-3">
+                 <button
+                    onClick={(e) => { if(docHasRelations) { e.stopPropagation(); handleOpenRelatedModal(doc); } }}
+                    className={docHasRelations ? "text-blue-600 hover:text-blue-800" : "text-gray-300 cursor-not-allowed"}
+                    title={docHasRelations ? "Xem tài liệu liên quan" : "Không có tài liệu liên quan trực tiếp"}
+                    disabled={!docHasRelations}
                 >
-                    <Icon type="pencil" className="h-5 w-5" />
+                    <Icon type="link" className="h-5 w-5" />
                 </button>
-            )}
-            {canDelete && (
-                <button 
-                    onClick={(e) => { e.stopPropagation(); setDeletingId(doc.ma_tl); }} 
-                    className="text-red-600 hover:text-red-800" 
-                    title="Xóa"
-                >
-                    <Icon type="trash" className="h-5 w-5" />
-                </button>
-            )}
-        </div>
-    );
+                {canUpdate && (
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); openModal(doc); }} 
+                        className="text-blue-600 hover:text-blue-800" 
+                        title="Chỉnh sửa"
+                    >
+                        <Icon type="pencil" className="h-5 w-5" />
+                    </button>
+                )}
+                {canDelete && (
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); setDeletingId(doc.ma_tl); }} 
+                        className="text-red-600 hover:text-red-800" 
+                        title="Xóa"
+                    >
+                        <Icon type="trash" className="h-5 w-5" />
+                    </button>
+                )}
+            </div>
+        );
+    };
 
     const tableColumns = [
         { 
@@ -659,61 +668,78 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                     <div className="md:hidden">
                         {paginatedDocuments.length > 0 ? (
                             <ul className="divide-y divide-gray-200">
-                                {paginatedDocuments.map(doc => (
-                                    <li key={doc.ma_tl} className="p-4 hover:bg-slate-50 cursor-pointer" onClick={() => onViewDetails(doc)}>
-                                        {/* Top section: Title and Bookmark */}
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-semibold text-blue-700 truncate text-base" title={doc.ten_tai_lieu}>{doc.ten_tai_lieu}</p>
-                                                <p className="text-sm text-slate-600 font-mono mt-1">{doc.so_hieu}</p>
-                                            </div>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); onToggleBookmark(doc.ma_tl); }}
-                                                className="p-2 -mr-2 -mt-1 rounded-full hover:bg-yellow-100 flex-shrink-0"
-                                                title={doc.is_bookmarked ? 'Bỏ đánh dấu' : 'Đánh dấu'}
-                                            >
-                                                <Icon type={doc.is_bookmarked ? 'star-solid' : 'star'} className={`h-5 w-5 ${doc.is_bookmarked ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}`} />
-                                            </button>
-                                        </div>
+                                {paginatedDocuments.map(doc => {
+                                    const hasParent = !!doc.ma_tl_cha;
+                                    const hasReplacement = !!doc.tai_lieu_thay_the;
+                                    const hasChildren = allData.documents.some(d => d.ma_tl_cha === doc.ma_tl);
+                                    const isReplacedBy = allData.documents.some(d => d.tai_lieu_thay_the === doc.ma_tl);
+                                    const docHasRelations = hasParent || hasChildren || hasReplacement || isReplacedBy;
 
-                                        {/* Middle section: Info */}
-                                        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
-                                            <div className="flex items-center gap-1.5">
-                                                <Icon type="calendar" className="h-3 w-3 text-gray-400" />
-                                                <span>{formatDateForDisplay(doc.ngay_hieu_luc)}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <Icon type="document-text" className="h-3 w-3 text-gray-400" />
-                                                <span>Phiên bản: {latestVersionMap.get(doc.ma_tl) || 'N/A'}</span>
-                                            </div>
-                                        </div>
-                                        
-                                        {/* Bottom section: Status and Actions */}
-                                        <div className="mt-3 flex items-center justify-between">
-                                            <Badge status={doc.trang_thai} />
-                                            <div className="flex items-center space-x-0">
-                                                {doc.file_pdf && (
-                                                    <a href={doc.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full" title="In/Mở PDF">
-                                                        <Icon type="printer" className="h-5 w-5" />
-                                                    </a>
-                                                )}
-                                                <button onClick={(e) => { e.stopPropagation(); handleOpenRelatedModal(doc); }} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full" title="Xem tài liệu liên quan">
-                                                    <Icon type="link" className="h-5 w-5" />
+                                    return (
+                                        <li key={doc.ma_tl} className="p-4 hover:bg-slate-50 cursor-pointer" onClick={() => onViewDetails(doc)}>
+                                            {/* Top section: Title and Bookmark */}
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-semibold text-blue-700 truncate text-base" title={doc.ten_tai_lieu}>{doc.ten_tai_lieu}</p>
+                                                    <p className="text-sm text-slate-600 font-mono mt-1">{doc.so_hieu}</p>
+                                                </div>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); onToggleBookmark(doc.ma_tl); }}
+                                                    className="p-2 -mr-2 -mt-1 rounded-full hover:bg-yellow-100 flex-shrink-0"
+                                                    title={doc.is_bookmarked ? 'Bỏ đánh dấu' : 'Đánh dấu'}
+                                                >
+                                                    <Icon type={doc.is_bookmarked ? 'star-solid' : 'star'} className={`h-5 w-5 ${doc.is_bookmarked ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}`} />
                                                 </button>
-                                                {canUpdate && (
-                                                    <button onClick={(e) => { e.stopPropagation(); openModal(doc); }} className="p-2 text-blue-600 hover:bg-blue-100 rounded-full" title="Chỉnh sửa">
-                                                        <Icon type="pencil" className="h-5 w-5" />
-                                                    </button>
-                                                )}
-                                                {canDelete && (
-                                                    <button onClick={(e) => { e.stopPropagation(); setDeletingId(doc.ma_tl); }} className="p-2 text-red-600 hover:bg-red-100 rounded-full" title="Xóa">
-                                                        <Icon type="trash" className="h-5 w-5" />
-                                                    </button>
-                                                )}
                                             </div>
-                                        </div>
-                                    </li>
-                                ))}
+
+                                            {/* Middle section: Info */}
+                                            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Icon type="calendar" className="h-3 w-3 text-gray-400" />
+                                                    <span>{formatDateForDisplay(doc.ngay_hieu_luc)}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <Icon type="document-text" className="h-3 w-3 text-gray-400" />
+                                                    <span>Phiên bản: {latestVersionMap.get(doc.ma_tl) || 'N/A'}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Bottom section: Status and Actions */}
+                                            <div className="mt-3 flex items-center justify-between">
+                                                <Badge status={doc.trang_thai} />
+                                                <div className="flex items-center space-x-0">
+                                                    {doc.file_pdf ? (
+                                                        <a href={doc.file_pdf} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full" title="In/Mở PDF">
+                                                            <Icon type="printer" className="h-5 w-5" />
+                                                        </a>
+                                                    ) : (
+                                                        <span className="p-2 text-gray-300 rounded-full cursor-not-allowed" title="Không có file PDF">
+                                                            <Icon type="printer" className="h-5 w-5" />
+                                                        </span>
+                                                    )}
+                                                    <button 
+                                                        onClick={(e) => { if (docHasRelations) { e.stopPropagation(); handleOpenRelatedModal(doc); } }} 
+                                                        className={`p-2 rounded-full ${docHasRelations ? 'text-blue-600 hover:bg-blue-100' : 'text-gray-300 cursor-not-allowed'}`} 
+                                                        title={docHasRelations ? "Xem tài liệu liên quan" : "Không có tài liệu liên quan trực tiếp"}
+                                                        disabled={!docHasRelations}
+                                                    >
+                                                        <Icon type="link" className="h-5 w-5" />
+                                                    </button>
+                                                    {canUpdate && (
+                                                        <button onClick={(e) => { e.stopPropagation(); openModal(doc); }} className="p-2 text-blue-600 hover:bg-blue-100 rounded-full" title="Chỉnh sửa">
+                                                            <Icon type="pencil" className="h-5 w-5" />
+                                                        </button>
+                                                    )}
+                                                    {canDelete && (
+                                                        <button onClick={(e) => { e.stopPropagation(); setDeletingId(doc.ma_tl); }} className="p-2 text-red-600 hover:bg-red-100 rounded-full" title="Xóa">
+                                                            <Icon type="trash" className="h-5 w-5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         ) : (
                             <div className="text-center py-10 px-4">
