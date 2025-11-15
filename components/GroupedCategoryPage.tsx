@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useMemo } from 'react';
 import Tabs from './ui/Tabs';
 import CategoryManagementPage from './CategoryManagementPage';
 import StandardsManagementPage from './StandardsManagementPage';
@@ -9,59 +10,67 @@ import DepartmentForm from './forms/DepartmentForm';
 import GenericCategoryForm from './forms/GenericCategoryForm';
 import AuditorForm from './forms/AuditorForm';
 
-// Types
-import type { DanhMucChung, NhanSu } from '../types';
+import type { NhanSu } from '../types';
 import { mockData } from '../data/mockData';
-import Badge from './ui/Badge';
-import { translate } from '../utils/translations';
 
-type CategoryKey = keyof typeof mockData;
+type GroupType = 'org' | 'doc' | 'audit';
 
 interface GroupedCategoryPageProps {
-    group: 'org' | 'doc' | 'audit';
+    group: GroupType;
     title: string;
     allData: typeof mockData;
-    onSaveCategory: (categoryKey: CategoryKey, item: any) => void;
-    onDeleteCategory: (categoryKey: CategoryKey, item: any) => void;
-    onToggleCategoryStatus: (categoryKey: CategoryKey, item: any) => void;
+    onSaveCategory: (categoryKey: keyof typeof mockData, item: any) => void;
+    onDeleteCategory: (categoryKey: keyof typeof mockData, item: any) => void;
+    onToggleCategoryStatus: (categoryKey: keyof typeof mockData, item: any) => void;
     onUpdateData: React.Dispatch<React.SetStateAction<any>>;
     currentUser: NhanSu;
-    initialTab?: string;
 }
 
-const categoryGroups = {
-    org: [
-        { key: 'nhanSu', title: 'Nhân sự', Component: CategoryManagementPage, FormComponent: PersonnelForm, formProps: (allData: any, currentUser: NhanSu) => ({ phongBanList: allData.phongBan, chucVuList: allData.chucVu, currentUser }), columns: (allData: any) => ([
-            { header: 'Tên nhân sự', accessor: 'ten', sortKey: 'ten', width: '20%' },
-            { header: 'Email', accessor: 'email', sortKey: 'email', width: '20%' },
-            { header: 'Chức vụ', accessor: (item: NhanSu) => allData.chucVu.find((cv: any) => cv.id === item.chuc_vu)?.ten || '', sortKey: 'chuc_vu', width: '15%' },
-            { header: 'Phòng ban', accessor: (item: NhanSu) => allData.phongBan.find((pb: any) => pb.id === item.phong_ban_id)?.ten || '', sortKey: 'phong_ban_id', width: '15%' },
-            { header: 'Vai trò', accessor: (item: NhanSu) => <Badge status={item.role} />, sortKey: 'role', width: '10%' },
-            { header: 'Nhiệm vụ', accessor: (item: NhanSu) => (
-                <div className="flex flex-wrap gap-1">
-                    {(item.nhiem_vu_tai_lieu || []).map(role => <Badge key={role} status={role} title={translate(role)} size="sm" />)}
-                </div>
-            ), sortKey: 'nhiem_vu_tai_lieu', width: '15%' },
-        ])},
-        { key: 'phongBan', title: 'Phòng ban', Component: CategoryManagementPage, FormComponent: DepartmentForm },
-        { key: 'chucVu', title: 'Chức vụ', Component: CategoryManagementPage, FormComponent: GenericCategoryForm, formProps: { categoryName: 'Chức vụ' }},
-    ],
-    doc: [
-        { key: 'loaiTaiLieu', title: 'Loại tài liệu', Component: CategoryManagementPage, FormComponent: GenericCategoryForm, formProps: { categoryName: 'Loại tài liệu' } },
-        { key: 'capDoTaiLieu', title: 'Cấp độ tài liệu', Component: CategoryManagementPage, FormComponent: GenericCategoryForm, formProps: { categoryName: 'Cấp độ tài liệu' } },
-        { key: 'mucDoBaoMat', title: 'Mức độ bảo mật', Component: CategoryManagementPage, FormComponent: GenericCategoryForm, formProps: { categoryName: 'Mức độ bảo mật' } },
-        { key: 'tanSuatRaSoat', title: 'Tần suất rà soát', Component: CategoryManagementPage, FormComponent: GenericCategoryForm, formProps: { categoryName: 'Tần suất rà soát' } },
-        { key: 'hangMucThayDoi', title: 'Hạng mục thay đổi', Component: CategoryManagementPage, FormComponent: GenericCategoryForm, formProps: { categoryName: 'Hạng mục thay đổi' } },
-    ],
-    audit: [
-        { key: 'tieuChuan', title: 'Tiêu chuẩn', Component: StandardsManagementPage },
-        { key: 'danhGiaVien', title: 'Đánh giá viên', Component: CategoryManagementPage, FormComponent: AuditorForm, formProps: (allData: any) => ({ organizations: allData.toChucDanhGia }) },
-        { key: 'toChucDanhGia', title: 'Tổ chức đánh giá', Component: CategoryManagementPage, FormComponent: GenericCategoryForm, formProps: { categoryName: 'Tổ chức đánh giá' } },
-    ]
-};
+const orgCategories = [
+    { key: 'nhanSu' as keyof typeof mockData, title: 'Nhân sự', Component: PersonnelForm, props: (data: any) => ({ chucVuList: data.chucVu, phongBanList: data.phongBan }) },
+    { key: 'phongBan' as keyof typeof mockData, title: 'Phòng ban', Component: DepartmentForm, props: () => ({}) },
+    { key: 'chucVu' as keyof typeof mockData, title: 'Chức vụ', Component: GenericCategoryForm, props: () => ({ categoryName: 'Chức vụ' }) },
+];
 
-const GroupedCategoryPage: React.FC<GroupedCategoryPageProps> = ({ 
-    group, 
+const docCategories = [
+    { key: 'loaiTaiLieu' as keyof typeof mockData, title: 'Loại tài liệu', Component: GenericCategoryForm, props: () => ({ categoryName: 'Loại tài liệu' }) },
+    { key: 'capDoTaiLieu' as keyof typeof mockData, title: 'Cấp độ tài liệu', Component: GenericCategoryForm, props: () => ({ categoryName: 'Cấp độ tài liệu' }) },
+    { key: 'mucDoBaoMat' as keyof typeof mockData, title: 'Mức độ bảo mật', Component: GenericCategoryForm, props: () => ({ categoryName: 'Mức độ bảo mật' }) },
+    { key: 'tanSuatRaSoat' as keyof typeof mockData, title: 'Tần suất rà soát', Component: GenericCategoryForm, props: () => ({ categoryName: 'Tần suất rà soát' }) },
+    { key: 'hangMucThayDoi' as keyof typeof mockData, title: 'Hạng mục thay đổi', Component: GenericCategoryForm, props: () => ({ categoryName: 'Hạng mục thay đổi' }) },
+];
+
+const auditCategories = [
+    { key: 'danhGiaVien' as keyof typeof mockData, title: 'Đánh giá viên', Component: AuditorForm, props: (data: any) => ({ organizations: data.toChucDanhGia }) },
+    { key: 'toChucDanhGia' as keyof typeof mockData, title: 'Tổ chức đánh giá', Component: GenericCategoryForm, props: () => ({ categoryName: 'Tổ chức đánh giá' }) },
+];
+
+const getColumnsForCategory = (key: string, data: any) => {
+    switch (key) {
+        case 'nhanSu':
+            const phongBanMap = new Map(data.phongBan.map((p: any) => [p.id, p.ten]));
+            const chucVuMap = new Map(data.chucVu.map((c: any) => [c.id, c.ten]));
+            return [
+                { header: 'Tên nhân sự', accessor: 'ten', sortKey: 'ten', width: '25%' },
+                { header: 'Email', accessor: 'email', sortKey: 'email', width: '20%' },
+                { header: 'Tên đăng nhập', accessor: 'ten_dang_nhap', sortKey: 'ten_dang_nhap', width: '15%' },
+                { header: 'Phòng ban', accessor: (item: any) => phongBanMap.get(item.phong_ban_id) || '', sortKey: 'phong_ban_id', width: '20%' },
+                { header: 'Chức vụ', accessor: (item: any) => chucVuMap.get(item.chuc_vu) || '', sortKey: 'chuc_vu', width: '15%' },
+            ];
+        case 'danhGiaVien':
+            const orgMap = new Map(data.toChucDanhGia.map((o: any) => [o.id, o.ten]));
+            return [
+                 { header: 'Tên đánh giá viên', accessor: 'ten', sortKey: 'ten', width: '40%' },
+                 { header: 'Loại', accessor: (item: any) => item.loai === 'internal' ? 'Nội bộ' : 'Bên ngoài', sortKey: 'loai', width: '25%' },
+                 { header: 'Tổ chức', accessor: (item: any) => orgMap.get(item.to_chuc_id) || '', sortKey: 'to_chuc_id', width: '30%' },
+            ]
+        default:
+            return null; // Let CategoryManagementPage use its default
+    }
+}
+
+export const GroupedCategoryPage: React.FC<GroupedCategoryPageProps> = ({
+    group,
     title,
     allData,
     onSaveCategory,
@@ -69,68 +78,60 @@ const GroupedCategoryPage: React.FC<GroupedCategoryPageProps> = ({
     onToggleCategoryStatus,
     onUpdateData,
     currentUser,
-    initialTab
 }) => {
-    
-    const tabsConfig = categoryGroups[group];
+    const [activeTab, setActiveTab] = useState(0);
+    const [categories, setCategories] = useState<any[]>([]);
 
-    const findInitialIndex = () => {
-        if (!initialTab) return 0;
-        const index = tabsConfig.findIndex(tab => tab.key === initialTab);
-        return index > -1 ? index : 0;
-    };
-
-    const [activeTabIndex, setActiveTabIndex] = useState(findInitialIndex());
-    
     useEffect(() => {
-        setActiveTabIndex(findInitialIndex());
-    }, [initialTab, group]);
+        if (group === 'org') {
+            setCategories(orgCategories);
+        } else if (group === 'doc') {
+            setCategories(docCategories);
+        } else if (group === 'audit') {
+            const newCategories = [
+                ...auditCategories,
+                { key: 'tieuChuan', title: 'Tiêu chuẩn', Component: null, props: () => ({}) }
+            ];
+            setCategories(newCategories);
+        }
+        setActiveTab(0);
+    }, [group]);
 
-
-    const tabs = tabsConfig.map(config => {
-        const { key, title, FormComponent, formProps, columns } = config;
-
-        let content;
-        if (key === 'tieuChuan') { // Special case for Standards
-            content = (
-                <StandardsManagementPage
+    const tabs = useMemo(() => categories.map(cat => ({
+        title: cat.title,
+        content: (
+            cat.key === 'tieuChuan' ? (
+                <StandardsManagementPage 
                     standards={allData.tieuChuan}
                     onUpdateData={onUpdateData}
                     currentUser={currentUser}
                 />
-            );
-        } else {
-             const finalFormProps = typeof formProps === 'function' ? formProps(allData, currentUser) : formProps;
-             const finalColumns = typeof columns === 'function' ? columns(allData) : columns;
-
-            content = (
-                <CategoryManagementPage<DanhMucChung>
-                    title={title}
-                    categoryKey={key as CategoryKey}
-                    items={allData[key as CategoryKey] as any[]}
-                    columns={finalColumns}
-                    FormComponent={FormComponent!}
-                    formProps={finalFormProps}
+            ) : (
+                <CategoryManagementPage
+                    title={`Quản lý ${cat.title}`}
+                    categoryKey={cat.key}
+                    items={allData[cat.key as keyof typeof mockData]}
+                    columns={getColumnsForCategory(cat.key, allData)}
+                    FormComponent={cat.Component}
+                    formProps={cat.props(allData)}
                     onSave={onSaveCategory}
                     onDelete={onDeleteCategory}
                     onToggleStatus={onToggleCategoryStatus}
                     currentUser={currentUser}
                 />
-            );
-        }
-        
-        return {
-            title: title,
-            content: <div className="mt-6">{content}</div>
-        };
-    });
-
+            )
+        )
+    })), [categories, allData, onSaveCategory, onDeleteCategory, onToggleCategoryStatus, onUpdateData, currentUser]);
+    
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-            <Tabs tabs={tabs} activeTabIndex={activeTabIndex} onTabChange={setActiveTabIndex} />
+            
+            <Tabs 
+                tabs={tabs}
+                activeTabIndex={activeTab}
+                onTabChange={setActiveTab}
+            />
         </div>
     );
 };
-
-export default GroupedCategoryPage;

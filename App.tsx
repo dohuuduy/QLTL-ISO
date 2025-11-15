@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -28,7 +29,8 @@ import AuditManagementPage from './components/AuditManagementPage';
 import ReportsPage from './components/ReportsPage';
 import SettingsPage from './components/SettingsPage';
 import AuditLogPage from './components/AuditLogPage';
-import GroupedCategoryPage from './components/GroupedCategoryPage';
+// FIX: Changed to named import for GroupedCategoryPage as it does not have a default export.
+import { GroupedCategoryPage } from './components/GroupedCategoryPage';
 import DashboardSkeleton from './components/DashboardSkeleton';
 import type { BreadcrumbItem } from './components/ui/Breadcrumb';
 
