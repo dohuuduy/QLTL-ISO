@@ -611,10 +611,16 @@ const App: React.FC = () => {
         }));
     }, []);
 
-    const handleUpdateDocument = useCallback((updatedDoc: DanhMucTaiLieu) => {
+    const handleUpdateDocument = useCallback((updatedDoc: Partial<DanhMucTaiLieu>) => {
         setAppData(prev => ({
             ...prev,
-            documents: prev.documents.map(d => d.ma_tl === updatedDoc.ma_tl ? updatedDoc : d)
+            documents: prev.documents.map(d => {
+                if (d.ma_tl === updatedDoc.ma_tl) {
+                    // Safely merge the update onto the existing document to prevent data loss
+                    return { ...d, ...updatedDoc };
+                }
+                return d;
+            })
         }));
     }, []);
     
