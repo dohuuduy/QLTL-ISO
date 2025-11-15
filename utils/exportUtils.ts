@@ -157,7 +157,7 @@ export const exportVisibleReportToWord = (filename: string) => {
             tbody tr:nth-child(even) { background-color: #f8f9fa; }
             .signature-section { margin-top: 40px; page-break-inside: avoid; }
             .signature-section table { width: 100%; border: none !important; }
-            .signature-section td { border: none !important; padding: 2px 0; }
+            .signature-section td { border: none !important; padding: 0; line-height: 1.4; }
             .signature-section .date-location { font-style: italic; }
             .signature-section .sign-title { font-weight: bold; text-transform: uppercase; padding-top: 10px; }
             .signature-section .sign-note { font-style: italic; font-size: 10pt; }

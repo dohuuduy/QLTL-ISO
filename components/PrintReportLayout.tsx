@@ -43,7 +43,7 @@ const PrintReportLayout: React.FC<PrintReportLayoutProps> = ({ title, filters, c
             <main>
                 <table>
                     <colgroup>
-                        <col style={{ width: '5%' }} />
+                        <col style={{ width: '8%' }} />
                         {columns.map((col, index) => (
                             <col key={index} style={{ width: col.width }} />
                         ))}
