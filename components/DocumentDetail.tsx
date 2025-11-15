@@ -339,6 +339,15 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
         });
     };
     
+    const handleCollapseAll = () => {
+        const allParentIds = new Set(docChildrenMap.keys());
+        setCollapsedNodes(allParentIds);
+    };
+
+    const handleExpandAll = () => {
+        setCollapsedNodes(new Set());
+    };
+
     const visibleTreeItems = useMemo(() => {
         const visibleItems: TreeItem[] = [];
         const parentLevels: { [level: number]: TreeItem } = {};
@@ -866,7 +875,15 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                                     } 
                                 />
                                 <div>
-                                    <dt className="text-sm font-medium text-gray-500 mb-2">Cây gia phả tài liệu</dt>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <dt className="text-sm font-medium text-gray-500">Cây gia phả tài liệu</dt>
+                                        {treeData.length > 1 && (
+                                            <div className="flex items-center space-x-4">
+                                                <button type="button" onClick={handleCollapseAll} className="text-xs font-medium text-gray-500 hover:text-blue-600">Thu gọn tất cả</button>
+                                                <button type="button" onClick={handleExpandAll} className="text-xs font-medium text-gray-500 hover:text-blue-600">Mở rộng tất cả</button>
+                                            </div>
+                                        )}
+                                    </div>
                                     <dd className="mt-1 text-sm text-gray-900 border rounded-lg p-2 bg-slate-50/50 space-y-1">
                                         {visibleTreeItems.length > 0 ? visibleTreeItems.map(item => {
                                             const hasChildren = docChildrenMap.has(item.doc.ma_tl);
@@ -922,12 +939,47 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                              <div className="px-4 py-3 sm:px-6 bg-slate-50">
                                 <h3 className="text-base font-semibold text-gray-800">Tệp đính kèm</h3>
                             </div>
-                             <div className="p-4 sm:p-6 flex items-center space-x-4">
-                                {document.link_drive && <a href={document.link_drive} target="_blank" rel="noopener noreferrer" className="link">Google Drive</a>}
-                                {document.file_pdf && <a href={document.file_pdf} target="_blank" rel="noopener noreferrer" className="link">PDF</a>}
-                                {document.file_docx && <a href={document.file_docx} target="_blank" rel="noopener noreferrer" className="link">DOCX</a>}
-                                {!document.link_drive && !document.file_pdf && !document.file_docx && <span className="text-sm text-gray-400">Không có</span>}
-                             </div>
+                            {document.file_pdf || document.file_docx || document.link_drive ? (
+                                <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {document.file_pdf && (
+                                        <a href={document.file_pdf} target="_blank" rel="noopener noreferrer" className="block p-4 rounded-lg border bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-all duration-150 flex items-center gap-4">
+                                            <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-lg bg-red-100">
+                                                <Icon type="document-text" className="h-6 w-6 text-red-600" />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-slate-800">Tệp PDF</p>
+                                                <p className="text-xs text-slate-500">Mở trong tab mới</p>
+                                            </div>
+                                        </a>
+                                    )}
+                                    {document.file_docx && (
+                                        <a href={document.file_docx} target="_blank" rel="noopener noreferrer" className="block p-4 rounded-lg border bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-all duration-150 flex items-center gap-4">
+                                            <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-lg bg-blue-100">
+                                                <Icon type="document-arrow-down" className="h-6 w-6 text-blue-600" />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-slate-800">Tệp DOCX</p>
+                                                <p className="text-xs text-slate-500">Tải xuống tệp</p>
+                                            </div>
+                                        </a>
+                                    )}
+                                    {document.link_drive && (
+                                        <a href={document.link_drive} target="_blank" rel="noopener noreferrer" className="block p-4 rounded-lg border bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-all duration-150 flex items-center gap-4">
+                                            <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-lg bg-yellow-100">
+                                                <Icon type="link" className="h-6 w-6 text-yellow-600" />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-slate-800">Google Drive</p>
+                                                <p className="text-xs text-slate-500">Mở trong tab mới</p>
+                                            </div>
+                                        </a>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="p-4 sm:p-6">
+                                    <span className="text-sm text-gray-500">Không có tệp đính kèm nào cho tài liệu này.</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </Card.Body>

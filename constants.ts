@@ -11,7 +11,7 @@ export enum DocumentStatus {
 export enum VersionStatus {
     BAN_THAO = 'ban_thao',
     PHE_DUYET = 'phe_duyet',
-    BAN_HANH = 'ban_hahn',
+    BAN_HANH = 'ban_hanh',
     THU_HOI = 'thu_hoi',
 }
 
