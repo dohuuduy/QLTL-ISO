@@ -66,7 +66,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [relatedDoc, setRelatedDoc] = useState<DanhMucTaiLieu | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filters, setFilters] = useState({ status: '', department: '', standard: '' });
+    const [filters, setFilters] = useState({ status: '', department: '', standard: '', loai_tai_lieu: '' });
     const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
     const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ngay_hieu_luc', direction: 'descending' });
     const [currentPage, setCurrentPage] = useState(1);
@@ -115,8 +115,9 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             
             const matchesDepartment = filters.department ? doc.phong_ban_quan_ly === filters.department : true;
             const matchesStandard = filters.standard ? doc.tieu_chuan_ids.includes(filters.standard) : true;
+            const matchesLoaiTaiLieu = filters.loai_tai_lieu ? doc.loai_tai_lieu === filters.loai_tai_lieu : true;
             
-            return matchesSearch && matchesStatus && matchesDepartment && matchesStandard;
+            return matchesSearch && matchesStatus && matchesDepartment && matchesStandard && matchesLoaiTaiLieu;
         });
     }, [allData.documents, searchTerm, filters, showBookmarkedOnly]);
 
@@ -198,6 +199,9 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         if (filters.department) {
             activeFilters['Phòng ban'] = phongBanMap.get(filters.department) || 'N/A';
         }
+        if (filters.loai_tai_lieu) {
+            activeFilters['Loại tài liệu'] = loaiTaiLieuMap.get(filters.loai_tai_lieu) || 'N/A';
+        }
         if (filters.standard) {
             activeFilters['Tiêu chuẩn'] = allData.tieuChuan.find(t => t.id === filters.standard)?.ten || 'N/A';
         }
@@ -218,7 +222,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             ],
             data: sortedDocuments,
         };
-    }, [sortedDocuments, filters, searchTerm, phongBanMap, latestVersionMap, allData.tieuChuan]);
+    }, [sortedDocuments, filters, searchTerm, phongBanMap, latestVersionMap, allData.tieuChuan, loaiTaiLieuMap]);
 
     const requestSort = (key: string) => {
         let direction: 'ascending' | 'descending' = 'ascending';
@@ -539,8 +543,9 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
 
                 <Card>
                     <Card.Body>
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 items-end">
-                            <div className="xl:col-span-2">
+                        <div className="flex flex-wrap items-end gap-4">
+                            {/* Search Input */}
+                            <div className="flex-grow" style={{ minWidth: '12rem', maxWidth: '17rem' }}>
                                 <label htmlFor="search-input" className="form-label">Tìm kiếm</label>
                                 <div className="search-input-container">
                                     <Icon type="search" className="search-input-icon h-5 w-5" />
@@ -564,7 +569,9 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                     )}
                                 </div>
                             </div>
-                            <div>
+
+                            {/* Status filter */}
+                            <div className="w-full sm:w-auto" style={{ flexBasis: '160px' }}>
                                 <label htmlFor="status-filter" className="form-label">Trạng thái</label>
                                 <select
                                     id="status-filter"
@@ -577,7 +584,9 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                     {Object.values(DocumentStatus).map(s => <option key={s} value={s}>{translate(s)}</option>)}
                                 </select>
                             </div>
-                            <div>
+
+                            {/* Department filter */}
+                            <div className="w-full sm:w-auto" style={{ flexBasis: '160px' }}>
                                 <label htmlFor="department-filter" className="form-label">Phòng ban</label>
                                 <select
                                     id="department-filter"
@@ -589,7 +598,23 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                     {allData.phongBan.map(d => <option key={d.id} value={d.id}>{d.ten}</option>)}
                                 </select>
                             </div>
-                           <div>
+
+                           {/* Doc type filter */}
+                           <div className="w-full sm:w-auto" style={{ flexBasis: '160px' }}>
+                                <label htmlFor="loai-tai-lieu-filter" className="form-label">Loại tài liệu</label>
+                                <select
+                                    id="loai-tai-lieu-filter"
+                                    value={filters.loai_tai_lieu}
+                                    onChange={(e) => setFilters(f => ({ ...f, loai_tai_lieu: e.target.value }))}
+                                    className="form-select"
+                                >
+                                    <option value="">Tất cả</option>
+                                    {allData.loaiTaiLieu.map(d => <option key={d.id} value={d.id}>{d.ten}</option>)}
+                                </select>
+                            </div>
+                           
+                           {/* Standard filter */}
+                           <div className="w-full sm:w-auto" style={{ flexBasis: '150px' }}>
                                 <label htmlFor="standard-filter" className="form-label">Tiêu chuẩn</label>
                                 <select
                                     id="standard-filter"
@@ -606,23 +631,25 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                                     })}
                                 </select>
                             </div>
-                            <div>
-                                <label htmlFor="bookmark-toggle" className="form-label">&nbsp;</label>
+
+                            {/* Bookmark button */}
+                            <div className="flex-shrink-0">
+                                <label className="form-label hidden sm:block">&nbsp;</label>
                                 <button
                                     id="bookmark-toggle"
                                     type="button"
                                     onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
-                                    className={`w-full inline-flex items-center justify-center gap-x-1.5 rounded-md border shadow-sm transition-colors duration-150 py-2.5 px-4 text-sm font-medium ${
+                                    className={`inline-flex p-[0.625rem] items-center justify-center rounded-md border shadow-sm transition-all duration-150 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-blue-500/40 focus:border-blue-500 ${
                                         showBookmarkedOnly
                                             ? 'bg-yellow-100 text-yellow-900 border-yellow-400 hover:bg-yellow-200'
-                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
                                     }`}
+                                    title={showBookmarkedOnly ? "Hiển thị tất cả" : "Chỉ hiển thị đã đánh dấu"}
                                 >
                                     <Icon 
                                         type={showBookmarkedOnly ? 'star-solid' : 'star'} 
-                                        className={`-ml-0.5 h-5 w-5 ${showBookmarkedOnly ? 'text-yellow-500' : 'text-gray-400'}`} 
+                                        className={`h-5 w-5 ${showBookmarkedOnly ? 'text-yellow-500' : 'text-gray-400'}`} 
                                     />
-                                    <span>Đã đánh dấu</span>
                                 </button>
                             </div>
                         </div>
