@@ -51,18 +51,18 @@ const VersionForm: React.FC<VersionFormProps> = ({ onSubmit, onCancel, initialDa
             <div className="p-6 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="phien_ban" className="form-label">Số phiên bản</label>
+                        <label htmlFor="phien_ban" className="form-label">Số phiên bản <span className="text-red-500">*</span></label>
                         <input type="text" name="phien_ban" id="phien_ban" value={formData.phien_ban} onChange={handleChange} className="form-input" required placeholder="VD: 1.0, 1.1, 2.0..." />
                     </div>
                     <div>
-                        <label htmlFor="ngay_phat_hanh" className="form-label">Ngày phát hành</label>
+                        <label htmlFor="ngay_phat_hanh" className="form-label">Ngày phát hành <span className="text-red-500">*</span></label>
                         <DatePicker id="ngay_phat_hanh" value={formData.ngay_phat_hanh} onChange={value => handleDateChange('ngay_phat_hanh', value)} required />
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="trang_thai_phien_ban" className="form-label">Trạng thái</label>
+                        <label htmlFor="trang_thai_phien_ban" className="form-label">Trạng thái <span className="text-red-500">*</span></label>
                         <select name="trang_thai_phien_ban" id="trang_thai_phien_ban" value={formData.trang_thai_phien_ban} onChange={handleChange} className="form-select" required>
                             {Object.values(VersionStatus).map(status => (
                                 <option key={status} value={status}>{translate(status)}</option>
@@ -70,7 +70,7 @@ const VersionForm: React.FC<VersionFormProps> = ({ onSubmit, onCancel, initialDa
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="nguoi_thuc_hien" className="form-label">Người thực hiện</label>
+                        <label htmlFor="nguoi_thuc_hien" className="form-label">Người thực hiện <span className="text-red-500">*</span></label>
                         <select name="nguoi_thuc_hien" id="nguoi_thuc_hien" value={formData.nguoi_thuc_hien} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn người</option>
                             {activeOrCurrentlySelectedUsers.map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
@@ -79,7 +79,7 @@ const VersionForm: React.FC<VersionFormProps> = ({ onSubmit, onCancel, initialDa
                 </div>
                 
                 <div>
-                    <label htmlFor="tom_tat_thay_doi" className="form-label">Tóm tắt thay đổi</label>
+                    <label htmlFor="tom_tat_thay_doi" className="form-label">Tóm tắt thay đổi <span className="text-red-500">*</span></label>
                     <textarea name="tom_tat_thay_doi" id="tom_tat_thay_doi" value={formData.tom_tat_thay_doi} onChange={handleChange} rows={2} className="form-textarea" required placeholder="Tóm tắt ngắn gọn những thay đổi trong phiên bản này" />
                 </div>
 

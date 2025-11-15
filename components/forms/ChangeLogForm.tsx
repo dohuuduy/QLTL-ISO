@@ -58,14 +58,14 @@ const ChangeLogForm: React.FC<ChangeLogFormProps> = ({ onSubmit, onCancel, initi
             <div className="p-6 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="id_phien_ban" className="form-label">Phiên bản</label>
+                        <label htmlFor="id_phien_ban" className="form-label">Phiên bản <span className="text-red-500">*</span></label>
                         <select name="id_phien_ban" id="id_phien_ban" value={formData.id_phien_ban} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn phiên bản</option>
                             {versions.map(v => <option key={v.id_phien_ban} value={v.id_phien_ban}>{v.phien_ban}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="hang_muc" className="form-label">Hạng mục thay đổi</label>
+                        <label htmlFor="hang_muc" className="form-label">Hạng mục thay đổi <span className="text-red-500">*</span></label>
                         <select name="hang_muc" id="hang_muc" value={formData.hang_muc} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn hạng mục</option>
                             {activeOrCurrentlySelected(hangMucList, formData.hang_muc).map(hm => <option key={hm.id} value={hm.id}>{hm.ten}</option>)}
@@ -74,7 +74,7 @@ const ChangeLogForm: React.FC<ChangeLogFormProps> = ({ onSubmit, onCancel, initi
                 </div>
 
                 <div>
-                    <label htmlFor="ly_do_thay_doi" className="form-label">Lý do thay đổi</label>
+                    <label htmlFor="ly_do_thay_doi" className="form-label">Lý do thay đổi <span className="text-red-500">*</span></label>
                     <textarea name="ly_do_thay_doi" id="ly_do_thay_doi" value={formData.ly_do_thay_doi} onChange={handleChange} rows={2} className="form-textarea" required placeholder="Giải thích lý do cho sự thay đổi này" />
                 </div>
 
@@ -90,14 +90,14 @@ const ChangeLogForm: React.FC<ChangeLogFormProps> = ({ onSubmit, onCancel, initi
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="nguoi_de_xuat" className="form-label">Người đề xuất</label>
+                        <label htmlFor="nguoi_de_xuat" className="form-label">Người đề xuất <span className="text-red-500">*</span></label>
                         <select name="nguoi_de_xuat" id="nguoi_de_xuat" value={formData.nguoi_de_xuat} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn người</option>
                             {nhanSuList.filter(u => u.is_active !== false || u.id === formData.nguoi_de_xuat).map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="ngay_de_xuat" className="form-label">Ngày đề xuất</label>
+                        <label htmlFor="ngay_de_xuat" className="form-label">Ngày đề xuất <span className="text-red-500">*</span></label>
                         <DatePicker id="ngay_de_xuat" value={formData.ngay_de_xuat} onChange={value => handleDateChange('ngay_de_xuat', value)} required />
                     </div>
                 </div>

@@ -15,8 +15,9 @@ interface PersonnelFormProps {
 const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initialData, phongBanList, chucVuList, currentUser }) => {
     const getInitialState = () => ({
         ten: '',
+        email: '',
         ten_dang_nhap: '',
-        mat_khau: initialData ? '' : '123',
+        mat_khau: '123', // Default password for new users
         chuc_vu: '',
         phong_ban_id: '',
         role: 'user' as NhanSuRole,
@@ -25,13 +26,15 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
     
     const [formData, setFormData] = useState(getInitialState());
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
         if (initialData) {
             setFormData({
                 ten: initialData.ten || '',
+                email: initialData.email || '',
                 ten_dang_nhap: initialData.ten_dang_nhap || '',
-                mat_khau: initialData.mat_khau || '',
+                mat_khau: '', // Leave empty for editing, user can fill to change it
                 chuc_vu: initialData.chuc_vu || '',
                 phong_ban_id: initialData.phong_ban_id || '',
                 role: initialData.role || 'user',
@@ -41,11 +44,36 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
             // Reset form for new user, with default password
             setFormData(getInitialState());
         }
+        setErrors({});
     }, [initialData]);
+
+    const validate = (): Record<string, string> => {
+        const newErrors: Record<string, string> = {};
+        if (!formData.ten.trim()) newErrors.ten = "Tên nhân sự là bắt buộc.";
+        if (!formData.ten_dang_nhap.trim()) newErrors.ten_dang_nhap = "Tên đăng nhập là bắt buộc.";
+        
+        // Password is required only for new users
+        if (!initialData?.id && !formData.mat_khau) {
+             newErrors.mat_khau = "Mật khẩu là bắt buộc.";
+        }
+        
+        // Email is optional, but if present, must be valid
+        if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = "Định dạng email không hợp lệ.";
+        }
+        return newErrors;
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        if (errors[name]) {
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[name];
+                return newErrors;
+            });
+        }
     };
 
     const handlePermissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +89,19 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        const validationErrors = validate();
+        setErrors(validationErrors);
+        if (Object.keys(validationErrors).length > 0) {
+            return;
+        }
+
         const dataToSubmit: Partial<NhanSu> = { ...initialData, ...formData };
+        
+        // If password field is empty during an edit, don't update it
+        if (initialData?.id && !formData.mat_khau) {
+            delete dataToSubmit.mat_khau;
+        }
+
         if (formData.role !== 'admin') {
              dataToSubmit.permissions = formData.permissions;
         } else {
@@ -83,34 +123,49 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
         <form onSubmit={handleSubmit}>
             <div className="p-6 space-y-4">
                 <div>
-                    <label htmlFor="ten" className="form-label">Tên nhân sự</label>
+                    <label htmlFor="ten" className="form-label">Tên nhân sự <span className="text-red-500">*</span></label>
                     <input
                         type="text"
                         name="ten"
                         id="ten"
                         value={formData.ten}
                         onChange={handleChange}
-                        className="form-input"
+                        className={`form-input ${errors.ten ? 'error' : ''}`}
                         required
                         placeholder="VD: Nguyễn Văn An"
                     />
+                    {errors.ten && <p className="mt-1 text-sm text-red-600">{errors.ten}</p>}
+                </div>
+                 <div>
+                    <label htmlFor="email" className="form-label">Email</label>
+                    <input
+                        type="email"
+                        name="email"
+                        id="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        className={`form-input ${errors.email ? 'error' : ''}`}
+                        placeholder="VD: an.nv@company.com (tùy chọn)"
+                    />
+                    {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                 </div>
                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="ten_dang_nhap" className="form-label">Tên đăng nhập</label>
+                        <label htmlFor="ten_dang_nhap" className="form-label">Tên đăng nhập <span className="text-red-500">*</span></label>
                         <input
                             type="text"
                             name="ten_dang_nhap"
                             id="ten_dang_nhap"
                             value={formData.ten_dang_nhap}
                             onChange={handleChange}
-                            className="form-input"
+                            className={`form-input ${errors.ten_dang_nhap ? 'error' : ''}`}
                             required
                             placeholder="VD: an.nv"
                         />
+                        {errors.ten_dang_nhap && <p className="mt-1 text-sm text-red-600">{errors.ten_dang_nhap}</p>}
                     </div>
                     <div>
-                        <label htmlFor="mat_khau" className="form-label">Mật khẩu</label>
+                        <label htmlFor="mat_khau" className="form-label">Mật khẩu {!initialData && <span className="text-red-500">*</span>}</label>
                          <div className="relative">
                             <input
                                 type={isPasswordVisible ? 'text' : 'password'}
@@ -118,9 +173,9 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
                                 id="mat_khau"
                                 value={formData.mat_khau}
                                 onChange={handleChange}
-                                className="form-input pr-10"
-                                required
-                                placeholder="Nhập mật khẩu"
+                                className={`form-input pr-10 ${errors.mat_khau ? 'error' : ''}`}
+                                required={!initialData}
+                                placeholder={initialData ? "Để trống nếu không đổi" : "Mật khẩu mặc định: 123"}
                             />
                              <button
                                 type="button"
@@ -131,11 +186,12 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
                                 <Icon type={isPasswordVisible ? 'eye-slash' : 'eye'} className="h-5 w-5" />
                             </button>
                         </div>
+                         {errors.mat_khau && <p className="mt-1 text-sm text-red-600">{errors.mat_khau}</p>}
                     </div>
                 </div>
                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="chuc_vu" className="form-label">Chức vụ</label>
+                        <label htmlFor="chuc_vu" className="form-label">Chức vụ <span className="text-red-500">*</span></label>
                         <select
                             name="chuc_vu"
                             id="chuc_vu"
@@ -151,7 +207,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="phong_ban_id" className="form-label">Phòng ban</label>
+                        <label htmlFor="phong_ban_id" className="form-label">Phòng ban <span className="text-red-500">*</span></label>
                         <select
                             name="phong_ban_id"
                             id="phong_ban_id"
@@ -170,7 +226,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
 
                 {currentUser.role === 'admin' && (
                      <div>
-                        <label htmlFor="role" className="form-label">Vai trò</label>
+                        <label htmlFor="role" className="form-label">Vai trò <span className="text-red-500">*</span></label>
                         <select
                             name="role"
                             id="role"

@@ -42,7 +42,7 @@ const AuditorForm: React.FC<AuditorFormProps> = ({ onSubmit, onCancel, initialDa
         <form onSubmit={handleSubmit}>
             <div className="p-6 space-y-4">
                 <div>
-                    <label htmlFor="ten" className="form-label">Tên đánh giá viên</label>
+                    <label htmlFor="ten" className="form-label">Tên đánh giá viên <span className="text-red-500">*</span></label>
                     <input
                         type="text"
                         name="ten"
@@ -70,7 +70,7 @@ const AuditorForm: React.FC<AuditorFormProps> = ({ onSubmit, onCancel, initialDa
                     </div>
                     {formData.loai === 'external' && (
                         <div>
-                            <label htmlFor="to_chuc_id" className="form-label">Tổ chức</label>
+                            <label htmlFor="to_chuc_id" className="form-label">Tổ chức <span className="text-red-500">*</span></label>
                             <select
                                 name="to_chuc_id"
                                 id="to_chuc_id"

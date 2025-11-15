@@ -26,7 +26,7 @@ const GenericCategoryForm: React.FC<GenericCategoryFormProps> = ({ onSubmit, onC
         <form onSubmit={handleSubmit}>
             <div className="p-6">
                 <label htmlFor="ten" className="form-label">
-                    Tên {categoryName.toLowerCase()}
+                    Tên {categoryName.toLowerCase()} <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="text"

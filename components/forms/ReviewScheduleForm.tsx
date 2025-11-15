@@ -60,11 +60,11 @@ const ReviewScheduleForm: React.FC<ReviewScheduleFormProps> = ({ onSubmit, onCan
             <div className="p-6 space-y-4">
                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="ngay_ra_soat_ke_tiep" className="form-label">Ngày rà soát kế tiếp</label>
+                        <label htmlFor="ngay_ra_soat_ke_tiep" className="form-label">Ngày rà soát kế tiếp <span className="text-red-500">*</span></label>
                         <DatePicker id="ngay_ra_soat_ke_tiep" value={formData.ngay_ra_soat_ke_tiep} onChange={value => handleDateChange('ngay_ra_soat_ke_tiep', value)} required />
                     </div>
                     <div>
-                        <label htmlFor="tan_suat" className="form-label">Tần suất</label>
+                        <label htmlFor="tan_suat" className="form-label">Tần suất <span className="text-red-500">*</span></label>
                         <select name="tan_suat" id="tan_suat" value={formData.tan_suat} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn tần suất</option>
                             {activeOrCurrentlySelected(tanSuatList, formData.tan_suat).map(ts => <option key={ts.id} value={ts.id}>{ts.ten}</option>)}
@@ -72,7 +72,7 @@ const ReviewScheduleForm: React.FC<ReviewScheduleFormProps> = ({ onSubmit, onCan
                     </div>
                 </div>
                  <div>
-                    <label htmlFor="nguoi_chiu_trach_nhiem" className="form-label">Người chịu trách nhiệm</label>
+                    <label htmlFor="nguoi_chiu_trach_nhiem" className="form-label">Người chịu trách nhiệm <span className="text-red-500">*</span></label>
                     <select name="nguoi_chiu_trach_nhiem" id="nguoi_chiu_trach_nhiem" value={formData.nguoi_chiu_trach_nhiem} onChange={handleChange} className="form-select" required>
                         <option value="">Chọn người</option>
                         {nhanSuList.filter(u => u.is_active !== false || u.id === formData.nguoi_chiu_trach_nhiem).map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
@@ -90,7 +90,7 @@ const ReviewScheduleForm: React.FC<ReviewScheduleFormProps> = ({ onSubmit, onCan
                         </div>
                         {isLoggingResult && (
                              <div>
-                                <label htmlFor="ngay_ra_soat_thuc_te" className="form-label">Ngày rà soát thực tế</label>
+                                <label htmlFor="ngay_ra_soat_thuc_te" className="form-label">Ngày rà soát thực tế <span className="text-red-500">*</span></label>
                                 <DatePicker id="ngay_ra_soat_thuc_te" value={formData.ngay_ra_soat_thuc_te} onChange={value => handleDateChange('ngay_ra_soat_thuc_te', value)} required />
                             </div>
                         )}

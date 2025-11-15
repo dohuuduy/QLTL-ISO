@@ -56,14 +56,14 @@ const RiskForm: React.FC<RiskFormProps> = ({ onSubmit, onCancel, initialData, ma
             <div className="p-6 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                      <div>
-                        <label htmlFor="loai" className="form-label">Loại</label>
+                        <label htmlFor="loai" className="form-label">Loại <span className="text-red-500">*</span></label>
                         <select name="loai" id="loai" value={formData.loai} onChange={handleChange} className="form-select" required>
                             <option value="rui_ro">Rủi ro</option>
                             <option value="co_hoi">Cơ hội</option>
                         </select>
                     </div>
                      <div>
-                        <label htmlFor="muc_do_anh_huong" className="form-label">Mức độ ảnh hưởng</label>
+                        <label htmlFor="muc_do_anh_huong" className="form-label">Mức độ ảnh hưởng <span className="text-red-500">*</span></label>
                         <select name="muc_do_anh_huong" id="muc_do_anh_huong" value={formData.muc_do_anh_huong} onChange={handleChange} className="form-select" required>
                             <option value="cao">Cao</option>
                             <option value="trung_binh">Trung bình</option>
@@ -73,7 +73,7 @@ const RiskForm: React.FC<RiskFormProps> = ({ onSubmit, onCancel, initialData, ma
                 </div>
                 
                 <div>
-                    <label htmlFor="mo_ta" className="form-label">Mô tả</label>
+                    <label htmlFor="mo_ta" className="form-label">Mô tả <span className="text-red-500">*</span></label>
                     <textarea name="mo_ta" id="mo_ta" value={formData.mo_ta} onChange={handleChange} rows={3} className="form-textarea" required placeholder="Mô tả chi tiết về rủi ro hoặc cơ hội" />
                 </div>
 
@@ -84,20 +84,20 @@ const RiskForm: React.FC<RiskFormProps> = ({ onSubmit, onCancel, initialData, ma
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                      <div>
-                        <label htmlFor="nguoi_phu_trach" className="form-label">Người phụ trách</label>
+                        <label htmlFor="nguoi_phu_trach" className="form-label">Người phụ trách <span className="text-red-500">*</span></label>
                         <select name="nguoi_phu_trach" id="nguoi_phu_trach" value={formData.nguoi_phu_trach} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn người</option>
                             {nhanSuList.map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
                         </select>
                     </div>
                      <div>
-                        <label htmlFor="ngay_nhan_dien" className="form-label">Ngày nhận diện</label>
+                        <label htmlFor="ngay_nhan_dien" className="form-label">Ngày nhận diện <span className="text-red-500">*</span></label>
                         <DatePicker id="ngay_nhan_dien" value={formData.ngay_nhan_dien} onChange={value => handleDateChange('ngay_nhan_dien', value)} required />
                     </div>
                 </div>
 
                 <div>
-                    <label htmlFor="trang_thai" className="form-label">Trạng thái</label>
+                    <label htmlFor="trang_thai" className="form-label">Trạng thái <span className="text-red-500">*</span></label>
                     <select name="trang_thai" id="trang_thai" value={formData.trang_thai} onChange={handleChange} className="form-select" required>
                         {Object.values(RiskStatus).map(status => (
                             <option key={status} value={status}>{translate(status)}</option>

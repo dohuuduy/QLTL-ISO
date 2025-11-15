@@ -217,18 +217,18 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
             <div className="p-6 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="sm:col-span-2">
-                        <label htmlFor="ten_cuoc_audit" className="form-label">Tên cuộc audit</label>
+                        <label htmlFor="ten_cuoc_audit" className="form-label">Tên cuộc audit <span className="text-red-500">*</span></label>
                         <input type="text" name="ten_cuoc_audit" id="ten_cuoc_audit" value={formData.ten_cuoc_audit} onChange={handleChange} className="form-input" required placeholder="VD: Đánh giá nội bộ Quý 3/2024" />
                     </div>
                     <div>
-                        <label htmlFor="loai_audit" className="form-label">Loại audit</label>
+                        <label htmlFor="loai_audit" className="form-label">Loại audit <span className="text-red-500">*</span></label>
                         <select name="loai_audit" id="loai_audit" value={formData.loai_audit} onChange={handleChange} className="form-select" required>
                             <option value="internal">Nội bộ</option>
                             <option value="external">Bên ngoài</option>
                         </select>
                     </div>
                      <div>
-                        <label htmlFor="trang_thai" className="form-label">Trạng thái</label>
+                        <label htmlFor="trang_thai" className="form-label">Trạng thái <span className="text-red-500">*</span></label>
                         <select name="trang_thai" id="trang_thai" value={formData.trang_thai} onChange={handleChange} className="form-select" required>
                             {Object.values(AuditStatus).map(s => <option key={s} value={s}>{translate(s)}</option>)}
                         </select>
@@ -237,7 +237,7 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
 
                 {formData.loai_audit === 'external' && (
                     <div>
-                        <label htmlFor="to_chuc_danh_gia_id" className="form-label">Tổ chức đánh giá</label>
+                        <label htmlFor="to_chuc_danh_gia_id" className="form-label">Tổ chức đánh giá <span className="text-red-500">*</span></label>
                         <select name="to_chuc_danh_gia_id" id="to_chuc_danh_gia_id" value={formData.to_chuc_danh_gia_id} onChange={handleChange} className="form-select" required>
                             <option value="">-- Chọn tổ chức --</option>
                             {categories.toChucDanhGia.filter(o => o.is_active).map(org => <option key={org.id} value={org.id}>{org.ten}</option>)}
@@ -252,11 +252,11 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
                 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                      <div>
-                        <label htmlFor="ngay_bat_dau" className="form-label">Ngày bắt đầu</label>
+                        <label htmlFor="ngay_bat_dau" className="form-label">Ngày bắt đầu <span className="text-red-500">*</span></label>
                         <DatePicker id="ngay_bat_dau" value={formData.ngay_bat_dau} onChange={(val) => handleDateChange('ngay_bat_dau', val)} className={dateError ? 'error' : ''} required />
                     </div>
                     <div>
-                        <label htmlFor="ngay_ket_thuc" className="form-label">Ngày kết thúc</label>
+                        <label htmlFor="ngay_ket_thuc" className="form-label">Ngày kết thúc <span className="text-red-500">*</span></label>
                         <DatePicker id="ngay_ket_thuc" value={formData.ngay_ket_thuc} onChange={(val) => handleDateChange('ngay_ket_thuc', val)} className={dateError ? 'error' : ''} required />
                         {dateError && <p className="mt-1 text-sm text-red-600">{dateError}</p>}
                     </div>
@@ -287,7 +287,7 @@ const AuditScheduleForm: React.FC<AuditScheduleFormProps> = ({ id, onSubmit, onC
                 </div>
                 
                  <div>
-                    <label htmlFor="chuyen_gia_danh_gia_truong_id" className="form-label">Trưởng đoàn đánh giá</label>
+                    <label htmlFor="chuyen_gia_danh_gia_truong_id" className="form-label">Trưởng đoàn đánh giá <span className="text-red-500">*</span></label>
                     <select name="chuyen_gia_danh_gia_truong_id" id="chuyen_gia_danh_gia_truong_id" value={formData.chuyen_gia_danh_gia_truong_id} onChange={handleChange} className="form-select" required>
                         <option value="">-- Chọn trưởng đoàn --</option>
                         {categories.danhGiaVien.filter(u => u.is_active).map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}

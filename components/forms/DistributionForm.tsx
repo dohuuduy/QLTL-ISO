@@ -71,28 +71,28 @@ const DistributionForm: React.FC<DistributionFormProps> = ({ onSubmit, onCancel,
             <div className="p-6 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="id_phien_ban" className="form-label">Phiên bản</label>
+                        <label htmlFor="id_phien_ban" className="form-label">Phiên bản <span className="text-red-500">*</span></label>
                         <select name="id_phien_ban" id="id_phien_ban" value={formData.id_phien_ban} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn phiên bản</option>
                             {versions.map(v => <option key={v.id_phien_ban} value={v.id_phien_ban}>{v.phien_ban}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="ngay_phan_phoi" className="form-label">Ngày phân phối</label>
+                        <label htmlFor="ngay_phan_phoi" className="form-label">Ngày phân phối <span className="text-red-500">*</span></label>
                         <DatePicker id="ngay_phan_phoi" value={formData.ngay_phan_phoi} onChange={value => handleDateChange('ngay_phan_phoi', value)} required />
                     </div>
                 </div>
                 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="phong_ban_nhan" className="form-label">Phòng ban nhận</label>
+                        <label htmlFor="phong_ban_nhan" className="form-label">Phòng ban nhận <span className="text-red-500">*</span></label>
                         <select name="phong_ban_nhan" id="phong_ban_nhan" value={formData.phong_ban_nhan} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn phòng ban</option>
                             {activeOrCurrentlySelected(phongBanList, formData.phong_ban_nhan).map(pb => <option key={pb.id} value={pb.id}>{pb.ten}</option>)}
                         </select>
                     </div>
                      <div>
-                        <label htmlFor="nguoi_nhan" className="form-label">Người nhận</label>
+                        <label htmlFor="nguoi_nhan" className="form-label">Người nhận <span className="text-red-500">*</span></label>
                         <select name="nguoi_nhan" id="nguoi_nhan" value={formData.nguoi_nhan} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn người</option>
                             {nhanSuList.filter(u => u.is_active !== false || u.id === formData.nguoi_nhan).map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}
@@ -112,7 +112,7 @@ const DistributionForm: React.FC<DistributionFormProps> = ({ onSubmit, onCancel,
                 </div>
                 
                  <div>
-                    <label htmlFor="trang_thai_phan_phoi" className="form-label">Trạng thái</label>
+                    <label htmlFor="trang_thai_phan_phoi" className="form-label">Trạng thái <span className="text-red-500">*</span></label>
                     <select name="trang_thai_phan_phoi" id="trang_thai_phan_phoi" value={formData.trang_thai_phan_phoi} onChange={handleChange} className="form-select" required>
                         {Object.values(DistributionStatus).map(status => (
                             <option key={status} value={status}>{translate(status)}</option>

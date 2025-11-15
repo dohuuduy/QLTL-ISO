@@ -69,7 +69,7 @@ const StandardForm: React.FC<StandardFormProps> = ({ onSubmit, onCancel, initial
         <form onSubmit={handleSubmit}>
             <div className="p-6 space-y-4">
                 <div>
-                    <label htmlFor="ten" className="form-label">Tên đầy đủ</label>
+                    <label htmlFor="ten" className="form-label">Tên đầy đủ <span className="text-red-500">*</span></label>
                     <input type="text" name="ten" id="ten" value={formData.ten} onChange={handleChange} className="form-input" required placeholder="VD: ISO 9001 - Hệ thống quản lý chất lượng" />
                 </div>
 
@@ -86,7 +86,7 @@ const StandardForm: React.FC<StandardFormProps> = ({ onSubmit, onCancel, initial
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="ngay_ap_dung" className="form-label">Ngày bắt đầu áp dụng</label>
+                        <label htmlFor="ngay_ap_dung" className="form-label">Ngày bắt đầu áp dụng <span className="text-red-500">*</span></label>
                         <DatePicker id="ngay_ap_dung" value={formData.ngay_ap_dung} onChange={(val) => handleDateChange('ngay_ap_dung', val)} required />
                     </div>
                     <div>

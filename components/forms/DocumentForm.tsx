@@ -336,7 +336,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                      <div className="space-y-6">
                         <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                             <div className="sm:col-span-4">
-                                <label htmlFor="ten_tai_lieu" className={labelStyles}>Tên tài liệu</label>
+                                <label htmlFor="ten_tai_lieu" className={labelStyles}>Tên tài liệu <span className="text-red-500">*</span></label>
                                 <input type="text" name="ten_tai_lieu" id="ten_tai_lieu" value={formData.ten_tai_lieu} onChange={handleChange} required className={`${inputStyles} ${errors.ten_tai_lieu ? 'border-red-500' : 'border-gray-300'}`} placeholder="VD: Quy trình Quản lý Nhà thầu phụ" />
                                 {errors.ten_tai_lieu && <p className="mt-1 text-sm text-red-600">{errors.ten_tai_lieu}</p>}
                             </div>
@@ -346,7 +346,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                             </div>
 
                             <div className="sm:col-span-3">
-                                <label htmlFor="loai_tai_lieu" className={labelStyles}>Loại tài liệu</label>
+                                <label htmlFor="loai_tai_lieu" className={labelStyles}>Loại tài liệu <span className="text-red-500">*</span></label>
                                 <select id="loai_tai_lieu" name="loai_tai_lieu" value={formData.loai_tai_lieu} onChange={handleChange} required className={`${inputStyles} ${errors.loai_tai_lieu ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn loại</option>
                                     {activeOrCurrentlySelected(categories.loaiTaiLieu, formData.loai_tai_lieu).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
@@ -354,7 +354,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                 {errors.loai_tai_lieu && <p className="mt-1 text-sm text-red-600">{errors.loai_tai_lieu}</p>}
                             </div>
                             <div className="sm:col-span-3">
-                                <label htmlFor="phong_ban_quan_ly" className={labelStyles}>Phòng ban quản lý</label>
+                                <label htmlFor="phong_ban_quan_ly" className={labelStyles}>Phòng ban quản lý <span className="text-red-500">*</span></label>
                                 <select id="phong_ban_quan_ly" name="phong_ban_quan_ly" value={formData.phong_ban_quan_ly} onChange={handleChange} required className={`${inputStyles} ${errors.phong_ban_quan_ly ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn phòng ban</option>
                                     {activeOrCurrentlySelected(categories.phongBan, formData.phong_ban_quan_ly).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
@@ -363,7 +363,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                             </div>
                             
                             <div className="sm:col-span-3">
-                                <label htmlFor="cap_do" className={labelStyles}>Cấp độ</label>
+                                <label htmlFor="cap_do" className={labelStyles}>Cấp độ <span className="text-red-500">*</span></label>
                                 <select id="cap_do" name="cap_do" value={formData.cap_do} onChange={handleChange} required className={`${inputStyles} ${errors.cap_do ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn cấp độ</option>
                                     {activeOrCurrentlySelected(categories.capDoTaiLieu, formData.cap_do).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
@@ -371,7 +371,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                 {errors.cap_do && <p className="mt-1 text-sm text-red-600">{errors.cap_do}</p>}
                             </div>
                             <div className="sm:col-span-3">
-                                <label htmlFor="muc_do_bao_mat" className={labelStyles}>Mức độ bảo mật</label>
+                                <label htmlFor="muc_do_bao_mat" className={labelStyles}>Mức độ bảo mật <span className="text-red-500">*</span></label>
                                 <select id="muc_do_bao_mat" name="muc_do_bao_mat" value={formData.muc_do_bao_mat} onChange={handleChange} required className={`${inputStyles} ${errors.muc_do_bao_mat ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn mức độ</option>
                                     {activeOrCurrentlySelected(categories.mucDoBaoMat, formData.muc_do_bao_mat).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
@@ -390,7 +390,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                             </div>
 
                             <div className="sm:col-span-2">
-                                <label htmlFor="nguoi_soan_thao" className={labelStyles}>Người soạn thảo</label>
+                                <label htmlFor="nguoi_soan_thao" className={labelStyles}>Người soạn thảo <span className="text-red-500">*</span></label>
                                 <select id="nguoi_soan_thao" name="nguoi_soan_thao" value={formData.nguoi_soan_thao} onChange={handleChange} required className={`${inputStyles} ${errors.nguoi_soan_thao ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn người</option>
                                     {categories.nhanSu.filter(u => u.is_active !== false || u.id === formData.nguoi_soan_thao).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
@@ -398,7 +398,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                 {errors.nguoi_soan_thao && <p className="mt-1 text-sm text-red-600">{errors.nguoi_soan_thao}</p>}
                             </div>
                             <div className="sm:col-span-2">
-                                <label htmlFor="nguoi_ra_soat" className={labelStyles}>Người rà soát</label>
+                                <label htmlFor="nguoi_ra_soat" className={labelStyles}>Người rà soát <span className="text-red-500">*</span></label>
                                 <select id="nguoi_ra_soat" name="nguoi_ra_soat" value={formData.nguoi_ra_soat} onChange={handleChange} required className={`${inputStyles} ${errors.nguoi_ra_soat ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn người</option>
                                     {categories.nhanSu.filter(u => u.is_active !== false || u.id === formData.nguoi_ra_soat).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
@@ -406,7 +406,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                 {errors.nguoi_ra_soat && <p className="mt-1 text-sm text-red-600">{errors.nguoi_ra_soat}</p>}
                             </div>
                             <div className="sm:col-span-2">
-                                <label htmlFor="nguoi_phe_duyet" className={labelStyles}>Người phê duyệt</label>
+                                <label htmlFor="nguoi_phe_duyet" className={labelStyles}>Người phê duyệt <span className="text-red-500">*</span></label>
                                 <select id="nguoi_phe_duyet" name="nguoi_phe_duyet" value={formData.nguoi_phe_duyet} onChange={handleChange} required className={`${inputStyles} ${errors.nguoi_phe_duyet ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn người</option>
                                     {categories.nhanSu.filter(u => u.is_active !== false || u.id === formData.nguoi_phe_duyet).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
@@ -415,12 +415,12 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                             </div>
                             
                             <div className="sm:col-span-2">
-                                <label htmlFor="ngay_ban_hanh" className={labelStyles}>Ngày ban hành</label>
+                                <label htmlFor="ngay_ban_hanh" className={labelStyles}>Ngày ban hành <span className="text-red-500">*</span></label>
                                 <DatePicker id="ngay_ban_hanh" value={formData.ngay_ban_hanh} onChange={value => handleDateChange('ngay_ban_hanh', value)} required className={`${inputStyles} ${errors.ngay_ban_hanh ? 'border-red-500' : 'border-gray-300'}`} />
                                 {errors.ngay_ban_hanh && <p className="mt-1 text-sm text-red-600">{errors.ngay_ban_hanh}</p>}
                             </div>
                             <div className="sm:col-span-2">
-                                <label htmlFor="ngay_hieu_luc" className={labelStyles}>Ngày hiệu lực</label>
+                                <label htmlFor="ngay_hieu_luc" className={labelStyles}>Ngày hiệu lực <span className="text-red-500">*</span></label>
                                 <DatePicker id="ngay_hieu_luc" value={formData.ngay_hieu_luc} onChange={value => handleDateChange('ngay_hieu_luc', value)} required className={`${inputStyles} ${errors.ngay_hieu_luc || dateError ? 'border-red-500' : 'border-gray-300'}`} />
                                 {errors.ngay_hieu_luc && <p className="mt-1 text-sm text-red-600">{errors.ngay_hieu_luc}</p>}
                             </div>

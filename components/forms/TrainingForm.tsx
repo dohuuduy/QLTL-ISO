@@ -81,17 +81,17 @@ const TrainingForm: React.FC<TrainingFormProps> = ({ onSubmit, onCancel, initial
         <form onSubmit={handleSubmit}>
             <div className="p-6 space-y-4">
                 <div>
-                    <label htmlFor="noi_dung_dao_tao" className="form-label">Nội dung đào tạo</label>
+                    <label htmlFor="noi_dung_dao_tao" className="form-label">Nội dung đào tạo <span className="text-red-500">*</span></label>
                     <textarea name="noi_dung_dao_tao" id="noi_dung_dao_tao" value={formData.noi_dung_dao_tao} onChange={handleChange} rows={3} className="form-textarea" required placeholder="Mô tả nội dung buổi đào tạo, truyền thông..." />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="ngay_dao_tao" className="form-label">Ngày đào tạo</label>
+                        <label htmlFor="ngay_dao_tao" className="form-label">Ngày đào tạo <span className="text-red-500">*</span></label>
                         <DatePicker id="ngay_dao_tao" value={formData.ngay_dao_tao} onChange={value => handleDateChange('ngay_dao_tao', value)} required />
                     </div>
                     <div>
-                        <label htmlFor="nguoi_dao_tao" className="form-label">Người đào tạo</label>
+                        <label htmlFor="nguoi_dao_tao" className="form-label">Người đào tạo <span className="text-red-500">*</span></label>
                         <select name="nguoi_dao_tao" id="nguoi_dao_tao" value={formData.nguoi_dao_tao} onChange={handleChange} className="form-select" required>
                             <option value="">Chọn người</option>
                             {nhanSuList.filter(u => u.is_active !== false || u.id === formData.nguoi_dao_tao).map(ns => <option key={ns.id} value={ns.id}>{ns.ten}</option>)}

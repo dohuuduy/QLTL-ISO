@@ -25,7 +25,7 @@ const DepartmentForm: React.FC<DepartmentFormProps> = ({ onSubmit, onCancel, ini
         <form onSubmit={handleSubmit}>
             <div className="p-6">
                 <label htmlFor="ten" className="form-label">
-                    Tên phòng ban
+                    Tên phòng ban <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="text"
