@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import type { NhanSu, ThongBao, ReportType, ChucVu } from '../../types';
 import { useSidebar } from '../../hooks/use-sidebar';
 import type { BreadcrumbItem } from '../ui/Breadcrumb';
-import type { SaveStatus } from '../../App';
+import type { SaveStatus, Theme } from '../../App';
 import SaveStatusToast from '../ui/SaveStatusToast';
 
 interface LayoutProps {
@@ -21,13 +21,15 @@ interface LayoutProps {
     chucVuList: ChucVu[];
     breadcrumbs: BreadcrumbItem[];
     saveStatus: SaveStatus;
+    theme: Theme;
+    setTheme: (theme: Theme) => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
     children, currentUser, onLogout, onNavigate, 
     notifications, onMarkNotificationRead, onMarkAllNotificationsRead, onNavigateToDocument,
     currentView, onNavigateToReport, chucVuList, breadcrumbs,
-    saveStatus
+    saveStatus, theme, setTheme
 }) => {
     const { isCollapsed, isMobileOpen, setMobileOpen, toggleSidebar, setOpenFlyoutView } = useSidebar();
 
@@ -51,7 +53,7 @@ const Layout: React.FC<LayoutProps> = ({
 
 
     return (
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen bg-gray-50 dark:bg-slate-900">
             <Sidebar
                 isCollapsed={isCollapsed}
                 isMobileOpen={isMobileOpen}
@@ -79,6 +81,8 @@ const Layout: React.FC<LayoutProps> = ({
                     onNavigateToDocument={onNavigateToDocument}
                     chucVuList={chucVuList}
                     breadcrumbs={breadcrumbs}
+                    theme={theme}
+                    setTheme={setTheme}
                 />
                 <main className="flex-1 overflow-x-hidden overflow-y-auto">
                     <div className="container mx-auto px-4 sm:px-6 py-8">

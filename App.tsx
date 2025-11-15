@@ -85,6 +85,37 @@ type View =
 // Define Save Status states
 export type SaveStatus = 'idle' | 'saving' | 'success' | 'error';
 
+// THEME MANAGEMENT
+export type Theme = 'light' | 'dark' | 'system';
+
+function useThemeManager() {
+    const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system');
+
+    useEffect(() => {
+        const root = window.document.documentElement;
+        
+        const applyTheme = () => {
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDark = theme === 'dark' || (theme === 'system' && systemPrefersDark);
+            root.classList.toggle('dark', isDark);
+        };
+        
+        applyTheme();
+        localStorage.setItem('theme', theme);
+
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = () => {
+            if (theme === 'system') {
+                applyTheme();
+            }
+        };
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, [theme]);
+    
+    return [theme, setTheme] as const;
+}
+
 
 /**
  * Creates a professional HTML email body.
@@ -269,6 +300,7 @@ const App: React.FC = () => {
     const [error, setError] = useState<React.ReactNode | null>(null);
     const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
     const saveStatusTimerRef = useRef<number | null>(null);
+    const [theme, setTheme] = useThemeManager();
 
     // Initial data load
     useEffect(() => {
@@ -540,7 +572,7 @@ const App: React.FC = () => {
         };
 
         checkForOverdueTasks();
-    }, [isLoading, currentUser, appData.notifications, appData.documents, appData.reviewSchedules, appData.nhanSu, view]);
+    }, [isLoading, currentUser, view]);
 
 
     // Persist data changes (debounced)
@@ -1149,6 +1181,8 @@ const App: React.FC = () => {
             chucVuList={appData.chucVu}
             breadcrumbs={breadcrumbs}
             saveStatus={saveStatus}
+            theme={theme}
+            setTheme={setTheme}
         >
             {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
             {renderView()}
