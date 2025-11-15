@@ -977,7 +977,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                                     <div className="flex items-center gap-x-2">
                                         <span>{item.phien_ban}</span>
                                         <Badge status={item.trang_thai_phien_ban} size="sm" />
-                                        {item.is_moi_nhat && <Icon type="star-solid" className="h-4 w-4 text-yellow-400 flex-shrink-0" title="Phiên bản mới nhất đang được ban hành" />}
+                                        {item.is_moi_nhat && <span title="Phiên bản mới nhất đang được ban hành"><Icon type="star-solid" className="h-4 w-4 text-yellow-400 flex-shrink-0" /></span>}
                                     </div>
                                 ) },
                                 { header: 'Ngày phát hành', accessor: item => formatDateForDisplay(item.ngay_phat_hanh) },

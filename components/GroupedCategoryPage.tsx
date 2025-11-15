@@ -13,6 +13,7 @@ import AuditorForm from './forms/AuditorForm';
 import type { DanhMucChung, NhanSu } from '../types';
 import { mockData } from '../data/mockData';
 import Badge from './ui/Badge';
+import { translate } from '../utils/translations';
 
 type CategoryKey = keyof typeof mockData;
 
@@ -33,10 +34,14 @@ const categoryGroups = {
         { key: 'nhanSu', title: 'Nhân sự', Component: CategoryManagementPage, FormComponent: PersonnelForm, formProps: (allData: any, currentUser: NhanSu) => ({ phongBanList: allData.phongBan, chucVuList: allData.chucVu, currentUser }), columns: (allData: any) => ([
             { header: 'Tên nhân sự', accessor: 'ten', sortKey: 'ten' },
             { header: 'Email', accessor: 'email', sortKey: 'email' },
-            { header: 'Tên đăng nhập', accessor: 'ten_dang_nhap', sortKey: 'ten_dang_nhap' },
             { header: 'Chức vụ', accessor: (item: NhanSu) => allData.chucVu.find((cv: any) => cv.id === item.chuc_vu)?.ten || '', sortKey: 'chuc_vu' },
             { header: 'Phòng ban', accessor: (item: NhanSu) => allData.phongBan.find((pb: any) => pb.id === item.phong_ban_id)?.ten || '', sortKey: 'phong_ban_id' },
             { header: 'Vai trò', accessor: (item: NhanSu) => <Badge status={item.role} />, sortKey: 'role' },
+            { header: 'Nhiệm vụ', accessor: (item: NhanSu) => (
+                <div className="flex flex-wrap gap-1">
+                    {(item.nhiem_vu_tai_lieu || []).map(role => <Badge key={role} status={role} title={translate(role)} size="sm" />)}
+                </div>
+            ), sortKey: 'nhiem_vu_tai_lieu' },
         ])},
         { key: 'phongBan', title: 'Phòng ban', Component: CategoryManagementPage, FormComponent: DepartmentForm },
         { key: 'chucVu', title: 'Chức vụ', Component: CategoryManagementPage, FormComponent: GenericCategoryForm, formProps: { categoryName: 'Chức vụ' }},

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import type { DanhMucTaiLieu, NhanSu, PhongBan, LoaiTaiLieu, CapDoTaiLieu, MucDoBaoMat, TieuChuan } from '../../types';
-import { DocumentStatus } from '../../constants';
+import { DocumentStatus, DocumentRole } from '../../constants';
 import DatePicker from '../ui/DatePicker';
 import { Icon } from '../ui/Icon';
 
@@ -129,6 +129,31 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [standardsDropdownRef, isoRefDropdownRef]);
+    
+    // Smart user lists for roles
+    const { compilers, reviewers, approvers } = useMemo(() => {
+        const allActiveUsers = categories.nhanSu.filter(u => u.is_active !== false);
+
+        const createListForRole = (role: DocumentRole, currentSelection: string) => {
+            const designated = allActiveUsers.filter(u => u.nhiem_vu_tai_lieu?.includes(role));
+            let list = designated.length > 0 ? designated : allActiveUsers;
+
+            if (currentSelection && !list.some(u => u.id === currentSelection)) {
+                const currentUser = categories.nhanSu.find(u => u.id === currentSelection);
+                if (currentUser) {
+                    list = [currentUser, ...list];
+                }
+            }
+            return list;
+        };
+
+        return {
+            compilers: createListForRole(DocumentRole.SOAN_THAO, formData.nguoi_soan_thao),
+            reviewers: createListForRole(DocumentRole.RA_SOAT, formData.nguoi_ra_soat),
+            approvers: createListForRole(DocumentRole.PHE_DUYET, formData.nguoi_phe_duyet),
+        };
+    }, [categories.nhanSu, formData.nguoi_soan_thao, formData.nguoi_ra_soat, formData.nguoi_phe_duyet]);
+
 
     const validate = (): Record<string, string> => {
         const newErrors: Record<string, string> = {};
@@ -393,7 +418,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                 <label htmlFor="nguoi_soan_thao" className={labelStyles}>Người soạn thảo <span className="text-red-500">*</span></label>
                                 <select id="nguoi_soan_thao" name="nguoi_soan_thao" value={formData.nguoi_soan_thao} onChange={handleChange} required className={`${inputStyles} ${errors.nguoi_soan_thao ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn người</option>
-                                    {categories.nhanSu.filter(u => u.is_active !== false || u.id === formData.nguoi_soan_thao).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
+                                    {compilers.map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
                                 </select>
                                 {errors.nguoi_soan_thao && <p className="mt-1 text-sm text-red-600">{errors.nguoi_soan_thao}</p>}
                             </div>
@@ -401,7 +426,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                 <label htmlFor="nguoi_ra_soat" className={labelStyles}>Người rà soát <span className="text-red-500">*</span></label>
                                 <select id="nguoi_ra_soat" name="nguoi_ra_soat" value={formData.nguoi_ra_soat} onChange={handleChange} required className={`${inputStyles} ${errors.nguoi_ra_soat ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn người</option>
-                                    {categories.nhanSu.filter(u => u.is_active !== false || u.id === formData.nguoi_ra_soat).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
+                                    {reviewers.map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
                                 </select>
                                 {errors.nguoi_ra_soat && <p className="mt-1 text-sm text-red-600">{errors.nguoi_ra_soat}</p>}
                             </div>
@@ -409,7 +434,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ id, onSubmit, initialData, 
                                 <label htmlFor="nguoi_phe_duyet" className={labelStyles}>Người phê duyệt <span className="text-red-500">*</span></label>
                                 <select id="nguoi_phe_duyet" name="nguoi_phe_duyet" value={formData.nguoi_phe_duyet} onChange={handleChange} required className={`${inputStyles} ${errors.nguoi_phe_duyet ? 'border-red-500' : 'border-gray-300'}`}>
                                     <option value="">Chọn người</option>
-                                    {categories.nhanSu.filter(u => u.is_active !== false || u.id === formData.nguoi_phe_duyet).map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
+                                    {approvers.map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
                                 </select>
                                 {errors.nguoi_phe_duyet && <p className="mt-1 text-sm text-red-600">{errors.nguoi_phe_duyet}</p>}
                             </div>

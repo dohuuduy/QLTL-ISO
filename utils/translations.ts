@@ -5,7 +5,8 @@ import {
     ReviewResult,
     RiskStatus,
     AuditAction,
-    AuditStatus
+    AuditStatus,
+    DocumentRole
 } from '../constants';
 
 export const translations: Record<string, string> = {
@@ -18,10 +19,9 @@ export const translations: Record<string, string> = {
 
     // VersionStatus
     [VersionStatus.BAN_THAO]: "Bản thảo",
+    // FIX: [VersionStatus.PHE_DUYET] and [DocumentRole.PHE_DUYET] have the same value 'phe_duyet'. Using one definition for both.
     [VersionStatus.PHE_DUYET]: "Phê duyệt",
     [VersionStatus.BAN_HANH]: "Ban hành",
-    // FIX: Removed duplicate key 'thu_hoi'. `DistributionStatus.THU_HOI` also uses this key. The translation from DistributionStatus ("Đã thu hồi") will be used for both.
-    // [VersionStatus.THU_HOI]: "Thu hồi",
 
     // DistributionStatus
     [DistributionStatus.DANG_HIEU_LUC]: "Đang hiệu lực",
@@ -51,6 +51,10 @@ export const translations: Record<string, string> = {
     [AuditStatus.IN_PROGRESS]: "Đang tiến hành",
     [AuditStatus.COMPLETED]: "Hoàn thành",
     [AuditStatus.CANCELLED]: "Đã hủy",
+
+    // Document Roles
+    [DocumentRole.SOAN_THAO]: "Soạn thảo",
+    [DocumentRole.RA_SOAT]: "Rà soát",
 
     // Entity Types for Audit Log & Categories
     'documents': "Tài liệu",

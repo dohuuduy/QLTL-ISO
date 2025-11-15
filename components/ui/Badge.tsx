@@ -1,8 +1,8 @@
 import React from 'react';
-import { DocumentStatus, VersionStatus, DistributionStatus, RiskStatus, ReviewResult, AuditStatus } from '../../constants';
+import { DocumentStatus, VersionStatus, DistributionStatus, RiskStatus, ReviewResult, AuditStatus, DocumentRole } from '../../constants';
 import { translate } from '../../utils/translations';
 
-type BadgeStatus = DocumentStatus | VersionStatus | DistributionStatus | RiskStatus | ReviewResult | AuditStatus | string;
+type BadgeStatus = DocumentStatus | VersionStatus | DistributionStatus | RiskStatus | ReviewResult | AuditStatus | DocumentRole | string;
 type BadgeSize = 'sm' | 'md' | 'lg';
 
 const statusColors: Record<BadgeStatus, string> = {
@@ -14,6 +14,7 @@ const statusColors: Record<BadgeStatus, string> = {
     [DocumentStatus.NHAP]: 'bg-purple-100 text-purple-800',
     // VersionStatus
     [VersionStatus.BAN_THAO]: 'bg-indigo-100 text-indigo-800',
+    // FIX: [VersionStatus.PHE_DUYET] and [DocumentRole.PHE_DUYET] have the same value 'phe_duyet'. Using one definition for both.
     [VersionStatus.PHE_DUYET]: 'bg-yellow-100 text-yellow-800',
     [VersionStatus.BAN_HANH]: 'bg-green-100 text-green-800',
     'thu_hoi': 'bg-red-100 text-red-800', // For both VersionStatus and DistributionStatus
@@ -28,6 +29,9 @@ const statusColors: Record<BadgeStatus, string> = {
     [RiskStatus.MO]: 'bg-blue-100 text-blue-800',
     [RiskStatus.DANG_LAM]: 'bg-yellow-100 text-yellow-800',
     [RiskStatus.DONG]: 'bg-green-100 text-green-800',
+    // DocumentRole
+    [DocumentRole.SOAN_THAO]: 'bg-purple-100 text-purple-800',
+    [DocumentRole.RA_SOAT]: 'bg-blue-100 text-blue-800',
     // AuditAction
     create: 'bg-green-100 text-green-800',
     update: 'bg-blue-100 text-blue-800',
@@ -52,6 +56,7 @@ const dotColors: Record<string, string> = {
     [DocumentStatus.HET_HIEU_LUC]: 'fill-gray-500',
     [DocumentStatus.NHAP]: 'fill-purple-500',
     [VersionStatus.BAN_THAO]: 'fill-indigo-500',
+    // FIX: [VersionStatus.PHE_DUYET] and [DocumentRole.PHE_DUYET] have the same value 'phe_duyet'. Using one definition for both.
     [VersionStatus.PHE_DUYET]: 'fill-yellow-500',
     [VersionStatus.BAN_HANH]: 'fill-green-500',
     'thu_hoi': 'fill-red-500', // For both VersionStatus and DistributionStatus
@@ -63,6 +68,8 @@ const dotColors: Record<string, string> = {
     [RiskStatus.MO]: 'fill-blue-500',
     [RiskStatus.DANG_LAM]: 'fill-yellow-500',
     [RiskStatus.DONG]: 'fill-green-500',
+    [DocumentRole.SOAN_THAO]: 'fill-purple-500',
+    [DocumentRole.RA_SOAT]: 'fill-blue-500',
     create: 'fill-green-500',
     update: 'fill-blue-500',
     delete: 'fill-red-500',

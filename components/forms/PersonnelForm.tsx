@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { NhanSu, PhongBan, NhanSuRole, DanhMucChung } from '../../types';
 import { Icon } from '../ui/Icon';
 import { translate } from '../../utils/translations';
+import { DocumentRole } from '../../constants';
 
 interface PersonnelFormProps {
     onSubmit: (data: Partial<NhanSu>) => void;
@@ -21,7 +22,8 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
         chuc_vu: '',
         phong_ban_id: '',
         role: 'user' as NhanSuRole,
-        permissions: { canCreate: false, canUpdate: false, canDelete: false }
+        permissions: { canCreate: false, canUpdate: false, canDelete: false },
+        nhiem_vu_tai_lieu: [] as DocumentRole[],
     });
     
     const [formData, setFormData] = useState(getInitialState());
@@ -38,7 +40,8 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
                 chuc_vu: initialData.chuc_vu || '',
                 phong_ban_id: initialData.phong_ban_id || '',
                 role: initialData.role || 'user',
-                permissions: initialData.permissions || { canCreate: false, canUpdate: false, canDelete: false }
+                permissions: initialData.permissions || { canCreate: false, canUpdate: false, canDelete: false },
+                nhiem_vu_tai_lieu: initialData.nhiem_vu_tai_lieu || [],
             });
         } else {
             // Reset form for new user, with default password
@@ -86,6 +89,19 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
             }
         }));
     };
+    
+    const handleTaskChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, checked } = e.target;
+        const role = name as DocumentRole;
+        setFormData(prev => {
+            const currentTasks = prev.nhiem_vu_tai_lieu || [];
+            if (checked) {
+                return { ...prev, nhiem_vu_tai_lieu: [...currentTasks, role] };
+            } else {
+                return { ...prev, nhiem_vu_tai_lieu: currentTasks.filter(t => t !== role) };
+            }
+        });
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -118,6 +134,12 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
         list.filter(item => item.is_active !== false || item.id === selectedId);
 
     const isEditingSelf = initialData?.id === currentUser.id;
+    
+    const documentRoleOptions = [
+        { id: DocumentRole.SOAN_THAO, label: translate(DocumentRole.SOAN_THAO) },
+        { id: DocumentRole.RA_SOAT, label: translate(DocumentRole.RA_SOAT) },
+        { id: DocumentRole.PHE_DUYET, label: translate(DocumentRole.PHE_DUYET) },
+    ];
 
     return (
         <form onSubmit={handleSubmit}>
@@ -244,7 +266,22 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ onSubmit, onCancel, initi
                 )}
                 
                 {currentUser.role === 'admin' && formData.role === 'user' && !isEditingSelf && (
-                     <div className="border-t border-gray-200 pt-4">
+                     <div className="space-y-4">
+                        <fieldset className="border-t border-gray-200 pt-4">
+                            <legend className="text-sm font-medium text-gray-900">Nhiệm vụ Tài liệu</legend>
+                            <div className="mt-2 space-y-2">
+                                {documentRoleOptions.map(option => (
+                                    <div key={option.id} className="relative flex items-start">
+                                        <div className="flex h-6 items-center">
+                                            <input id={option.id} name={option.id} type="checkbox" checked={(formData.nhiem_vu_tai_lieu || []).includes(option.id)} onChange={handleTaskChange} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600" />
+                                        </div>
+                                        <div className="ml-3 text-sm leading-6">
+                                            <label htmlFor={option.id} className="font-medium text-gray-700">{option.label}</label>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </fieldset>
                          <fieldset>
                             <legend className="text-sm font-medium text-gray-900">Quyền hạn tài liệu</legend>
                             <div className="mt-2 space-y-2">

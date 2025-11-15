@@ -1,4 +1,4 @@
-import { DocumentStatus, VersionStatus, DistributionStatus, ReviewResult, RiskStatus, AuditAction, NotificationType, AuditStatus } from './constants';
+import { DocumentStatus, VersionStatus, DistributionStatus, ReviewResult, RiskStatus, AuditAction, NotificationType, AuditStatus, DocumentRole } from './constants';
 
 export type ReportType = 'by-department' | 'by-standard' | 'relationships' | 'expiring' | 'by-audit';
 
@@ -44,6 +44,7 @@ export interface NhanSu {
     role: NhanSuRole;
     is_active: boolean;
     permissions?: NhanSuPermissions;
+    nhiem_vu_tai_lieu?: DocumentRole[];
 }
 
 export interface TieuChuan {

@@ -11,7 +11,7 @@ export enum DocumentStatus {
 export enum VersionStatus {
     BAN_THAO = 'ban_thao',
     PHE_DUYET = 'phe_duyet',
-    BAN_HANH = 'ban_hanh',
+    BAN_HANH = 'ban_hahn',
     THU_HOI = 'thu_hoi',
 }
 
@@ -56,6 +56,13 @@ export enum AuditStatus {
     COMPLETED = 'completed',
     CANCELLED = 'cancelled',
 }
+
+export enum DocumentRole {
+    SOAN_THAO = 'soan_thao',
+    RA_SOAT = 'ra_soat',
+    PHE_DUYET = 'phe_duyet',
+}
+
 
 export const reportNavItems: { key: ReportType; title: string; icon: string; }[] = [
     { key: 'by-department', title: 'Theo Phòng ban', icon: 'building-library' },
