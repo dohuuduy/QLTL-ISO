@@ -968,9 +968,14 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                     <div className="overflow-x-auto">
                         <Table<PhienBanTaiLieu>
                             columns={[
-                                { header: 'Phiên bản', accessor: (item) => <div className="flex items-center gap-2">{item.phien_ban} {item.is_moi_nhat && <Badge status={VersionStatus.BAN_HANH} size="sm" title="Phiên bản mới nhất đang được ban hành" />}</div> },
+                                { header: 'Phiên bản', accessor: (item) => (
+                                    <div className="flex items-center gap-x-2">
+                                        <span>{item.phien_ban}</span>
+                                        <Badge status={item.trang_thai_phien_ban} size="sm" />
+                                        {item.is_moi_nhat && <Icon type="star-solid" className="h-4 w-4 text-yellow-400 flex-shrink-0" title="Phiên bản mới nhất đang được ban hành" />}
+                                    </div>
+                                ) },
                                 { header: 'Ngày phát hành', accessor: item => formatDateForDisplay(item.ngay_phat_hanh) },
-                                { header: 'Trạng thái', accessor: item => <Badge status={item.trang_thai_phien_ban} /> },
                                 { header: 'Tóm tắt thay đổi', accessor: 'tom_tat_thay_doi' },
                                 { header: 'Người thực hiện', accessor: item => nhanSuMap.get(item.nguoi_thuc_hien) },
                             ]}
