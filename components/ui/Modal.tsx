@@ -12,9 +12,25 @@ interface ModalSubComponents {
     Footer: React.FC<{ children: React.ReactNode; className?: string }>;
 }
 
+const ModalFooter: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => {
+    return (
+        <div className={`flex-shrink-0 bg-slate-50 px-4 py-3 flex flex-col-reverse sm:flex-row sm:justify-end sm:px-6 gap-3 border-t border-gray-200 ${className}`}>
+            {children}
+        </div>
+    );
+};
+
 
 const Modal: React.FC<ModalProps> & ModalSubComponents = ({ isOpen, onClose, title, children }) => {
     if (!isOpen) return null;
+
+    // Split children into body and footer
+    const footer = React.Children.toArray(children).find(
+        (child) => React.isValidElement(child) && (child.type as any) === ModalFooter
+    );
+    const body = React.Children.toArray(children).filter(
+        (child) => !(React.isValidElement(child) && (child.type as any) === ModalFooter)
+    );
 
     return (
         <div className="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -22,8 +38,10 @@ const Modal: React.FC<ModalProps> & ModalSubComponents = ({ isOpen, onClose, tit
 
             <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
                 <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    <div className="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl">
-                        <div className="bg-white px-4 pt-5 sm:p-6 sm:pb-4">
+                    <div className="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl flex flex-col max-h-[90vh]">
+                        
+                        {/* Header (sticky) */}
+                        <div className="flex-shrink-0 bg-white px-4 pt-5 sm:p-6 sm:pb-4 border-b border-gray-200">
                              <div className="flex items-start justify-between">
                                 <h3 className="text-lg font-semibold leading-6 text-gray-900" id="modal-title">
                                     {title}
@@ -33,18 +51,17 @@ const Modal: React.FC<ModalProps> & ModalSubComponents = ({ isOpen, onClose, tit
                                 </button>
                             </div>
                         </div>
-                        {children}
+                        
+                        {/* Body (scrollable) */}
+                        <div className="flex-1 overflow-y-auto">
+                            {body}
+                        </div>
+
+                        {/* Footer (sticky) */}
+                        {footer}
                     </div>
                 </div>
             </div>
-        </div>
-    );
-};
-
-const ModalFooter: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => {
-    return (
-        <div className={`bg-slate-50 px-4 py-3 flex flex-col-reverse sm:flex-row sm:justify-end sm:px-6 rounded-b-xl gap-3 ${className}`}>
-            {children}
         </div>
     );
 };

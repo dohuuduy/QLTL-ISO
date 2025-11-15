@@ -864,7 +864,11 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                 {renderModalContent()}
             </Modal>
 
-            <Modal isOpen={isEditingDocument} onClose={() => setIsEditingDocument(false)} title="Chỉnh sửa thông tin tài liệu">
+            <Modal 
+                isOpen={isEditingDocument} 
+                onClose={() => setIsEditingDocument(false)} 
+                title={`Chỉnh sửa: ${document.ten_tai_lieu} (${document.so_hieu})`}
+            >
                  <DocumentForm
                     id="edit-document-form"
                     onSubmit={handleSaveDocument}
