@@ -9,9 +9,10 @@ import type {
     DanhMucChung,
     LichRaSoat,
     ThongBao,
-    PhienBanTaiLieu
+    PhienBanTaiLieu,
+    AuditLog
 } from './types';
-import { VersionStatus, DocumentStatus, NotificationType } from './constants';
+import { VersionStatus, DocumentStatus, NotificationType, AuditAction } from './constants';
 
 // Import Services & Data
 import { login, getAllData, updateAllData, sendEmail } from './services/api';
@@ -33,6 +34,7 @@ import type { BreadcrumbItem } from './components/ui/Breadcrumb';
 
 // Import Utils
 import { formatDateForDisplay as formatDateInGMT7 } from './utils/dateUtils';
+import { translate } from './utils/translations';
 
 type AppData = typeof mockData;
 
@@ -569,17 +571,66 @@ const App: React.FC = () => {
         };
     }, [appData, isLoading]);
     
+    // Audit Log helper
+    const createAuditLog = useCallback((
+        action: AuditAction,
+        entity_type: string,
+        details: string,
+        entity_id?: string,
+        ma_tl?: string
+    ): AuditLog | null => {
+        if (!currentUser) return null;
+        return {
+            id: `log-${uuidv4()}`,
+            timestamp: new Date().toISOString(),
+            user_id: currentUser.id,
+            user_name: currentUser.ten,
+            action,
+            entity_type,
+            details,
+            entity_id,
+            ma_tl,
+        };
+    }, [currentUser]);
+
     // Login and Logout handlers
     const handleLogin = async (username: string, password: string): Promise<boolean> => {
         const user = await login(username, password);
         if (user) {
             setCurrentUser(user);
+            const newLog: AuditLog = {
+                id: `log-${uuidv4()}`,
+                timestamp: new Date().toISOString(),
+                user_id: user.id,
+                user_name: user.ten,
+                action: AuditAction.LOGIN_SUCCESS,
+                entity_type: 'system',
+                details: `Người dùng "${user.ten}" đã đăng nhập thành công.`,
+            };
+            setAppData(prev => ({ ...prev, auditTrail: [newLog, ...prev.auditTrail] }));
             return true;
         }
+        
+        const newLog: AuditLog = {
+            id: `log-${uuidv4()}`,
+            timestamp: new Date().toISOString(),
+            user_id: 'unknown',
+            user_name: username,
+            action: AuditAction.LOGIN_FAIL,
+            entity_type: 'system',
+            details: `Đăng nhập thất bại với tên đăng nhập: "${username}".`,
+        };
+        setAppData(prev => ({ ...prev, auditTrail: [newLog, ...prev.auditTrail] }));
         return false;
     };
 
     const handleLogout = () => {
+        if (currentUser) {
+            const newLog = createAuditLog(AuditAction.LOGOUT, 'system', `Người dùng "${currentUser.ten}" đã đăng xuất.`);
+            if (newLog) {
+                setAppData(prev => ({...prev, auditTrail: [newLog, ...prev.auditTrail]}));
+            }
+        }
         setCurrentUser(null);
         setView({ type: 'dashboard' });
     };
@@ -603,33 +654,74 @@ const App: React.FC = () => {
     
     // Data modification handlers
     const handleToggleBookmark = useCallback((docId: string) => {
-        setAppData(prevData => ({
-            ...prevData,
-            documents: prevData.documents.map(doc =>
-                doc.ma_tl === docId ? { ...doc, is_bookmarked: !doc.is_bookmarked } : doc
-            )
-        }));
-    }, []);
+        setAppData(prevData => {
+            const doc = prevData.documents.find(d => d.ma_tl === docId);
+            if (!doc) return prevData;
+
+            const isBookmarking = !doc.is_bookmarked;
+            const newLog = createAuditLog(
+                AuditAction.UPDATE,
+                'documents',
+                `${isBookmarking ? 'Đánh dấu' : 'Bỏ đánh dấu'} tài liệu: "${doc.ten_tai_lieu}"`,
+                docId,
+                docId
+            );
+
+            if (!newLog) return prevData;
+
+            return {
+                ...prevData,
+                documents: prevData.documents.map(d =>
+                    d.ma_tl === docId ? { ...d, is_bookmarked: !d.is_bookmarked } : d
+                ),
+                auditTrail: [newLog, ...prevData.auditTrail]
+            };
+        });
+    }, [createAuditLog]);
 
     const handleUpdateDocument = useCallback((updatedDoc: Partial<DanhMucTaiLieu>) => {
-        setAppData(prev => ({
-            ...prev,
-            documents: prev.documents.map(d => {
-                if (d.ma_tl === updatedDoc.ma_tl) {
-                    // Safely merge the update onto the existing document to prevent data loss
-                    return { ...d, ...updatedDoc };
-                }
-                return d;
-            })
-        }));
-    }, []);
+        setAppData(prev => {
+            const originalDoc = prev.documents.find(d => d.ma_tl === updatedDoc.ma_tl);
+            if (!originalDoc) return prev;
+
+            const newLog = createAuditLog(
+                AuditAction.UPDATE,
+                'documents',
+                `Cập nhật thông tin tài liệu: "${originalDoc.ten_tai_lieu}"`,
+                originalDoc.ma_tl,
+                originalDoc.ma_tl
+            );
+
+            if (!newLog) return prev;
+
+            return {
+                ...prev,
+                documents: prev.documents.map(d => {
+                    if (d.ma_tl === updatedDoc.ma_tl) {
+                        return { ...d, ...updatedDoc };
+                    }
+                    return d;
+                }),
+                auditTrail: [newLog, ...prev.auditTrail]
+            };
+        });
+    }, [createAuditLog]);
     
     const handleUpdateVersionStatus = useCallback((versionId: string, newStatus: VersionStatus) => {
         setAppData(prev => {
             const targetVersion = prev.versions.find(v => v.id_phien_ban === versionId);
-            if (!targetVersion) {
-                return prev; // Safety check if version not found
-            }
+            if (!targetVersion) return prev;
+            const doc = prev.documents.find(d => d.ma_tl === targetVersion.ma_tl);
+            if (!doc) return prev;
+
+            const newLog = createAuditLog(
+                AuditAction.UPDATE,
+                'versions',
+                `Cập nhật trạng thái phiên bản ${targetVersion.phien_ban} của tài liệu "${doc.ten_tai_lieu}" thành "${translate(newStatus)}"`,
+                versionId,
+                doc.ma_tl
+            );
+            if (!newLog) return prev;
 
             let updatedVersions = prev.versions;
             let updatedDocuments = prev.documents;
@@ -637,9 +729,6 @@ const App: React.FC = () => {
             if (newStatus === VersionStatus.BAN_HANH) {
                 const docId = targetVersion.ma_tl;
                 
-                // 1. Update versions array:
-                //    - Set the target version's status to BAN_HANH and is_moi_nhat to true.
-                //    - Set all other versions of the same document to is_moi_nhat = false.
                 updatedVersions = prev.versions.map(v => {
                     if (v.ma_tl === docId) {
                         return {
@@ -651,8 +740,6 @@ const App: React.FC = () => {
                     return v;
                 });
 
-                // 2. Update documents array:
-                //    - Find the parent document and update its status and issue date.
                 updatedDocuments = prev.documents.map(doc => {
                     if (doc.ma_tl === docId) {
                         return { 
@@ -664,7 +751,6 @@ const App: React.FC = () => {
                     return doc;
                 });
             } else {
-                // For other status changes (e.g., Draft -> For Approval), just update the version.
                 updatedVersions = prev.versions.map(v => 
                     v.id_phien_ban === versionId 
                         ? { ...v, trang_thai_phien_ban: newStatus } 
@@ -672,32 +758,48 @@ const App: React.FC = () => {
                 );
             }
             
-            return { ...prev, versions: updatedVersions, documents: updatedDocuments };
+            return { ...prev, versions: updatedVersions, documents: updatedDocuments, auditTrail: [newLog, ...prev.auditTrail] };
         });
-    }, []);
+    }, [createAuditLog]);
 
     const handleSaveRelatedData = useCallback((type: string, data: any) => {
         const key = type as keyof AppData;
         setAppData(prev => {
-            let newList;
             const idKey = Object.keys(data).find(k => k.startsWith('id_'));
+            const isUpdate = idKey && data[idKey];
+            const action = isUpdate ? AuditAction.UPDATE : AuditAction.CREATE;
+            const actionText = isUpdate ? 'Cập nhật' : 'Tạo mới';
+    
+            let docName = '';
+            let docId = data.ma_tl;
+            if (!docId && data.id_phien_ban) {
+                const version = prev.versions.find(v => v.id_phien_ban === data.id_phien_ban);
+                if (version) docId = version.ma_tl;
+            }
+            if (docId) {
+                const doc = prev.documents.find(d => d.ma_tl === docId);
+                if (doc) docName = `cho tài liệu "${doc.ten_tai_lieu}"`;
+            }
+    
+            let newList;
+            let newItemId = isUpdate ? data[idKey!] : undefined;
 
-            if (idKey && data[idKey]) { // Update existing
-                newList = (prev[key] as any[]).map(item => item[idKey] === data[idKey] ? data : item);
-            } else { // Add new
+            if (isUpdate) {
+                newList = (prev[key] as any[]).map(item => item[idKey!] === data[idKey!] ? data : item);
+            } else {
                 const idPrefix = type === 'changeLogs' ? 'cl' :
                                  type === 'distributions' ? 'pp' :
                                  type.slice(0, 2);
                 const newIdKey = `id_${type.slice(0, -1)}`;
-                const newItem = { ...data, [newIdKey]: `${idPrefix}-${uuidv4()}` };
+                newItemId = `${idPrefix}-${uuidv4()}`;
+                const newItem = { ...data, [newIdKey]: newItemId };
                 newList = [...(prev[key] as any[]), newItem];
             }
-
+    
             if (key === 'reviewSchedules' && data.ket_qua_ra_soat && data.id_lich) {
                 const oldSchedule = (prev.reviewSchedules as LichRaSoat[]).find(rs => rs.id_lich === data.id_lich);
                 const tanSuat = prev.tanSuatRaSoat.find(ts => ts.id === oldSchedule?.tan_suat);
                 if (tanSuat?.so_thang && data.ngay_ra_soat_thuc_te) {
-                    // Use local Date parsing and local-format output (YYYY-MM-DD)
                     const nextReviewDate = parseYMDToLocalDate(data.ngay_ra_soat_thuc_te);
                     if (nextReviewDate) {
                         nextReviewDate.setMonth(nextReviewDate.getMonth() + tanSuat.so_thang);
@@ -712,47 +814,111 @@ const App: React.FC = () => {
                     }
                 }
             }
+            
+            const newLog = createAuditLog(action, type, `${actionText} ${translate(type)} ${docName}`, newItemId, docId);
+            if (!newLog) return prev;
 
-            return { ...prev, [key]: newList };
+            return { ...prev, [key]: newList, auditTrail: [newLog, ...prev.auditTrail] };
         });
-    }, []);
+    }, [createAuditLog]);
 
     const handleDeleteRelatedData = useCallback((type: string, data: any) => {
         const key = type as keyof AppData;
         const idKey = Object.keys(data).find(k => k.startsWith('id_'))!;
-        setAppData(prev => ({
-            ...prev,
-            [key]: (prev[key] as any[]).filter(item => item[idKey] !== data[idKey]),
-        }));
-    }, []);
+        setAppData(prev => {
+            let docName = '';
+            let docId = data.ma_tl;
+            if (!docId && data.id_phien_ban) {
+                const version = prev.versions.find(v => v.id_phien_ban === data.id_phien_ban);
+                if (version) docId = version.ma_tl;
+            }
+            if (docId) {
+                const doc = prev.documents.find(d => d.ma_tl === docId);
+                if (doc) docName = `của tài liệu "${doc.ten_tai_lieu}"`;
+            }
+            
+            const newLog = createAuditLog(
+                AuditAction.DELETE,
+                type,
+                `Xóa ${translate(type)} ${docName}`,
+                data[idKey],
+                docId
+            );
+            if (!newLog) return prev;
+
+            return {
+                ...prev,
+                [key]: (prev[key] as any[]).filter(item => item[idKey] !== data[idKey]),
+                auditTrail: [newLog, ...prev.auditTrail]
+            };
+        });
+    }, [createAuditLog]);
 
     const handleSaveCategory = useCallback((categoryKey: keyof AppData, item: any) => {
          setAppData(prev => {
+            const isUpdate = !!item.id;
+            const action = isUpdate ? AuditAction.UPDATE : AuditAction.CREATE;
+            const actionText = isUpdate ? 'Cập nhật' : 'Tạo mới';
+
             const list = prev[categoryKey] as any[];
             let newList;
-            if (item.id) {
+            let newId = item.id;
+
+            if (isUpdate) {
                 newList = list.map(i => i.id === item.id ? item : i);
             } else {
-                const newId = `${categoryKey}-${uuidv4()}`;
+                newId = `${categoryKey}-${uuidv4()}`;
                 newList = [...list, { ...item, id: newId, is_active: true }];
             }
-            return { ...prev, [categoryKey]: newList };
+
+            const newLog = createAuditLog(
+                action,
+                categoryKey as string,
+                `${actionText} ${translate(categoryKey as string)}: "${item.ten}"`,
+                newId
+            );
+            if (!newLog) return prev;
+            
+            return { ...prev, [categoryKey]: newList, auditTrail: [newLog, ...prev.auditTrail] };
         });
-    }, []);
+    }, [createAuditLog]);
 
     const handleDeleteCategory = useCallback((categoryKey: keyof AppData, item: any) => {
-        setAppData(prev => ({
-            ...prev,
-            [categoryKey]: (prev[categoryKey] as any[]).filter(i => i.id !== item.id)
-        }));
-    }, []);
+        setAppData(prev => {
+            const newLog = createAuditLog(
+                AuditAction.DELETE,
+                categoryKey as string,
+                `Xóa ${translate(categoryKey as string)}: "${item.ten}"`,
+                item.id
+            );
+            if (!newLog) return prev;
+            
+            return {
+                ...prev,
+                [categoryKey]: (prev[categoryKey] as any[]).filter(i => i.id !== item.id),
+                auditTrail: [newLog, ...prev.auditTrail]
+            }
+        });
+    }, [createAuditLog]);
 
     const handleToggleCategoryStatus = useCallback((categoryKey: keyof AppData, item: any) => {
-        setAppData(prev => ({
-            ...prev,
-            [categoryKey]: (prev[categoryKey] as any[]).map(i => i.id === item.id ? { ...i, is_active: i.is_active === false } : i)
-        }));
-    }, []);
+        setAppData(prev => {
+            const newStatus = item.is_active === false ? 'hoạt động' : 'vô hiệu hóa';
+            const newLog = createAuditLog(
+                AuditAction.UPDATE,
+                categoryKey as string,
+                `Chuyển trạng thái ${translate(categoryKey as string)} "${item.ten}" thành ${newStatus}`,
+                item.id
+            );
+            if (!newLog) return prev;
+
+            return {
+                ...prev,
+                [categoryKey]: (prev[categoryKey] as any[]).map(i => i.id === item.id ? { ...i, is_active: i.is_active === false } : i),
+                auditTrail: [newLog, ...prev.auditTrail]
+            };
+        });
+    }, [createAuditLog]);
     
     const handleMarkNotificationRead = useCallback((notificationId: string) => {
         setAppData(prev => ({
