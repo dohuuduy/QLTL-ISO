@@ -1049,6 +1049,7 @@ const App: React.FC = () => {
                     onUpdateVersionStatus={handleUpdateVersionStatus}
                     onToggleBookmark={handleToggleBookmark}
                     currentUser={currentUser!}
+                    onNavigateToDocument={handleNavigateToDocument}
                 /> : <div>Không tìm thấy tài liệu.</div>;
             
             case 'audits':

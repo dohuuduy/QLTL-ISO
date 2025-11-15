@@ -24,29 +24,6 @@ import TrainingForm from './forms/TrainingForm';
 import RiskForm from './forms/RiskForm';
 import DocumentForm from './forms/DocumentForm';
 
-// Helper function to find all descendants of a document
-const getDescendantIds = (docId: string, allDocs: DanhMucTaiLieu[]): Set<string> => {
-    const descendants = new Set<string>();
-    const queue: string[] = [docId];
-    const visited = new Set<string>([docId]);
-
-    let head = 0;
-    while(head < queue.length) {
-        const currentParentId = queue[head];
-        head++;
-
-        for (const doc of allDocs) {
-            if (doc.ma_tl_cha === currentParentId && !visited.has(doc.ma_tl)) {
-                descendants.add(doc.ma_tl);
-                visited.add(doc.ma_tl);
-                queue.push(doc.ma_tl);
-            }
-        }
-    }
-    return descendants;
-};
-
-
 // A simple component to display details in a list
 const DetailItem: React.FC<{ label: string; value?: React.ReactNode; className?: string }> = ({ label, value, className = '' }) => {
     if (!value && typeof value !== 'string' && typeof value !== 'number') return null;
@@ -114,6 +91,105 @@ const RelationshipItem: React.FC<{
     </div>
 );
 
+type TreeItem = {
+    doc: DanhMucTaiLieu;
+    level: number;
+};
+
+// Helper function to find all descendants of a document
+const getDescendantIds = (docId: string, allDocs: DanhMucTaiLieu[]): Set<string> => {
+    const descendants = new Set<string>();
+    const queue: string[] = [docId];
+    const visited = new Set<string>([docId]);
+
+    let head = 0;
+    while(head < queue.length) {
+        const currentParentId = queue[head];
+        head++;
+
+        for (const doc of allDocs) {
+            if (doc.ma_tl_cha === currentParentId && !visited.has(doc.ma_tl)) {
+                descendants.add(doc.ma_tl);
+                visited.add(doc.ma_tl);
+                queue.push(doc.ma_tl);
+            }
+        }
+    }
+    return descendants;
+};
+
+/**
+ * Builds a full document hierarchy tree (ancestors and descendants) for a given document.
+ * This function now filters out old versions of documents.
+ * @param selectedDoc The document to start from.
+ * @param allDocuments The list of all documents in the system.
+ * @returns A flat array representing the tree, with each item having a 'level' for indentation.
+ */
+const buildDocumentTree = (selectedDoc: DanhMucTaiLieu, allDocuments: DanhMucTaiLieu[]): TreeItem[] => {
+    if (!selectedDoc) return [];
+
+    // Identify all document IDs that have been replaced by a newer version.
+    const replacedDocIds = new Set<string>();
+    allDocuments.forEach(doc => {
+        if (doc.tai_lieu_thay_the) {
+            replacedDocIds.add(doc.tai_lieu_thay_the);
+        }
+    });
+
+    // Filter out the old/replaced documents. The tree will only be built with current documents.
+    const currentDocuments = allDocuments.filter(doc => !replacedDocIds.has(doc.ma_tl));
+
+    const docMap = new Map(currentDocuments.map(d => [d.ma_tl, d]));
+
+    // If the document being viewed is an old, replaced version, it's not part of the "current" tree.
+    // In this case, we just show it as a single node for context.
+    if (!docMap.has(selectedDoc.ma_tl)) {
+        return [{ doc: selectedDoc, level: 0 }];
+    }
+    
+    // 1. Find the ultimate root ancestor from the current documents
+    let rootDoc = selectedDoc;
+    while (rootDoc.ma_tl_cha && docMap.has(rootDoc.ma_tl_cha)) {
+        const parent = docMap.get(rootDoc.ma_tl_cha);
+        if (!parent) break;
+        rootDoc = parent;
+    }
+
+    // 2. Recursively build the tree from the root
+    const tree: TreeItem[] = [];
+    const getDescendants = (docId: string, level: number) => {
+        const doc = docMap.get(docId);
+        if (doc) {
+            tree.push({ doc, level });
+            const children = currentDocuments.filter(d => d.ma_tl_cha === docId);
+            for (const child of children) {
+                getDescendants(child.ma_tl, level + 1);
+            }
+        }
+    };
+    
+    getDescendants(rootDoc.ma_tl, 0);
+
+    return tree;
+};
+
+
+// Helper to get all ancestors of a document
+const getAncestorIds = (docId: string, allDocsMap: Map<string, DanhMucTaiLieu>): Set<string> => {
+    const ancestors = new Set<string>();
+    let currentId = docId;
+    while (true) {
+        const doc = allDocsMap.get(currentId);
+        if (doc?.ma_tl_cha) {
+            ancestors.add(doc.ma_tl_cha);
+            currentId = doc.ma_tl_cha;
+        } else {
+            break;
+        }
+    }
+    return ancestors;
+};
+
 
 type AllData = {
     documents: DanhMucTaiLieu[];
@@ -144,6 +220,7 @@ interface DocumentDetailProps {
     onUpdateVersionStatus: (versionId: string, newStatus: VersionStatus) => void;
     onToggleBookmark: (docId: string) => void;
     currentUser: NhanSu;
+    onNavigateToDocument: (docId: string) => void;
 }
 
 type ModalType = 'versions' | 'changeLogs' | 'distributions' | 'reviewSchedules' | 'trainings' | 'risks' | 'viewChangeLog';
@@ -201,7 +278,7 @@ const TabContentWrapper: React.FC<{
 );
 
 const DocumentDetail: React.FC<DocumentDetailProps> = ({
-    document, allData, onBack, onSaveRelatedData, onDeleteRelatedData, onUpdateDocument, onUpdateVersionStatus, onToggleBookmark, currentUser
+    document, allData, onBack, onSaveRelatedData, onDeleteRelatedData, onUpdateDocument, onUpdateVersionStatus, onToggleBookmark, currentUser, onNavigateToDocument
 }) => {
     const [activeTabIndex, setActiveTabIndex] = useState(0);
     const [modalContent, setModalContent] = useState<ModalContent | null>(null);
@@ -219,8 +296,68 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
         auditTrail: { page: 1, perPage: 10 },
     });
 
-    const parentDoc = useMemo(() => allData.documents.find(d => d.ma_tl === document.ma_tl_cha) || null, [allData.documents, document.ma_tl_cha]);
     const replacementDoc = useMemo(() => allData.documents.find(d => d.ma_tl === document.tai_lieu_thay_the) || null, [allData.documents, document.tai_lieu_thay_the]);
+
+    // --- HIERARCHY TREE LOGIC ---
+    const docMap = useMemo(() => new Map(allData.documents.map(d => [d.ma_tl, d])), [allData.documents]);
+    const docChildrenMap = useMemo(() => {
+        const map = new Map<string, string[]>();
+        allData.documents.forEach(doc => {
+            if (doc.ma_tl_cha) {
+                if (!map.has(doc.ma_tl_cha)) {
+                    map.set(doc.ma_tl_cha, []);
+                }
+                map.get(doc.ma_tl_cha)!.push(doc.ma_tl);
+            }
+        });
+        return map;
+    }, [allData.documents]);
+    const treeData = useMemo(() => buildDocumentTree(document, allData.documents), [document, allData.documents]);
+    const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(() => {
+        const ancestors = getAncestorIds(document.ma_tl, docMap);
+        const initiallyCollapsed = new Set<string>();
+        // Collapse any node that has children and is NOT an ancestor of the current doc
+        for (const docId of docChildrenMap.keys()) {
+            if (!ancestors.has(docId) && docId !== document.ma_tl && !getAncestorIds(docId, docMap).has(document.ma_tl)) {
+                 initiallyCollapsed.add(docId);
+            }
+        }
+        return initiallyCollapsed;
+    });
+
+    const toggleNode = (docId: string) => {
+        setCollapsedNodes(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(docId)) {
+                newSet.delete(docId);
+            } else {
+                newSet.add(docId);
+            }
+            return newSet;
+        });
+    };
+    
+    const visibleTreeItems = useMemo(() => {
+        const visibleItems: TreeItem[] = [];
+        const parentLevels: { [level: number]: TreeItem } = {};
+
+        for (const item of treeData) {
+            parentLevels[item.level] = item;
+            let isHidden = false;
+            for (let i = 0; i < item.level; i++) {
+                if (parentLevels[i] && collapsedNodes.has(parentLevels[i].doc.ma_tl)) {
+                    isHidden = true;
+                    break;
+                }
+            }
+            if (!isHidden) {
+                visibleItems.push(item);
+            }
+        }
+        return visibleItems;
+    }, [treeData, collapsedNodes]);
+
+    // --- END HIERARCHY TREE LOGIC ---
 
     const handlePageChange = (tab: TabKey, page: number) => {
         setTabPaging(prev => ({ ...prev, [tab]: { ...prev[tab], page } }));
@@ -234,12 +371,9 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
     const canDeleteDocument = currentUser.role === 'admin' || !!currentUser.permissions?.canDelete;
 
     const handlePrint = () => {
-        // If a PDF link exists, open it in a new tab for the browser's PDF viewer to handle printing.
-        // This is more intuitive for users than printing the entire web page.
         if (document.file_pdf) {
             window.open(document.file_pdf, '_blank');
         } else {
-            // Otherwise, fall back to printing the current detail page, which is formatted for printing via CSS.
             window.print();
         }
     };
@@ -705,9 +839,8 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                              <div className="px-4 py-3 sm:px-6 bg-slate-50">
                                 <h3 className="text-base font-semibold text-gray-800">Tham chiếu & Liên kết</h3>
                             </div>
-                            <dl className="p-4 sm:p-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                            <dl className="p-4 sm:p-6 grid grid-cols-1 gap-x-4 gap-y-8">
                                  <DetailItem 
-                                    className="sm:col-span-2" 
                                     label="Tiêu chuẩn áp dụng" 
                                     value={
                                         <div className="flex flex-wrap gap-2 pt-1">
@@ -728,53 +861,46 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                                     } 
                                 />
                                 <div>
-                                    <dt className="text-sm font-medium text-gray-500">Tài liệu cha</dt>
-                                    <dd className="mt-1 text-sm text-gray-900 flex items-center justify-between gap-x-4">
-                                        {parentDoc ? (
-                                            <div className="flex items-center gap-x-2 truncate flex-1 min-w-0">
-                                                <strong className="font-semibold text-blue-700 truncate" title={parentDoc.ten_tai_lieu}>{parentDoc.ten_tai_lieu}</strong>
-                                                <span className="text-gray-500 flex-shrink-0">({parentDoc.so_hieu})</span>
-                                                {parentDoc.file_pdf && (
-                                                    <a
-                                                        href={parentDoc.file_pdf}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        title="Mở file PDF của tài liệu cha"
-                                                        className="text-blue-600 hover:text-blue-800 flex-shrink-0"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        <Icon type="document-text" className="h-5 w-5" />
-                                                    </a>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <span className="text-gray-400">Không có</span>
-                                        )}
-                                        {canUpdateDocument && (
-                                            <div className="flex-shrink-0 flex items-center space-x-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setSelectorModalType('parent')}
-                                                    className="text-blue-600 hover:text-blue-800"
-                                                    title={parentDoc ? 'Thay đổi' : 'Thêm'}
+                                    <dt className="text-sm font-medium text-gray-500 mb-2">Cây gia phả tài liệu</dt>
+                                    <dd className="mt-1 text-sm text-gray-900 border rounded-lg p-2 bg-slate-50/50 space-y-1">
+                                        {visibleTreeItems.length > 0 ? visibleTreeItems.map(item => {
+                                            const hasChildren = docChildrenMap.has(item.doc.ma_tl);
+                                            const isCollapsed = collapsedNodes.has(item.doc.ma_tl);
+                                            const isSelected = item.doc.ma_tl === document.ma_tl;
+
+                                            return (
+                                                <div 
+                                                    key={item.doc.ma_tl}
+                                                    className={`flex items-center group rounded-md transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-slate-100'}`}
+                                                    style={{ paddingLeft: `${item.level * 1}rem` }}
                                                 >
-                                                    <Icon type="pencil" className="h-4 w-4" />
-                                                </button>
-                                                {parentDoc && (
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleRemoveRelationship('parent')}
-                                                        className="text-red-600 hover:text-red-800"
-                                                        title="Xóa liên kết"
+                                                        onClick={(e) => { e.stopPropagation(); toggleNode(item.doc.ma_tl); }}
+                                                        className={`p-1 rounded-full hover:bg-slate-200 ${hasChildren ? 'opacity-100' : 'opacity-0 cursor-default'}`}
+                                                        disabled={!hasChildren}
+                                                        aria-label={isCollapsed ? 'Mở rộng' : 'Thu gọn'}
                                                     >
-                                                        <Icon type="x-mark" className="h-4 w-4" />
+                                                        <Icon type={isCollapsed ? 'chevron-right' : 'chevron-down'} className="h-4 w-4 text-gray-500" />
                                                     </button>
-                                                )}
-                                            </div>
-                                        )}
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => onNavigateToDocument(item.doc.ma_tl)}
+                                                        className="flex items-center gap-2 py-1.5 px-2 text-left flex-1 min-w-0"
+                                                        title={`Xem chi tiết: ${item.doc.ten_tai_lieu}`}
+                                                    >
+                                                        <Icon type="document-text" className={`h-5 w-5 flex-shrink-0 ${isSelected ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-700'}`} />
+                                                        <span className={`truncate ${isSelected ? 'font-bold text-blue-800' : 'font-medium text-gray-800'}`}>
+                                                            {item.doc.ten_tai_lieu}
+                                                        </span>
+                                                        <span className="text-gray-500 font-mono text-xs">({item.doc.so_hieu})</span>
+                                                    </button>
+                                                </div>
+                                            );
+                                        }) : <p className="p-2 text-gray-500">Tài liệu này không có quan hệ cha-con.</p>}
                                     </dd>
                                 </div>
-                                <div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
                                     <RelationshipItem
                                         label="Thay thế cho tài liệu"
                                         doc={replacementDoc}

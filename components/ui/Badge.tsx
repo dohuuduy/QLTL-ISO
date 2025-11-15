@@ -16,7 +16,7 @@ const statusColors: Record<BadgeStatus, string> = {
     [VersionStatus.BAN_THAO]: 'bg-indigo-100 text-indigo-800',
     [VersionStatus.PHE_DUYET]: 'bg-yellow-100 text-yellow-800',
     [VersionStatus.BAN_HANH]: 'bg-green-100 text-green-800',
-    [VersionStatus.THU_HOI]: 'bg-red-100 text-red-800',
+    'thu_hoi': 'bg-red-100 text-red-800', // For both VersionStatus and DistributionStatus
     // DistributionStatus
     [DistributionStatus.DANG_HIEU_LUC]: 'bg-green-100 text-green-800',
     [DistributionStatus.MAT_HONG]: 'bg-red-100 text-red-800',
@@ -54,9 +54,8 @@ const dotColors: Record<string, string> = {
     [VersionStatus.BAN_THAO]: 'fill-indigo-500',
     [VersionStatus.PHE_DUYET]: 'fill-yellow-500',
     [VersionStatus.BAN_HANH]: 'fill-green-500',
-    [VersionStatus.THU_HOI]: 'fill-red-500',
+    'thu_hoi': 'fill-red-500', // For both VersionStatus and DistributionStatus
     [DistributionStatus.DANG_HIEU_LUC]: 'fill-green-500',
-    // FIX: Removed duplicate key 'thu_hoi'. VersionStatus.THU_HOI provides the value for this key.
     [DistributionStatus.MAT_HONG]: 'fill-red-500',
     [ReviewResult.TIEP_TUC]: 'fill-green-500',
     [ReviewResult.CAN_SUA]: 'fill-yellow-500',

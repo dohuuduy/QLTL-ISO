@@ -20,27 +20,35 @@ const postToGAS = async (payload: object): Promise<any> => {
     const params = new URLSearchParams();
     params.append('payload', JSON.stringify(payload));
 
-    const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: params,
-        // No Content-Type header is needed; URLSearchParams sets it automatically.
-        // The mode 'no-cors' is not used here because we need to read the response.
-        // redirect: 'follow' is the default and usually correct for Apps Script.
-    });
+    let response;
+    try {
+        response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            body: params,
+        });
+    } catch (e) {
+        if (e instanceof TypeError && (e.message.includes('Failed to fetch') || e.message.includes('Network request failed'))) {
+            // This specific error is often due to CORS or network issues.
+            // Throw a specific error type that high-level components are checking for.
+            throw new TypeError('Failed to fetch');
+        }
+        // Re-throw other unexpected errors
+        throw e;
+    }
     
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Network request failed: ${response.status} - ${errorText}`);
+        const shortError = errorText.length > 500 ? errorText.substring(0, 500) + '...' : errorText;
+        console.error(`GAS request failed with status ${response.status}:`, shortError);
+        throw new Error(`Yêu cầu đến máy chủ thất bại với mã lỗi: ${response.status}.`);
     }
 
-    // The Apps Script is expected to return a JSON response with 'Content-Type: application/json'.
-    // If it returns 'text/plain' or an HTML error page, .json() will fail. We handle this gracefully.
     const textResponse = await response.text();
     try {
         return JSON.parse(textResponse);
     } catch (e) {
-        console.error("Failed to parse JSON response:", textResponse);
-        throw new Error("Invalid response from server. Check the Google Apps Script deployment and logs.");
+        console.error("Failed to parse JSON response from GAS:", textResponse);
+        throw new Error("Phản hồi không hợp lệ từ máy chủ. Vui lòng kiểm tra lại quá trình triển khai Google Apps Script.");
     }
 };
 
