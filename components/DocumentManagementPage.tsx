@@ -533,7 +533,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                     <Card.Body>
                         <div className="flex flex-wrap items-end gap-4">
                             {/* Search Input */}
-                            <div className="flex-grow" style={{ minWidth: '12rem', maxWidth: '17rem' }}>
+                            <div className="w-full sm:flex-1" style={{ minWidth: '15rem' }}>
                                 <label htmlFor="search-input" className="form-label">Tìm kiếm</label>
                                 <div className="search-input-container">
                                     <Icon type="search" className="search-input-icon h-5 w-5" />
@@ -559,7 +559,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             </div>
 
                             {/* Status filter */}
-                            <div className="w-full sm:w-auto" style={{ flexBasis: '160px' }}>
+                            <div className="w-full sm:flex-1" style={{ minWidth: '10rem' }}>
                                 <label htmlFor="status-filter" className="form-label">Trạng thái</label>
                                 <select
                                     id="status-filter"
@@ -574,7 +574,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             </div>
 
                             {/* Department filter */}
-                            <div className="w-full sm:w-auto" style={{ flexBasis: '160px' }}>
+                            <div className="w-full sm:flex-1" style={{ minWidth: '10rem' }}>
                                 <label htmlFor="department-filter" className="form-label">Phòng ban</label>
                                 <select
                                     id="department-filter"
@@ -588,7 +588,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             </div>
 
                            {/* Doc type filter */}
-                           <div className="w-full sm:w-auto" style={{ flexBasis: '160px' }}>
+                           <div className="w-full sm:flex-1" style={{ minWidth: '10rem' }}>
                                 <label htmlFor="loai-tai-lieu-filter" className="form-label">Loại tài liệu</label>
                                 <select
                                     id="loai-tai-lieu-filter"
@@ -602,7 +602,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             </div>
                            
                            {/* Standard filter */}
-                           <div className="w-full sm:w-auto" style={{ flexBasis: '150px' }}>
+                           <div className="w-full sm:flex-1" style={{ minWidth: '10rem' }}>
                                 <label htmlFor="standard-filter" className="form-label">Tiêu chuẩn</label>
                                 <select
                                     id="standard-filter"
@@ -621,7 +621,7 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                             </div>
 
                             {/* Bookmark button */}
-                            <div className="flex-shrink-0">
+                            <div className="w-full sm:w-auto">
                                 <label className="form-label hidden sm:block">&nbsp;</label>
                                 <button
                                     id="bookmark-toggle"
