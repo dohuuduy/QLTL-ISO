@@ -296,6 +296,8 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
         auditTrail: { page: 1, perPage: 10 },
     });
 
+    const hasPdf = useMemo(() => !!(document.file_pdf && document.file_pdf.trim()), [document.file_pdf]);
+
     const replacementDoc = useMemo(() => allData.documents.find(d => d.ma_tl === document.tai_lieu_thay_the) || null, [allData.documents, document.tai_lieu_thay_the]);
 
     // --- HIERARCHY TREE LOGIC ---
@@ -371,10 +373,8 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
     const canDeleteDocument = currentUser.role === 'admin' || !!currentUser.permissions?.canDelete;
 
     const handlePrint = () => {
-        if (document.file_pdf) {
-            window.open(document.file_pdf, '_blank');
-        } else {
-            window.print();
+        if (hasPdf) {
+            window.open(document.file_pdf!, '_blank');
         }
     };
 
@@ -786,8 +786,13 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                              )}
                             <button 
                                 onClick={handlePrint} 
-                                className="btn-secondary btn-responsive text-blue-600 font-semibold hover:bg-blue-50"
-                                title={document.file_pdf ? "In file PDF" : "In trang này"}>
+                                disabled={!hasPdf}
+                                className={`btn-secondary btn-responsive font-semibold transition-colors ${
+                                    hasPdf
+                                        ? 'text-blue-600 hover:bg-blue-50'
+                                        : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                                }`}
+                                title={hasPdf ? "In file PDF" : "Không có file PDF để in"}>
                                 <Icon type="printer" className="btn-icon h-5 w-5" />
                                 <span className="btn-text">In</span>
                             </button>
