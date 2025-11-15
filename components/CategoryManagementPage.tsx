@@ -1,10 +1,10 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import type { NhanSu } from '../types';
 import Card from './ui/Card';
 import Table from './ui/Table';
 import Modal from './ui/Modal';
 import { Icon } from './ui/Icon';
-import ConfirmationDialog from './ui/ConfirmationDialog';
 import Badge from './ui/Badge';
 import { mockData } from '../data/mockData';
 import Pagination from './ui/Pagination';
@@ -31,7 +31,7 @@ interface CategoryManagementPageProps<T extends { id: string, ten: string, is_ac
     FormComponent: React.FC<any>;
     formProps?: object;
     onSave: (categoryKey: CategoryKey, item: T) => void;
-    onDelete: (categoryKey: CategoryKey, item: T) => void;
+    onRequestDelete: (categoryKey: CategoryKey, item: T) => void;
     onToggleStatus: (categoryKey: CategoryKey, item: T) => void;
     currentUser: NhanSu;
 }
@@ -54,13 +54,12 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
     FormComponent,
     formProps = {},
     onSave,
-    onDelete,
+    onRequestDelete,
     onToggleStatus,
     currentUser,
 }: CategoryManagementPageProps<T>) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalData, setModalData] = useState<T | null>(null);
-    const [deletingItem, setDeletingItem] = useState<T | null>(null);
     const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ten', direction: 'ascending' });
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(15);
@@ -175,13 +174,6 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
         onSave(categoryKey, formData);
         closeModal();
     };
-
-    const handleDeleteConfirm = () => {
-        if (deletingItem) {
-            onDelete(categoryKey, deletingItem);
-            setDeletingItem(null);
-        }
-    };
     
     const defaultColumns = [
         { header: `Tên ${title.replace('Quản lý ', '').toLowerCase()}`, accessor: (item: T) => item.ten, sortKey: 'ten', width: '70%' },
@@ -288,7 +280,7 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
                     <Icon type="pencil" className="h-5 w-5" />
                 </button>
                 {!isSelf && (
-                    <button onClick={(e) => { e.stopPropagation(); setDeletingItem(item); }} className="text-red-600 hover:text-red-800" title="Xóa">
+                    <button onClick={(e) => { e.stopPropagation(); onRequestDelete(categoryKey, item); }} className="text-red-600 hover:text-red-800" title="Xóa">
                         <Icon type="trash" className="h-5 w-5" />
                     </button>
                 )}
@@ -297,7 +289,6 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
     };
 
     const modalTitle = `${modalData ? 'Chỉnh sửa' : 'Thêm mới'} ${title.replace('Quản lý ', '')}`;
-    const deletionMessage = `Bạn có chắc chắn muốn xóa '${deletingItem?.ten || ''}' không? Hành động này không thể hoàn tác.`;
 
     return (
         <>
@@ -413,14 +404,6 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
                         {...formProps}
                     />
                 </Modal>
-
-                <ConfirmationDialog
-                    isOpen={!!deletingItem}
-                    onClose={() => setDeletingItem(null)}
-                    onConfirm={handleDeleteConfirm}
-                    title={`Xác nhận Xóa`}
-                    message={deletionMessage}
-                />
             </div>
         </>
     );

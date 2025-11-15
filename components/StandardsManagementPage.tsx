@@ -1,10 +1,10 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import type { TieuChuan, NhanSu } from '../types';
 import Card from './ui/Card';
 import Table from './ui/Table';
 import Modal from './ui/Modal';
 import { Icon } from './ui/Icon';
-import ConfirmationDialog from './ui/ConfirmationDialog';
 import StandardForm from './forms/StandardForm';
 import Badge from './ui/Badge';
 import { formatDateForDisplay } from '../utils/dateUtils';
@@ -15,7 +15,9 @@ import Pagination from './ui/Pagination';
 
 interface StandardsManagementPageProps {
     standards: TieuChuan[];
-    onUpdateData: React.Dispatch<React.SetStateAction<any>>;
+    onSave: (categoryKey: string, item: any) => void;
+    onRequestDelete: (categoryKey: string, item: TieuChuan) => void;
+    onToggleStatus: (categoryKey: string, item: TieuChuan) => void;
     currentUser: NhanSu;
 }
 
@@ -24,10 +26,9 @@ type SortConfig = {
     direction: 'ascending' | 'descending';
 } | null;
 
-const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ standards, onUpdateData, currentUser }) => {
+const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ standards, onSave, onRequestDelete, onToggleStatus, currentUser }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingStandard, setEditingStandard] = useState<TieuChuan | null>(null);
-    const [deletingId, setDeletingId] = useState<string | null>(null);
     const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ten', direction: 'ascending' });
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(15);
@@ -119,48 +120,8 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
     };
 
     const handleSave = (formData: TieuChuan) => {
-        onUpdateData((prev: any) => {
-            let newList;
-            if (editingStandard) {
-                newList = prev.tieuChuan.map((item: TieuChuan) => item.id === editingStandard.id ? formData : item);
-            } else {
-                newList = [...prev.tieuChuan, { ...formData, id: `tc-${Date.now()}`, is_active: true }];
-            }
-            return { ...prev, tieuChuan: newList.sort((a: TieuChuan, b: TieuChuan) => a.ten.localeCompare(b.ten)) };
-        });
+        onSave('tieuChuan', formData);
         closeModal();
-    };
-
-    const handleDelete = () => {
-        if (!deletingId) return;
-        onUpdateData((prev: any) => ({
-            ...prev,
-            tieuChuan: prev.tieuChuan.filter((item: TieuChuan) => item.id !== deletingId),
-        }));
-        setDeletingId(null);
-    };
-
-    const handleToggleStatus = (standardToToggle: TieuChuan) => {
-        onUpdateData((prev: any) => {
-            const updatedList = prev.tieuChuan.map((item: TieuChuan) => {
-                if (item.id === standardToToggle.id) {
-                    const newActiveState = item.is_active === false;
-                    const updatedItem = { ...item, is_active: newActiveState };
-
-                    if (newActiveState && updatedItem.ngay_ket_thuc_ap_dung) {
-                        const endDate = new Date(updatedItem.ngay_ket_thuc_ap_dung); 
-                        const now = new Date();
-                        const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-                        if (endDate < todayUTC) {
-                            updatedItem.ngay_ket_thuc_ap_dung = undefined;
-                        }
-                    }
-                    return updatedItem;
-                }
-                return item;
-            });
-            return { ...prev, tieuChuan: updatedList };
-        });
     };
     
     const canManage = currentUser.role === 'admin';
@@ -168,7 +129,7 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
     const renderActions = (item: TieuChuan) => (
         <div className="flex items-center justify-end space-x-3">
             <button
-                onClick={(e) => { e.stopPropagation(); handleToggleStatus(item); }}
+                onClick={(e) => { e.stopPropagation(); onToggleStatus('tieuChuan', item); }}
                 className={item.is_active !== false ? "text-gray-500 hover:text-gray-700" : "text-green-600 hover:text-green-800"}
                 title={item.is_active !== false ? "Vô hiệu hóa" : "Kích hoạt"}
             >
@@ -177,20 +138,11 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
             <button onClick={(e) => { e.stopPropagation(); openModal(item); }} className="text-blue-600 hover:text-blue-800" title="Chỉnh sửa">
                 <Icon type="pencil" className="h-5 w-5" />
             </button>
-            <button onClick={(e) => { e.stopPropagation(); setDeletingId(item.id); }} className="text-red-600 hover:text-red-800" title="Xóa">
+            <button onClick={(e) => { e.stopPropagation(); onRequestDelete('tieuChuan', item); }} className="text-red-600 hover:text-red-800" title="Xóa">
                 <Icon type="trash" className="h-5 w-5" />
             </button>
         </div>
     );
-
-    const deletionInfo = useMemo(() => {
-        if (!deletingId) return { title: 'Xác nhận Xóa', message: 'Bạn có chắc chắn muốn xóa mục này không?' };
-        const standard = standards.find(s => s.id === deletingId);
-        return {
-            title: 'Xác nhận Xóa Tiêu chuẩn',
-            message: `Bạn có chắc chắn muốn xóa tiêu chuẩn '${standard?.ten || ''}' không? Hành động này không thể hoàn tác.`,
-        };
-    }, [deletingId, standards]);
     
     const handlePrint = () => window.print();
     
@@ -304,14 +256,6 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
                         initialData={editingStandard}
                     />
                 </Modal>
-                
-                <ConfirmationDialog
-                    isOpen={!!deletingId}
-                    onClose={() => setDeletingId(null)}
-                    onConfirm={handleDelete}
-                    title={deletionInfo.title}
-                    message={deletionInfo.message}
-                />
             </div>
         </>
     );
