@@ -32,16 +32,16 @@ interface GroupedCategoryPageProps {
 const categoryGroups = {
     org: [
         { key: 'nhanSu', title: 'Nhân sự', Component: CategoryManagementPage, FormComponent: PersonnelForm, formProps: (allData: any, currentUser: NhanSu) => ({ phongBanList: allData.phongBan, chucVuList: allData.chucVu, currentUser }), columns: (allData: any) => ([
-            { header: 'Tên nhân sự', accessor: 'ten', sortKey: 'ten' },
-            { header: 'Email', accessor: 'email', sortKey: 'email' },
-            { header: 'Chức vụ', accessor: (item: NhanSu) => allData.chucVu.find((cv: any) => cv.id === item.chuc_vu)?.ten || '', sortKey: 'chuc_vu' },
-            { header: 'Phòng ban', accessor: (item: NhanSu) => allData.phongBan.find((pb: any) => pb.id === item.phong_ban_id)?.ten || '', sortKey: 'phong_ban_id' },
-            { header: 'Vai trò', accessor: (item: NhanSu) => <Badge status={item.role} />, sortKey: 'role' },
+            { header: 'Tên nhân sự', accessor: 'ten', sortKey: 'ten', width: '20%' },
+            { header: 'Email', accessor: 'email', sortKey: 'email', width: '20%' },
+            { header: 'Chức vụ', accessor: (item: NhanSu) => allData.chucVu.find((cv: any) => cv.id === item.chuc_vu)?.ten || '', sortKey: 'chuc_vu', width: '15%' },
+            { header: 'Phòng ban', accessor: (item: NhanSu) => allData.phongBan.find((pb: any) => pb.id === item.phong_ban_id)?.ten || '', sortKey: 'phong_ban_id', width: '15%' },
+            { header: 'Vai trò', accessor: (item: NhanSu) => <Badge status={item.role} />, sortKey: 'role', width: '10%' },
             { header: 'Nhiệm vụ', accessor: (item: NhanSu) => (
                 <div className="flex flex-wrap gap-1">
                     {(item.nhiem_vu_tai_lieu || []).map(role => <Badge key={role} status={role} title={translate(role)} size="sm" />)}
                 </div>
-            ), sortKey: 'nhiem_vu_tai_lieu' },
+            ), sortKey: 'nhiem_vu_tai_lieu', width: '15%' },
         ])},
         { key: 'phongBan', title: 'Phòng ban', Component: CategoryManagementPage, FormComponent: DepartmentForm },
         { key: 'chucVu', title: 'Chức vụ', Component: CategoryManagementPage, FormComponent: GenericCategoryForm, formProps: { categoryName: 'Chức vụ' }},

@@ -4,7 +4,7 @@ import type { NhanSu } from '../types';
 interface PrintReportLayoutProps {
     title: string;
     filters: Record<string, string>;
-    columns: { header: string; accessor: (item: any) => React.ReactNode }[];
+    columns: { header: string; accessor: (item: any) => React.ReactNode; width?: string }[];
     data: any[];
     currentUser: NhanSu;
 }
@@ -43,6 +43,12 @@ const PrintReportLayout: React.FC<PrintReportLayoutProps> = ({ title, filters, c
 
             <main>
                 <table>
+                    <colgroup>
+                        <col style={{ width: '5%' }} />
+                        {columns.map((col, index) => (
+                            <col key={index} style={{ width: col.width }} />
+                        ))}
+                    </colgroup>
                     <thead>
                         <tr>
                             <th>STT</th>

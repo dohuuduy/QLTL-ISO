@@ -26,6 +26,7 @@ interface CategoryManagementPageProps<T extends { id: string, ten: string, is_ac
         header: React.ReactNode;
         accessor: keyof T | ((item: T) => React.ReactNode);
         sortKey: string;
+        width?: string;
     }[];
     FormComponent: React.FC<any>;
     formProps?: object;
@@ -183,7 +184,7 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
     };
     
     const defaultColumns = [
-        { header: `Tên ${title.replace('Quản lý ', '').toLowerCase()}`, accessor: (item: T) => item.ten, sortKey: 'ten' },
+        { header: `Tên ${title.replace('Quản lý ', '').toLowerCase()}`, accessor: (item: T) => item.ten, sortKey: 'ten', width: '70%' },
     ];
 
     const finalColumns = (columns || defaultColumns).map(col => ({
@@ -192,13 +193,13 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
             ? getSortableHeader(col.header, col.sortKey)
             : col.header,
     })).concat([
-        { header: getSortableHeader('Trạng thái', 'is_active'), accessor: (item: T) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} />, sortKey: 'is_active' }
+        { header: getSortableHeader('Trạng thái', 'is_active'), accessor: (item: T) => <Badge status={item.is_active !== false ? 'active' : 'inactive'} />, sortKey: 'is_active', width: columns ? '15%' : '30%' }
     ]);
     
     const printLayoutProps = useMemo(() => {
-        const baseColumns = columns || defaultColumns;
+        const baseColumns = (columns || defaultColumns);
         const printColumns = baseColumns.map(col => ({
-          header: typeof col.header === 'string' ? col.header.replace(/<[^>]*>?/gm, '') : 'Header',
+          header: typeof col.header === 'string' ? col.header.replace(/<[^>]*>?/gm, '') : String(col.header),
           accessor: (item: T): string => {
             if (typeof col.accessor === 'function') {
               const value = col.accessor(item);
@@ -211,12 +212,14 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
               return String(value ?? '');
             }
             return String(item[col.accessor as keyof T] ?? '');
-          }
+          },
+          width: col.width
         }));
         
         printColumns.push({
             header: 'Trạng thái',
-            accessor: (item: T) => item.is_active !== false ? 'Đang hoạt động' : 'Vô hiệu hóa'
+            accessor: (item: T) => item.is_active !== false ? 'Đang hoạt động' : 'Vô hiệu hóa',
+            width: columns ? '15%' : '30%'
         });
 
         const activeFilters: Record<string, string> = {};
@@ -363,7 +366,7 @@ const CategoryManagementPage = <T extends { id: string, ten: string, is_active?:
                         </div>
                     </Card.Body>
                     <Table
-                        columns={finalColumns}
+                        columns={finalColumns as any}
                         data={paginatedItems}
                         actions={renderActions}
                         onRowClick={(item) => openModal(item)}

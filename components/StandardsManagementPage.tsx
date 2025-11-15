@@ -70,11 +70,11 @@ const StandardsManagementPage: React.FC<StandardsManagementPageProps> = ({ stand
             title: 'Danh sách tiêu chuẩn',
             filters: {}, // No filters on this page
             columns: [
-                { header: 'Tên tiêu chuẩn', accessor: (item: TieuChuan) => item.ten },
-                { header: 'Viết tắt', accessor: (item: TieuChuan) => item.ten_viet_tat || '' },
-                { header: 'Phiên bản', accessor: (item: TieuChuan) => item.phien_ban || '' },
-                { header: 'Ngày áp dụng', accessor: (item: TieuChuan) => formatDateForDisplay(item.ngay_ap_dung) },
-                { header: 'Trạng thái', accessor: (item: TieuChuan) => item.is_active !== false ? 'Hoạt động' : 'Vô hiệu hóa' },
+                { header: 'Tên tiêu chuẩn', accessor: (item: TieuChuan) => item.ten, width: '40%' },
+                { header: 'Viết tắt', accessor: (item: TieuChuan) => item.ten_viet_tat || '', width: '10%' },
+                { header: 'Phiên bản', accessor: (item: TieuChuan) => item.phien_ban || '', width: '10%' },
+                { header: 'Ngày áp dụng', accessor: (item: TieuChuan) => formatDateForDisplay(item.ngay_ap_dung), width: '20%' },
+                { header: 'Trạng thái', accessor: (item: TieuChuan) => item.is_active !== false ? 'Hoạt động' : 'Vô hiệu hóa', width: '15%' },
             ],
             data: sortedStandards,
         };

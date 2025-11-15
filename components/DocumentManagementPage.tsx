@@ -193,12 +193,12 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
             title: 'Danh sách tài liệu',
             filters: activeFilters,
             columns: [
-                { header: 'Tên tài liệu', accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu },
-                { header: 'Số hiệu', accessor: (item: DanhMucTaiLieu) => item.so_hieu },
-                { header: 'Phiên bản', accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A' },
-                { header: 'Phòng ban', accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly) },
-                { header: 'Trạng thái', accessor: (item: DanhMucTaiLieu) => translate(item.trang_thai) },
-                { header: 'Ngày hiệu lực', accessor: (item: DanhMucTaiLieu) => formatDateForDisplay(item.ngay_hieu_luc) },
+                { header: 'Tên tài liệu', accessor: (item: DanhMucTaiLieu) => item.ten_tai_lieu, width: '30%' },
+                { header: 'Số hiệu', accessor: (item: DanhMucTaiLieu) => item.so_hieu, width: '15%' },
+                { header: 'Phiên bản', accessor: (item: DanhMucTaiLieu) => latestVersionMap.get(item.ma_tl) || 'N/A', width: '10%' },
+                { header: 'Phòng ban', accessor: (item: DanhMucTaiLieu) => phongBanMap.get(item.phong_ban_quan_ly), width: '15%' },
+                { header: 'Trạng thái', accessor: (item: DanhMucTaiLieu) => translate(item.trang_thai), width: '15%' },
+                { header: 'Ngày hiệu lực', accessor: (item: DanhMucTaiLieu) => formatDateForDisplay(item.ngay_hieu_luc), width: '15%' },
             ],
             data: sortedDocuments,
         };

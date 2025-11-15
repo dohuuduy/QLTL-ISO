@@ -137,12 +137,12 @@ const AuditManagementPage: React.FC<AuditManagementPageProps> = ({ allData, onUp
             title: 'Danh sách lịch Audit',
             filters: activeFilters,
             columns: [
-                { header: 'Tên cuộc audit', accessor: (item: LichAudit) => item.ten_cuoc_audit },
-                { header: 'Loại', accessor: (item: LichAudit) => item.loai_audit === 'internal' ? 'Nội bộ' : 'Bên ngoài' },
-                { header: 'Ngày bắt đầu', accessor: (item: LichAudit) => formatDateForDisplay(item.ngay_bat_dau) },
-                { header: 'Ngày kết thúc', accessor: (item: LichAudit) => formatDateForDisplay(item.ngay_ket_thuc) },
-                { header: 'Trưởng đoàn', accessor: (item: LichAudit) => danhGiaVienMap.get(item.chuyen_gia_danh_gia_truong_id) || 'N/A' },
-                { header: 'Trạng thái', accessor: (item: LichAudit) => translate(item.trang_thai) },
+                { header: 'Tên cuộc audit', accessor: (item: LichAudit) => item.ten_cuoc_audit, width: '30%' },
+                { header: 'Loại', accessor: (item: LichAudit) => item.loai_audit === 'internal' ? 'Nội bộ' : 'Bên ngoài', width: '10%' },
+                { header: 'Ngày bắt đầu', accessor: (item: LichAudit) => formatDateForDisplay(item.ngay_bat_dau), width: '15%' },
+                { header: 'Ngày kết thúc', accessor: (item: LichAudit) => formatDateForDisplay(item.ngay_ket_thuc), width: '15%' },
+                { header: 'Trưởng đoàn', accessor: (item: LichAudit) => danhGiaVienMap.get(item.chuyen_gia_danh_gia_truong_id) || 'N/A', width: '15%' },
+                { header: 'Trạng thái', accessor: (item: LichAudit) => translate(item.trang_thai), width: '10%' },
             ],
             data: sortedAudits,
         };

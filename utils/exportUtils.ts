@@ -151,8 +151,8 @@ export const exportVisibleReportToWord = (filename: string) => {
             .header .motto { font-style: italic; font-weight: bold; text-align: center; }
             .report-title { text-align: center; font-weight: bold; font-size: 16pt; text-transform: uppercase; margin: 30px 0 15px; }
             .filter-section { margin: 15px 0; font-style: italic; }
-            table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11pt; }
-            th, td { border: 1px solid black !important; padding: 6px 8px; text-align: left; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11pt; table-layout: fixed; }
+            th, td { border: 1px solid black !important; padding: 6px 8px; text-align: left; word-wrap: break-word; }
             th { text-align: center; font-weight: bold; }
             .footer { margin-top: 30px; text-align: right; }
             .signature { margin-top: 10px; text-align: center; width: 35%; margin-left: auto; }

@@ -335,6 +335,7 @@
             font-size: 16pt;
             margin: 30px 0 15px;
             page-break-after: avoid;
+            text-transform: uppercase;
         }
         .print-report-container .filter-section {
             margin: 15px 0;
@@ -346,6 +347,7 @@
             margin-top: 15px;
             font-size: 11pt;
             page-break-inside: auto;
+            table-layout: fixed; /* Added for better width control */
         }
         .print-report-container tr {
             page-break-inside: avoid;
@@ -358,6 +360,7 @@
             border: 1px solid black !important;
             padding: 6px 8px;
             text-align: left;
+            word-wrap: break-word; /* Added to wrap long text */
         }
         .print-report-container th {
             text-align: center;
