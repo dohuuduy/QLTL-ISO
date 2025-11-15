@@ -303,11 +303,13 @@
             margin: 1.5cm;
         }
         
-        /* Layout Resets for full content printing */
+        /* Layout Resets for full content printing & Force white background */
         html, body, #root, .flex.h-screen, .flex-1.flex.flex-col.overflow-hidden {
             height: auto !important;
             overflow: visible !important;
             display: block !important;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
         }
         main {
             padding: 0 !important;
@@ -316,10 +318,7 @@
             width: 100% !important;
             height: auto !important;
             display: block !important;
-        }
-
-        /* Force white background when printing */
-        html, body {
+            background: #ffffff !important;
             background-color: #ffffff !important;
         }
         
