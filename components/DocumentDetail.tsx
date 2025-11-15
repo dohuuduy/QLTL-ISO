@@ -67,9 +67,24 @@ const RelationshipItem: React.FC<{
 }> = ({ label, doc, canUpdate, onAdd, onRemove }) => (
     <div>
         <dt className="text-sm font-medium text-gray-500">{label}</dt>
-        <dd className="mt-1 text-sm text-gray-900 flex items-center justify-between">
+        <dd className="mt-1 text-sm text-gray-900 flex items-center justify-between gap-x-4">
             {doc ? (
-                <span className="truncate pr-4">{`${doc.ten_tai_lieu} (${doc.so_hieu})`}</span>
+                <div className="flex items-center gap-x-2 truncate flex-1 min-w-0">
+                    <span className="font-medium text-gray-800 truncate" title={doc.ten_tai_lieu}>{doc.ten_tai_lieu}</span>
+                    <span className="text-gray-500 flex-shrink-0">({doc.so_hieu})</span>
+                    {doc.file_pdf && (
+                        <a
+                            href={doc.file_pdf}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={`Mở file PDF`}
+                            className="text-blue-600 hover:text-blue-800 flex-shrink-0"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <Icon type="document-text" className="h-5 w-5" />
+                        </a>
+                    )}
+                </div>
             ) : (
                 <span className="text-gray-400">Không có</span>
             )}
@@ -635,7 +650,10 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                                     <span className="btn-text">Sửa</span>
                                 </button>
                              )}
-                              <button onClick={handlePrint} className="btn-secondary btn-responsive" title={document.file_pdf ? "In file PDF" : "In trang này"}>
+                            <button 
+                                onClick={handlePrint} 
+                                className="btn-secondary btn-responsive text-blue-600 font-semibold hover:bg-blue-50"
+                                title={document.file_pdf ? "In file PDF" : "In trang này"}>
                                 <Icon type="printer" className="btn-icon h-5 w-5" />
                                 <span className="btn-text">In</span>
                             </button>
@@ -722,7 +740,7 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         title="Mở file PDF của tài liệu cha"
-                                                        className="text-red-600 hover:text-red-800 flex-shrink-0"
+                                                        className="text-blue-600 hover:text-blue-800 flex-shrink-0"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
                                                         <Icon type="document-text" className="h-5 w-5" />
