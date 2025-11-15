@@ -4,6 +4,8 @@ import Sidebar from './Sidebar';
 import type { NhanSu, ThongBao, ReportType, ChucVu } from '../../types';
 import { useSidebar } from '../../hooks/use-sidebar';
 import type { BreadcrumbItem } from '../ui/Breadcrumb';
+import type { SaveStatus } from '../../App';
+import SaveStatusToast from '../ui/SaveStatusToast';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -18,12 +20,14 @@ interface LayoutProps {
     onNavigateToReport: (reportType: ReportType) => void;
     chucVuList: ChucVu[];
     breadcrumbs: BreadcrumbItem[];
+    saveStatus: SaveStatus;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
     children, currentUser, onLogout, onNavigate, 
     notifications, onMarkNotificationRead, onMarkAllNotificationsRead, onNavigateToDocument,
-    currentView, onNavigateToReport, chucVuList, breadcrumbs
+    currentView, onNavigateToReport, chucVuList, breadcrumbs,
+    saveStatus
 }) => {
     const { isCollapsed, isMobileOpen, setMobileOpen, toggleSidebar } = useSidebar();
 
@@ -74,6 +78,7 @@ const Layout: React.FC<LayoutProps> = ({
                         {children}
                     </div>
                 </main>
+                <SaveStatusToast status={saveStatus} />
             </div>
         </div>
     );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 // Import Types
@@ -78,6 +78,9 @@ type View =
     | { type: 'settings-group-org' }
     | { type: 'settings-group-doc' }
     | { type: 'settings-group-audit' };
+
+// Define Save Status states
+export type SaveStatus = 'idle' | 'saving' | 'success' | 'error';
 
 
 /**
@@ -261,7 +264,8 @@ const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [view, setView] = useState<View>({ type: 'dashboard' });
     const [error, setError] = useState<React.ReactNode | null>(null);
-    const [isSaving, setIsSaving] = useState(false);
+    const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+    const saveStatusTimerRef = useRef<number | null>(null);
 
     // Initial data load
     useEffect(() => {
@@ -538,19 +542,29 @@ const App: React.FC = () => {
 
     // Persist data changes (debounced)
     useEffect(() => {
-        if (isLoading) return; // Don't save initial mock data load
+        if (isLoading) return;
 
-        setIsSaving(true);
+        if (saveStatusTimerRef.current) {
+            clearTimeout(saveStatusTimerRef.current);
+        }
+        
+        setSaveStatus('saving');
+        
         const handler = setTimeout(() => {
             updateAllData(appData)
                 .then(() => {
                     console.log("Data saved successfully.");
+                    setSaveStatus('success');
                     setError(null);
+                    saveStatusTimerRef.current = window.setTimeout(() => setSaveStatus('idle'), 2500);
                 })
                 .catch(e => {
                     console.error("Failed to save data.", e);
+                    setSaveStatus('error');
+                    saveStatusTimerRef.current = window.setTimeout(() => setSaveStatus('idle'), 5000);
+
                     let errorMessage: React.ReactNode = "Lỗi: Không thể lưu thay đổi vào máy chủ.";
-                     if (e instanceof TypeError && (e.message.includes('Failed to fetch') || e.message.includes('Network request failed'))) {
+                    if (e instanceof TypeError && (e.message.includes('Failed to fetch') || e.message.includes('Network request failed'))) {
                         errorMessage = (
                             <>
                                 <strong>Lỗi kết nối mạng (CORS):</strong> Không thể lưu dữ liệu. Vui lòng kiểm tra lại cấu hình triển khai Google Apps Script.
@@ -562,12 +576,14 @@ const App: React.FC = () => {
                         );
                     }
                     setError(errorMessage);
-                })
-                .finally(() => setIsSaving(false));
-        }, 1500); // Debounce saves by 1.5 seconds
+                });
+        }, 1500);
 
         return () => {
             clearTimeout(handler);
+            if (saveStatusTimerRef.current) {
+                clearTimeout(saveStatusTimerRef.current);
+            }
         };
     }, [appData, isLoading]);
     
@@ -1128,9 +1144,9 @@ const App: React.FC = () => {
             onNavigateToReport={handleNavigateToReport}
             chucVuList={appData.chucVu}
             breadcrumbs={breadcrumbs}
+            saveStatus={saveStatus}
         >
             {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
-            {isSaving && <div className="fixed top-4 right-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded-md shadow-lg z-50 animate-pulse">Đang lưu...</div>}
             {renderView()}
         </Layout>
     );
