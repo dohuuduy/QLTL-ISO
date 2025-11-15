@@ -164,27 +164,6 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
         return sortedDocuments.slice(startIndex, startIndex + itemsPerPage);
     }, [sortedDocuments, currentPage, itemsPerPage]);
 
-    const relatedDocsData = useMemo(() => {
-        if (!relatedDoc) return null;
-
-        const parent = relatedDoc.ma_tl_cha ? allData.documents.find(d => d.ma_tl === relatedDoc.ma_tl_cha) : null;
-        const children = allData.documents.filter(d => d.ma_tl_cha === relatedDoc.ma_tl);
-        
-        const replaces = relatedDoc.tai_lieu_thay_the ? allData.documents.find(d => d.ma_tl === relatedDoc.tai_lieu_thay_the) : null;
-        const replacedBy = allData.documents.filter(d => d.tai_lieu_thay_the === relatedDoc.ma_tl);
-
-        const sameStandard = allData.documents.filter(d => 
-            d.ma_tl !== relatedDoc.ma_tl && 
-            d.tieu_chuan_ids.some(id => relatedDoc.tieu_chuan_ids.includes(id))
-        );
-        const sameDepartment = allData.documents.filter(d => 
-            d.ma_tl !== relatedDoc.ma_tl && 
-            d.phong_ban_quan_ly === relatedDoc.phong_ban_quan_ly
-        );
-
-        return { parent, children, replaces, replacedBy, sameStandard, sameDepartment };
-    }, [relatedDoc, allData.documents]);
-
     const printLayoutProps = useMemo(() => {
         if (sortedDocuments.length === 0) return null;
 
@@ -824,10 +803,10 @@ const DocumentManagementPage: React.FC<DocumentManagementPageProps> = ({ allData
                     onClose={() => setRelatedDoc(null)} 
                     title={`Tài liệu liên quan cho: ${relatedDoc?.ten_tai_lieu || ''}`}
                 >
-                    {relatedDoc && relatedDocsData && (
+                    {relatedDoc && (
                         <RelatedDocumentsView 
                             selectedDoc={relatedDoc}
-                            relatedData={relatedDocsData}
+                            allDocuments={allData.documents}
                             onViewDetailsClick={handleNavigateFromModal}
                         />
                     )}
