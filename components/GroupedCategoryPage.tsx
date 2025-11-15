@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import Tabs from './ui/Tabs';
 import CategoryManagementPage from './CategoryManagementPage';
@@ -52,12 +53,12 @@ const auditCategories = [
     { key: 'toChucDanhGia' as keyof typeof mockData, title: 'Tổ chức đánh giá', Component: GenericCategoryForm, props: () => ({ categoryName: 'Tổ chức đánh giá' }) },
 ];
 
-// FIX: Add explicit return types to accessor functions to satisfy React.ReactNode type requirement.
-const getColumnsForCategory = (key: string, data: any) => {
+// FIX: Type the `data` parameter and remove explicit `any` to allow for proper type inference, fixing the 'unknown' type error.
+const getColumnsForCategory = (key: string, data: typeof mockData) => {
     switch (key) {
         case 'nhanSu':
-            const phongBanMap = new Map(data.phongBan.map((p: any) => [p.id, p.ten]));
-            const chucVuMap = new Map(data.chucVu.map((c: any) => [c.id, c.ten]));
+            const phongBanMap = new Map(data.phongBan.map((p) => [p.id, p.ten]));
+            const chucVuMap = new Map(data.chucVu.map((c) => [c.id, c.ten]));
             return [
                 { header: 'Tên nhân sự', accessor: 'ten', sortKey: 'ten', width: '25%' },
                 { header: 'Email', accessor: 'email', sortKey: 'email', width: '20%' },
@@ -66,7 +67,7 @@ const getColumnsForCategory = (key: string, data: any) => {
                 { header: 'Chức vụ', accessor: (item: NhanSu): React.ReactNode => chucVuMap.get(item.chuc_vu) || '', sortKey: 'chuc_vu', width: '15%' },
             ];
         case 'danhGiaVien':
-            const orgMap = new Map(data.toChucDanhGia.map((o: any) => [o.id, o.ten]));
+            const orgMap = new Map(data.toChucDanhGia.map((o) => [o.id, o.ten]));
             return [
                  { header: 'Tên đánh giá viên', accessor: 'ten', sortKey: 'ten', width: '40%' },
                  { header: 'Loại', accessor: (item: DanhGiaVien): React.ReactNode => item.loai === 'internal' ? 'Nội bộ' : 'Bên ngoài', sortKey: 'loai', width: '25%' },

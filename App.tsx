@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -539,7 +540,7 @@ const App: React.FC = () => {
         };
 
         checkForOverdueTasks();
-    }, [isLoading, currentUser, appData.notifications, appData.documents, appData.reviewSchedules, appData.nhanSu]);
+    }, [isLoading, currentUser, appData.notifications, appData.documents, appData.reviewSchedules, appData.nhanSu, view]);
 
 
     // Persist data changes (debounced)
