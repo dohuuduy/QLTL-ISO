@@ -48,6 +48,24 @@ const Navbar: React.FC<NavbarProps> = ({
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const notificationsRef = useRef<HTMLDivElement>(null);
+    
+    const [isEffectivelyDark, setIsEffectivelyDark] = useState(false);
+
+    // Effect to track the current displayed theme (light/dark)
+    useEffect(() => {
+        const checkDarkMode = () => {
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            setIsEffectivelyDark(theme === 'dark' || (theme === 'system' && systemPrefersDark));
+        };
+        
+        checkDarkMode(); // Initial check
+
+        // Listen for changes in system preference for 'system' theme
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addEventListener('change', checkDarkMode);
+
+        return () => mediaQuery.removeEventListener('change', checkDarkMode);
+    }, [theme]); // Rerun when theme prop changes
 
     const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -122,6 +140,16 @@ const Navbar: React.FC<NavbarProps> = ({
                 </div>
 
                 <div className="flex items-center space-x-2 sm:space-x-4">
+                     {/* Mobile Theme Toggle */}
+                    <button
+                        type="button"
+                        onClick={() => setTheme(isEffectivelyDark ? 'light' : 'dark')}
+                        className="md:hidden rounded-full p-1.5 text-gray-400 dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
+                    >
+                        <span className="sr-only">Toggle theme</span>
+                        <Icon type={isEffectivelyDark ? 'sun' : 'moon'} className="h-6 w-6" />
+                    </button>
+
                     <div className="relative" ref={notificationsRef}>
                         <button
                             type="button"
@@ -165,7 +193,7 @@ const Navbar: React.FC<NavbarProps> = ({
                                         <p className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate">{currentUser.ten}</p>
                                         <p className="text-sm text-gray-500 dark:text-slate-400 truncate">{chucVuTen}</p>
                                     </div>
-                                    <div className="px-3 py-3 border-b border-slate-200 dark:border-slate-700">
+                                    <div className="hidden md:block px-3 py-3 border-b border-slate-200 dark:border-slate-700">
                                         <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Giao diện</p>
                                         <div className="flex items-center justify-between rounded-lg bg-slate-100 dark:bg-slate-700 p-1 space-x-1">
                                             <ThemeSwitcherButton value="light" label="Sáng" icon="sun" />
